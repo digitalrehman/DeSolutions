@@ -1,0 +1,164 @@
+import React from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  View,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import theme from '@config/theme';
+
+/**
+ * CustomButton - Reusable button component
+ * @param {string} title - Button text
+ * @param {function} onPress - Press handler
+ * @param {boolean} loading - Loading state
+ * @param {boolean} disabled - Disabled state
+ * @param {string} variant - Button variant: 'primary', 'secondary', 'outline'
+ * @param {string} icon - Icon name (Ionicons)
+ * @param {string} iconPosition - Icon position: 'left', 'right'
+ * @param {object} style - Container style override
+ * @param {object} textStyle - Text style override
+ */
+const CustomButton = ({
+  title,
+  onPress,
+  loading = false,
+  disabled = false,
+  variant = 'primary',
+  icon,
+  iconPosition = 'left',
+  style,
+  textStyle,
+  ...props
+}) => {
+  const getButtonStyle = () => {
+    switch (variant) {
+      case 'secondary':
+        return styles.secondaryButton;
+      case 'outline':
+        return styles.outlineButton;
+      default:
+        return styles.primaryButton;
+    }
+  };
+
+  const getTextStyle = () => {
+    switch (variant) {
+      case 'secondary':
+        return styles.secondaryText;
+      case 'outline':
+        return styles.outlineText;
+      default:
+        return styles.primaryText;
+    }
+  };
+
+  const getIconColor = () => {
+    switch (variant) {
+      case 'outline':
+        return theme.colors.primary;
+      default:
+        return theme.colors.white;
+    }
+  };
+
+  const isDisabled = disabled || loading;
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        getButtonStyle(),
+        isDisabled && styles.disabledButton,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={isDisabled}
+      activeOpacity={0.7}
+      {...props}
+    >
+      {loading ? (
+        <ActivityIndicator
+          color={
+            variant === 'outline' ? theme.colors.primary : theme.colors.white
+          }
+          size="small"
+        />
+      ) : (
+        <View style={styles.content}>
+          {icon && iconPosition === 'left' && (
+            <Icon
+              name={icon}
+              size={20}
+              color={getIconColor()}
+              style={styles.iconLeft}
+            />
+          )}
+          <Text style={[getTextStyle(), textStyle]}>{title}</Text>
+          {icon && iconPosition === 'right' && (
+            <Icon
+              name={icon}
+              size={20}
+              color={getIconColor()}
+              style={styles.iconRight}
+            />
+          )}
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  button: {
+    height: 52,
+    borderRadius: theme.borderRadius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+    ...theme.shadows.sm,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  primaryButton: {
+    backgroundColor: theme.colors.primary,
+  },
+  secondaryButton: {
+    backgroundColor: theme.colors.surface,
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  primaryText: {
+    color: theme.colors.white,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semiBold,
+  },
+  secondaryText: {
+    color: theme.colors.text,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semiBold,
+  },
+  outlineText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semiBold,
+  },
+  iconLeft: {
+    marginRight: theme.spacing.sm,
+  },
+  iconRight: {
+    marginLeft: theme.spacing.sm,
+  },
+});
+
+export default CustomButton;
