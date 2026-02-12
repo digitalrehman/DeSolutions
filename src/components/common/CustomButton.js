@@ -43,6 +43,8 @@ const CustomButton = ({
         return dynamicStyles.secondaryButton;
       case 'outline':
         return dynamicStyles.outlineButton;
+      case 'danger':
+        return dynamicStyles.dangerButton;
       default:
         return dynamicStyles.primaryButton;
     }
@@ -54,6 +56,8 @@ const CustomButton = ({
         return dynamicStyles.secondaryText;
       case 'outline':
         return dynamicStyles.outlineText;
+      case 'danger':
+        return dynamicStyles.dangerText;
       default:
         return dynamicStyles.primaryText;
     }
@@ -63,6 +67,8 @@ const CustomButton = ({
     switch (variant) {
       case 'outline':
         return theme.colors.primary;
+      case 'danger':
+        return theme.colors.white;
       default:
         return theme.colors.white;
     }
@@ -140,23 +146,31 @@ const getStyles = theme =>
       borderWidth: 2,
       borderColor: theme.colors.primary,
     },
+    dangerButton: {
+      backgroundColor: theme.colors.error || '#EF4444',
+    },
     disabledButton: {
       opacity: 0.5,
     },
     primaryText: {
       color: theme.colors.white,
       fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.semiBold,
+      fontWeight: theme.typography.fontWeight.bold,
     },
     secondaryText: {
       color: theme.colors.text,
       fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.semiBold,
+      fontWeight: theme.typography.fontWeight.bold,
     },
     outlineText: {
       color: theme.colors.primary,
       fontSize: theme.typography.fontSize.base,
-      fontWeight: theme.typography.fontWeight.semiBold,
+      fontWeight: theme.typography.fontWeight.bold,
+    },
+    dangerText: {
+      color: theme.colors.white,
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.bold,
     },
     iconLeft: {
       marginRight: theme.spacing.sm,

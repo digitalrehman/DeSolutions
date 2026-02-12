@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,34 @@ import { setCredentials } from '@store/slices/authSlice';
 import { useTheme } from '@config/useTheme';
 
 /**
- * LoginScreen - Professional login screen with dynamic theme and "Desolutions" branding
+ * AnimatedTypingText - Small sub-component for the typing effect
+ */
+const AnimatedTypingText = ({ text, style }) => {
+  const [displayText, setDisplayText] = useState('');
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (index < text.length) {
+      const timeout = setTimeout(() => {
+        setDisplayText(prev => prev + text[index]);
+        setIndex(prev => prev + 1);
+      }, 100);
+      return () => clearTimeout(timeout);
+    } else {
+      // Loop the animation
+      const resetTimeout = setTimeout(() => {
+        setDisplayText('');
+        setIndex(0);
+      }, 3000);
+      return () => clearTimeout(resetTimeout);
+    }
+  }, [index, text]);
+
+  return <Text style={style}>{displayText}|</Text>;
+};
+
+/**
+ * LoginScreen - Refined with centered form, keyboard handling, and typing animation
  */
 const LoginScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -72,7 +99,6 @@ const LoginScreen = ({ navigation }) => {
         password: formData.password,
       }).unwrap();
 
-      // Save user data to Redux store
       dispatch(setCredentials({ user: result.user, token: null }));
     } catch (error) {
       console.log('Login error:', error);
@@ -91,80 +117,83 @@ const LoginScreen = ({ navigation }) => {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={dynamicStyles.keyboardView}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
             contentContainerStyle={dynamicStyles.scrollContent}
             keyboardShouldPersistTaps="handled"
+            centerContent={true}
             showsVerticalScrollIndicator={false}
           >
-            {/* Header Section */}
-            <View style={dynamicStyles.header}>
-              <View style={dynamicStyles.logoContainer}>
-                <Text style={dynamicStyles.logoText}>Desolutions</Text>
-                <View
-                  style={[
-                    dynamicStyles.logoBar,
-                    { backgroundColor: theme.colors.primary },
-                  ]}
-                />
-              </View>
-              <Text
-                style={[
-                  dynamicStyles.subtitle,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
-                Sign in to continue to your account
-              </Text>
-            </View>
-
-            {/* Form Section */}
-            <View style={dynamicStyles.formContainer}>
-              <CustomInput
-                label="Username"
-                placeholder="Enter your username"
-                value={formData.username}
-                onChangeText={value => handleInputChange('username', value)}
-                error={errors.username}
-                leftIcon="person-outline"
-                keyboardType="default"
-                autoCapitalize="none"
-                returnKeyType="next"
-              />
-
-              <CustomInput
-                label="Password"
-                placeholder="Enter your password"
-                value={formData.password}
-                onChangeText={value => handleInputChange('password', value)}
-                error={errors.password}
-                leftIcon="lock-closed-outline"
-                secureTextEntry
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
-
-              <CustomButton
-                title="Sign In"
-                onPress={handleLogin}
-                loading={isLoading}
-                style={dynamicStyles.loginButton}
-                icon="log-in-outline"
-                iconPosition="right"
-              />
-
-              {/* Footer Links */}
-              <View style={dynamicStyles.footer}>
+            <View style={dynamicStyles.innerContainer}>
+              {/* Header Section */}
+              <View style={dynamicStyles.header}>
+                <View style={dynamicStyles.logoContainer}>
+                  <Text style={dynamicStyles.logoText}>Desolutions</Text>
+                  <View
+                    style={[
+                      dynamicStyles.logoBar,
+                      { backgroundColor: theme.colors.primary },
+                    ]}
+                  />
+                </View>
                 <Text
                   style={[
-                    dynamicStyles.footerText,
+                    dynamicStyles.subtitle,
                     { color: theme.colors.textSecondary },
                   ]}
                 >
-                  Powered by Desolutions
+                  Sign in to continue to your account
                 </Text>
               </View>
+
+              {/* Form Section */}
+              <View style={dynamicStyles.formContainer}>
+                <CustomInput
+                  label="Username"
+                  placeholder="Enter your username"
+                  value={formData.username}
+                  onChangeText={value => handleInputChange('username', value)}
+                  error={errors.username}
+                  leftIcon="person-outline"
+                  keyboardType="default"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                />
+
+                <CustomInput
+                  label="Password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChangeText={value => handleInputChange('password', value)}
+                  error={errors.password}
+                  leftIcon="lock-closed-outline"
+                  secureTextEntry
+                  returnKeyType="done"
+                  onSubmitEditing={handleLogin}
+                />
+
+                <CustomButton
+                  title="Sign In"
+                  onPress={handleLogin}
+                  loading={isLoading}
+                  style={dynamicStyles.loginButton}
+                  icon="arrow-forward-outline"
+                  iconPosition="right"
+                />
+              </View>
+            </View>
+
+            {/* Footer Links - Outside innerContainer to push to bottom if space allows */}
+            <View style={dynamicStyles.footer}>
+              <AnimatedTypingText
+                text="Powered by Desolutions"
+                style={[
+                  dynamicStyles.footerText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              />
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>
@@ -184,15 +213,20 @@ const getStyles = theme =>
     },
     scrollContent: {
       flexGrow: 1,
+      justifyContent: 'center', // Centers content vertically when scroll not needed
       paddingHorizontal: 20,
+    },
+    innerContainer: {
+      width: '100%',
+      maxWidth: 400,
+      alignSelf: 'center',
     },
     header: {
       alignItems: 'center',
-      marginTop: 60,
       marginBottom: 40,
     },
     logoContainer: {
-      marginBottom: 24,
+      marginBottom: 20,
       alignItems: 'center',
     },
     logoText: {
@@ -207,28 +241,27 @@ const getStyles = theme =>
       marginTop: 4,
       borderRadius: 2,
     },
-    title: {
-      fontSize: 28,
-      fontWeight: '700',
-      marginBottom: 8,
-    },
     subtitle: {
       fontSize: 16,
       textAlign: 'center',
     },
     formContainer: {
-      flex: 1,
+      width: '100%',
     },
     loginButton: {
       marginTop: 24,
     },
     footer: {
-      marginTop: 'auto',
-      paddingVertical: 32,
+      marginTop: 40,
+      paddingVertical: 24,
       alignItems: 'center',
     },
     footerText: {
-      fontSize: 14,
+      fontSize: 18,
+      fontWeight: '600',
+      letterSpacing: 0.5,
+      fontFamily:
+        Platform.OS === 'ios' ? 'DancingScript-Regular' : 'DancingScript',
     },
   });
 

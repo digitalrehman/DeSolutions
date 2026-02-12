@@ -390,10 +390,25 @@ export const themes = {
     warning: '#F59E0B',
     info: '#F59E0B',
   }),
+
+  monochrome: createTheme('Classic Monochrome', {
+    primary: '#000000',
+    primaryDark: '#333333',
+    background: '#FFFFFF',
+    surface: '#F9FAFB',
+    text: '#000000',
+    textSecondary: '#666666',
+    textDark: '#333333',
+    border: '#E5E7EB',
+    success: '#10B981',
+    error: '#EF4444',
+    warning: '#F59E0B',
+    info: '#000000',
+  }),
 };
 
 // Default theme
-export const defaultTheme = themes.midnightBlue;
+export const defaultTheme = themes.monochrome;
 
 // Theme list for dropdown
 export const themeList = Object.keys(themes).map(key => ({

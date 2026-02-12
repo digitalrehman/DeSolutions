@@ -16,7 +16,7 @@ export const ThemeContext = createContext({
  */
 export const ThemeProvider = ({ children }) => {
   const [currentTheme, setCurrentTheme] = useState(defaultTheme);
-  const [currentThemeName, setCurrentThemeName] = useState('midnightBlue');
+  const [currentThemeName, setCurrentThemeName] = useState('monochrome');
   const [isLoading, setIsLoading] = useState(true);
 
   // Load saved theme on mount

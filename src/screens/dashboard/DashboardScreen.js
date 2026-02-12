@@ -58,7 +58,7 @@ const DashboardScreen = () => {
           <CustomButton
             title="Logout"
             onPress={handleLogout}
-            variant="outline"
+            variant="danger"
             icon="log-out-outline"
             iconPosition="right"
             style={dynamicStyles.logoutButton}
