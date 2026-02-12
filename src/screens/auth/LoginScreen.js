@@ -213,7 +213,7 @@ const getStyles = theme =>
     },
     scrollContent: {
       flexGrow: 1,
-      justifyContent: 'center', // Centers content vertically when scroll not needed
+      justifyContent: 'center',
       paddingHorizontal: 20,
     },
     innerContainer: {
@@ -242,8 +242,10 @@ const getStyles = theme =>
       borderRadius: 2,
     },
     subtitle: {
-      fontSize: 16,
+      fontSize: 23,
       textAlign: 'center',
+      fontFamily:
+        Platform.OS === 'ios' ? 'DancingScript-Regular' : 'DancingScript',
     },
     formContainer: {
       width: '100%',
@@ -257,7 +259,7 @@ const getStyles = theme =>
       alignItems: 'center',
     },
     footerText: {
-      fontSize: 18,
+      fontSize: 25,
       fontWeight: '600',
       letterSpacing: 0.5,
       fontFamily:
