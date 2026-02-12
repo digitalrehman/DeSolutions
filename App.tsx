@@ -6,7 +6,26 @@ import { Provider } from 'react-redux';
 import Toast from 'react-native-toast-message';
 import store from './src/store';
 import AppNavigator from './src/routes/AppNavigator';
-import theme from './src/config/theme';
+
+import { ThemeProvider } from './src/config/ThemeContext';
+import { useTheme } from './src/config/useTheme';
+
+const AppContent = () => {
+  const { theme } = useTheme();
+
+  return (
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle={
+          theme.name === 'Arctic White' ? 'dark-content' : 'light-content'
+        }
+        backgroundColor={theme.colors.background}
+      />
+      <AppNavigator />
+      <Toast />
+    </SafeAreaProvider>
+  );
+};
 
 /**
  * App - Root component
@@ -16,14 +35,9 @@ const App = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
-        <SafeAreaProvider>
-          <StatusBar
-            barStyle="light-content"
-            backgroundColor={theme.colors.background}
-          />
-          <AppNavigator />
-          <Toast />
-        </SafeAreaProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </Provider>
     </GestureHandlerRootView>
   );

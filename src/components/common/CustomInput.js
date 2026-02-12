@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import theme from '@config/theme';
+import { useTheme } from '@config/useTheme';
 
 /**
  * CustomInput - Reusable input component
@@ -38,6 +38,7 @@ const CustomInput = ({
   containerStyle,
   ...props
 }) => {
+  const { theme } = useTheme();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -45,16 +46,18 @@ const CustomInput = ({
     setIsPasswordVisible(!isPasswordVisible);
   };
 
+  const dynamicStyles = getStyles(theme);
+
   return (
-    <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+    <View style={[dynamicStyles.container, containerStyle]}>
+      {label && <Text style={dynamicStyles.label}>{label}</Text>}
 
       <View
         style={[
-          styles.inputContainer,
-          isFocused && styles.inputContainerFocused,
-          error && styles.inputContainerError,
-          !editable && styles.inputContainerDisabled,
+          dynamicStyles.inputContainer,
+          isFocused && dynamicStyles.inputContainerFocused,
+          error && dynamicStyles.inputContainerError,
+          !editable && dynamicStyles.inputContainerDisabled,
         ]}
       >
         {leftIcon && (
@@ -64,12 +67,15 @@ const CustomInput = ({
             color={
               isFocused ? theme.colors.primary : theme.colors.textSecondary
             }
-            style={styles.leftIcon}
+            style={dynamicStyles.leftIcon}
           />
         )}
 
         <TextInput
-          style={[styles.input, leftIcon && styles.inputWithLeftIcon]}
+          style={[
+            dynamicStyles.input,
+            leftIcon && dynamicStyles.inputWithLeftIcon,
+          ]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
@@ -85,7 +91,7 @@ const CustomInput = ({
         {secureTextEntry && (
           <TouchableOpacity
             onPress={togglePasswordVisibility}
-            style={styles.eyeIcon}
+            style={dynamicStyles.eyeIcon}
           >
             <Icon
               name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
@@ -100,71 +106,72 @@ const CustomInput = ({
             name={rightIcon}
             size={20}
             color={theme.colors.textSecondary}
-            style={styles.rightIcon}
+            style={dynamicStyles.rightIcon}
           />
         )}
       </View>
 
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <Text style={dynamicStyles.errorText}>{error}</Text>}
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: theme.spacing.md,
-  },
-  label: {
-    fontSize: theme.typography.fontSize.sm,
-    fontWeight: theme.typography.fontWeight.medium,
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingHorizontal: theme.spacing.md,
-    height: 52,
-  },
-  inputContainerFocused: {
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
-  },
-  inputContainerError: {
-    borderColor: theme.colors.error,
-  },
-  inputContainerDisabled: {
-    backgroundColor: theme.colors.darkGray,
-    opacity: 0.6,
-  },
-  input: {
-    flex: 1,
-    fontSize: theme.typography.fontSize.base,
-    color: theme.colors.text,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-  },
-  inputWithLeftIcon: {
-    marginLeft: theme.spacing.sm,
-  },
-  leftIcon: {
-    marginRight: theme.spacing.xs,
-  },
-  rightIcon: {
-    marginLeft: theme.spacing.xs,
-  },
-  eyeIcon: {
-    padding: theme.spacing.xs,
-  },
-  errorText: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.error,
-    marginTop: theme.spacing.xs,
-    marginLeft: theme.spacing.xs,
-  },
-});
+const getStyles = theme =>
+  StyleSheet.create({
+    container: {
+      marginBottom: theme.spacing.md,
+    },
+    label: {
+      fontSize: theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.medium,
+      color: theme.colors.text,
+      marginBottom: theme.spacing.sm,
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: theme.spacing.md,
+      height: 52,
+    },
+    inputContainerFocused: {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+    },
+    inputContainerError: {
+      borderColor: theme.colors.error,
+    },
+    inputContainerDisabled: {
+      backgroundColor: theme.colors.darkGray,
+      opacity: 0.6,
+    },
+    input: {
+      flex: 1,
+      fontSize: theme.typography.fontSize.base,
+      color: theme.colors.text,
+      paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    },
+    inputWithLeftIcon: {
+      marginLeft: theme.spacing.sm,
+    },
+    leftIcon: {
+      marginRight: theme.spacing.xs,
+    },
+    rightIcon: {
+      marginLeft: theme.spacing.xs,
+    },
+    eyeIcon: {
+      padding: theme.spacing.xs,
+    },
+    errorText: {
+      fontSize: theme.typography.fontSize.xs,
+      color: theme.colors.error,
+      marginTop: theme.spacing.xs,
+      marginLeft: theme.spacing.xs,
+    },
+  });
 
 export default CustomInput;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import theme from '@config/theme';
+import { useTheme } from '@config/useTheme';
 
 /**
  * LoadingSpinner - Reusable loading indicator
@@ -8,14 +8,19 @@ import theme from '@config/theme';
  * @param {string} color - Spinner color
  * @param {object} style - Container style override
  */
-const LoadingSpinner = ({
-  size = 'large',
-  color = theme.colors.primary,
-  style,
-}) => {
+const LoadingSpinner = ({ size = 'large', color, style }) => {
+  const { theme } = useTheme();
+  const spinnerColor = color || theme.colors.primary;
+
   return (
-    <View style={[styles.container, style]}>
-      <ActivityIndicator size={size} color={color} />
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background },
+        style,
+      ]}
+    >
+      <ActivityIndicator size={size} color={spinnerColor} />
     </View>
   );
 };
@@ -25,7 +30,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: theme.colors.background,
   },
 });
 

@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import theme from '@config/theme';
+import { useTheme } from '@config/useTheme';
 
 /**
  * CustomButton - Reusable button component
@@ -33,25 +33,29 @@ const CustomButton = ({
   textStyle,
   ...props
 }) => {
+  const { theme } = useTheme();
+
+  const dynamicStyles = getStyles(theme);
+
   const getButtonStyle = () => {
     switch (variant) {
       case 'secondary':
-        return styles.secondaryButton;
+        return dynamicStyles.secondaryButton;
       case 'outline':
-        return styles.outlineButton;
+        return dynamicStyles.outlineButton;
       default:
-        return styles.primaryButton;
+        return dynamicStyles.primaryButton;
     }
   };
 
   const getTextStyle = () => {
     switch (variant) {
       case 'secondary':
-        return styles.secondaryText;
+        return dynamicStyles.secondaryText;
       case 'outline':
-        return styles.outlineText;
+        return dynamicStyles.outlineText;
       default:
-        return styles.primaryText;
+        return dynamicStyles.primaryText;
     }
   };
 
@@ -69,9 +73,9 @@ const CustomButton = ({
   return (
     <TouchableOpacity
       style={[
-        styles.button,
+        dynamicStyles.button,
         getButtonStyle(),
-        isDisabled && styles.disabledButton,
+        isDisabled && dynamicStyles.disabledButton,
         style,
       ]}
       onPress={onPress}
@@ -87,13 +91,13 @@ const CustomButton = ({
           size="small"
         />
       ) : (
-        <View style={styles.content}>
+        <View style={dynamicStyles.content}>
           {icon && iconPosition === 'left' && (
             <Icon
               name={icon}
               size={20}
               color={getIconColor()}
-              style={styles.iconLeft}
+              style={dynamicStyles.iconLeft}
             />
           )}
           <Text style={[getTextStyle(), textStyle]}>{title}</Text>
@@ -102,7 +106,7 @@ const CustomButton = ({
               name={icon}
               size={20}
               color={getIconColor()}
-              style={styles.iconRight}
+              style={dynamicStyles.iconRight}
             />
           )}
         </View>
@@ -111,54 +115,55 @@ const CustomButton = ({
   );
 };
 
-const styles = StyleSheet.create({
-  button: {
-    height: 52,
-    borderRadius: theme.borderRadius.lg,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.lg,
-    ...theme.shadows.sm,
-  },
-  content: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  primaryButton: {
-    backgroundColor: theme.colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: theme.colors.surface,
-  },
-  outlineButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  primaryText: {
-    color: theme.colors.white,
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semiBold,
-  },
-  secondaryText: {
-    color: theme.colors.text,
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semiBold,
-  },
-  outlineText: {
-    color: theme.colors.primary,
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.semiBold,
-  },
-  iconLeft: {
-    marginRight: theme.spacing.sm,
-  },
-  iconRight: {
-    marginLeft: theme.spacing.sm,
-  },
-});
+const getStyles = theme =>
+  StyleSheet.create({
+    button: {
+      height: 52,
+      borderRadius: theme.borderRadius.lg,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: theme.spacing.lg,
+      ...theme.shadows.sm,
+    },
+    content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    primaryButton: {
+      backgroundColor: theme.colors.primary,
+    },
+    secondaryButton: {
+      backgroundColor: theme.colors.surface,
+    },
+    outlineButton: {
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderColor: theme.colors.primary,
+    },
+    disabledButton: {
+      opacity: 0.5,
+    },
+    primaryText: {
+      color: theme.colors.white,
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.semiBold,
+    },
+    secondaryText: {
+      color: theme.colors.text,
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.semiBold,
+    },
+    outlineText: {
+      color: theme.colors.primary,
+      fontSize: theme.typography.fontSize.base,
+      fontWeight: theme.typography.fontWeight.semiBold,
+    },
+    iconLeft: {
+      marginRight: theme.spacing.sm,
+    },
+    iconRight: {
+      marginLeft: theme.spacing.sm,
+    },
+  });
 
 export default CustomButton;
