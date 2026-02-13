@@ -1,4 +1,4 @@
-package com.desolution
+package com.de2solutions.erp
 
 import android.app.Application
 import com.facebook.react.PackageList
