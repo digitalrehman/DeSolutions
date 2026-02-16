@@ -4,246 +4,239 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Dimensions,
-  StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { ThemeDropdown } from '@components/common';
-import { logout, selectCurrentUser } from '@store/slices/authSlice';
 import { useTheme } from '@config/useTheme';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const HEADER_HEIGHT = SCREEN_HEIGHT * 0.25;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-/**
- * DashboardScreen - Professional ERP Dashboard with Grid Navigation
- */
 const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
-  const dispatch = useDispatch();
-  const user = useSelector(selectCurrentUser);
 
-  const handleLogout = () => {
-    dispatch(logout());
-  };
-
-  const menuItems = [
+  const stats = [
     {
-      id: 'Dashboard',
-      name: 'Dashboard',
-      icon: 'grid-outline',
-      screen: 'Dashboard',
+      id: '1',
+      title: 'Bank / Cash',
+      value: 'PKR 1.2M',
+      icon: 'wallet-outline',
+      color: '#3B82F6',
+      trend: '+5.2%',
     },
     {
-      id: 'Approvals',
-      name: 'Approvals',
-      icon: 'checkmark-circle-outline',
-      screen: 'Approvals',
-    },
-    { id: 'Sales', name: 'Sales', icon: 'cart-outline', screen: 'Sales' },
-    {
-      id: 'Purchase',
-      name: 'Purchase',
-      icon: 'bag-handle-outline',
-      screen: 'Purchase',
+      id: '2',
+      title: 'Receivables',
+      value: 'PKR 450K',
+      icon: 'arrow-down-circle-outline',
+      color: '#10B981',
+      trend: '-2.1%',
     },
     {
-      id: 'Inventory',
-      name: 'Inventory',
+      id: '3',
+      title: 'Payables',
+      value: 'PKR 210K',
+      icon: 'arrow-up-circle-outline',
+      color: '#EF4444',
+      trend: '+1.5%',
+    },
+    {
+      id: '4',
+      title: 'Inventory',
+      value: '542 Items',
       icon: 'cube-outline',
-      screen: 'Inventory',
+      color: '#F59E0B',
+      trend: 'In Stock',
     },
-    { id: 'HCM', name: 'HCM', icon: 'people-outline', screen: 'HCM' },
-    {
-      id: 'Manufacturing',
-      name: 'Manufacturing',
-      icon: 'settings-outline',
-      screen: 'Manufacturing',
-    },
-    { id: 'CRM', name: 'CRM', icon: 'business-outline', screen: 'CRM' },
-    { id: 'Finance', name: 'Finance', icon: 'cash-outline', screen: 'Finance' },
   ];
 
-  const dynamicStyles = getStyles(theme);
-
   return (
-    <View style={dynamicStyles.container}>
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="transparent"
-      />
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          Financial Overview
+        </Text>
 
-      {/* Header Section (25% Height) */}
-      <View style={dynamicStyles.header}>
-        <SafeAreaView
-          edges={['top', 'left', 'right']}
-          style={dynamicStyles.headerContent}
-        >
-          <View style={dynamicStyles.topBar}>
-            <View style={dynamicStyles.companyInfo}>
-              <Text style={dynamicStyles.companyName}>Desolutions ERP</Text>
-              <Text style={dynamicStyles.userName}>
-                Welcome, {user?.user_id || 'User'}
-              </Text>
-            </View>
-            <View style={dynamicStyles.headerActions}>
-              <TouchableOpacity style={dynamicStyles.iconBtn}>
-                <Icon name="notifications-outline" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <ThemeDropdown compact style={dynamicStyles.themeIcon} />
-              <TouchableOpacity
-                style={[dynamicStyles.iconBtn, dynamicStyles.logoutBtn]}
-                onPress={handleLogout}
-              >
-                <Icon name="log-out-outline" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={dynamicStyles.headerBranding}>
-            <Icon name="rocket" size={40} color="#FFFFFF" />
-            <Text style={dynamicStyles.dashboardText}>
-              Operational Dashboard
-            </Text>
-          </View>
-        </SafeAreaView>
-      </View>
-
-      {/* Grid Section */}
-      <ScrollView
-        contentContainerStyle={dynamicStyles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={dynamicStyles.gridContainer}>
-          {menuItems.map(item => (
-            <TouchableOpacity
-              key={item.id}
-              style={dynamicStyles.gridBox}
-              activeOpacity={0.7}
-              onPress={() =>
-                item.screen !== 'Dashboard' && navigation.navigate(item.screen)
-              }
+        <View style={styles.statsGrid}>
+          {stats.map(stat => (
+            <View
+              key={stat.id}
+              style={[
+                styles.statCard,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.border,
+                },
+              ]}
             >
               <View
+                style={[styles.iconBox, { backgroundColor: stat.color + '15' }]}
+              >
+                <Icon name={stat.icon} size={24} color={stat.color} />
+              </View>
+              <Text
+                style={[styles.statValue, { color: theme.colors.text }]}
+                numberOfLines={1}
+              >
+                {stat.value}
+              </Text>
+              <Text
                 style={[
-                  dynamicStyles.iconContainer,
-                  { backgroundColor: theme.colors.primary + '15' },
+                  styles.statTitle,
+                  { color: theme.colors.textSecondary },
                 ]}
               >
-                <Icon name={item.icon} size={30} color={theme.colors.primary} />
+                {stat.title}
+              </Text>
+              <View style={styles.trendContainer}>
+                <Text
+                  style={[
+                    styles.trendText,
+                    {
+                      color:
+                        stat.id === '3'
+                          ? theme.colors.error
+                          : theme.colors.success,
+                    },
+                  ]}
+                >
+                  {stat.trend}
+                </Text>
               </View>
-              <Text style={dynamicStyles.boxName}>{item.name}</Text>
-            </TouchableOpacity>
+            </View>
           ))}
+        </View>
+
+        {/* Placeholder for Analytics Charts */}
+        <View
+          style={[
+            styles.chartSection,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
+          <View style={styles.chartHeader}>
+            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+              Monthly Cash Flow
+            </Text>
+            <Icon
+              name="ellipsis-horizontal"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
+          </View>
+          <View style={styles.placeholderChart}>
+            <Icon
+              name="stats-chart-outline"
+              size={50}
+              color={theme.colors.border}
+            />
+            <Text style={{ color: theme.colors.textSecondary, marginTop: 10 }}>
+              Analytics Visualization
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </View>
   );
 };
 
-const getStyles = theme =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-    header: {
-      height: HEADER_HEIGHT,
-      backgroundColor: theme.colors.primary,
-      borderBottomLeftRadius: 30,
-      borderBottomRightRadius: 30,
-      ...theme.shadows.lg,
-    },
-    headerContent: {
-      flex: 1,
-      paddingHorizontal: 20,
-      paddingBottom: 20,
-    },
-    topBar: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginTop: 10,
-    },
-    companyInfo: {
-      flex: 1,
-    },
-    companyName: {
-      fontSize: 20,
-      fontWeight: '800',
-      color: '#FFFFFF',
-    },
-    userName: {
-      fontSize: 14,
-      color: 'rgba(255, 255, 255, 0.8)',
-      marginTop: 2,
-    },
-    headerActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    iconBtn: {
-      padding: 8,
-      marginLeft: 4,
-    },
-    themeIcon: {
-      width: 'auto',
-      marginLeft: 4,
-    },
-    logoutBtn: {
-      marginLeft: 8,
-    },
-    headerBranding: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 10,
-    },
-    dashboardText: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#FFFFFF',
-      marginTop: 8,
-    },
-    scrollContent: {
-      padding: 20,
-      paddingTop: 30,
-    },
-    gridContainer: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'space-between',
-    },
-    gridBox: {
-      width: '31%', // Roughly 3 in a line with spacing
-      aspectRatio: 1,
-      backgroundColor: theme.colors.surface,
-      borderRadius: 20,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 15,
-      ...theme.shadows.md,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-    },
-    iconContainer: {
-      width: 50,
-      height: 50,
-      borderRadius: 15,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginBottom: 10,
-    },
-    boxName: {
-      fontSize: 12,
-      fontWeight: '700',
-      color: theme.colors.text,
-      textAlign: 'center',
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  backBtn: {
+    padding: 5,
+  },
+  content: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 20,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statCard: {
+    width: (SCREEN_WIDTH - 55) / 2,
+    padding: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginBottom: 15,
+  },
+  iconBox: {
+    width: 45,
+    height: 45,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  statTitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  trendContainer: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  trendText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  chartSection: {
+    marginTop: 10,
+    borderRadius: 25,
+    borderWidth: 1,
+    padding: 20,
+    minHeight: 250,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  placeholderChart: {
+    flex: 1,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    borderStyle: 'dashed',
+    borderRadius: 15,
+  },
+});
 
 export default DashboardScreen;

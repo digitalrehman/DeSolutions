@@ -7,6 +7,7 @@ import { selectIsAuthenticated, restoreSession } from '@store/slices/authSlice';
 
 // Screens
 import LoginScreen from '@screens/auth/LoginScreen';
+import MainScreen from '@screens/MainScreen';
 import DashboardScreen from '@screens/dashboard/DashboardScreen';
 import ApprovalsScreen from '@screens/approvals/ApprovalsScreen';
 import SalesScreen from '@screens/sales/SalesScreen';
@@ -16,7 +17,7 @@ import HCMScreen from '@screens/hcm/HCMScreen';
 import ManufacturingScreen from '@screens/manufacturing/ManufacturingScreen';
 import CRMScreen from '@screens/crm/CRMScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
-import { LoadingSpinner } from '@components/common';
+import { LoadingSpinner, CustomHeader } from '@components/common';
 
 const Stack = createNativeStackNavigator();
 
@@ -58,16 +59,25 @@ const AppNavigator = () => {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{
-          headerShown: false,
+          header: props => <CustomHeader {...props} />,
           animation: 'slide_from_right',
         }}
       >
         {!isAuthenticated ? (
           // Auth Stack
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
         ) : (
           // Main App Stack
           <>
+            <Stack.Screen
+              initialRouteName="MainScreen"
+              name="MainScreen"
+              component={MainScreen}
+            />
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="Approvals" component={ApprovalsScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />

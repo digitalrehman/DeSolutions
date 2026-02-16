@@ -9,22 +9,13 @@ const InventoryScreen = ({ navigation }) => {
   const styles = getStyles(theme);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Inventory</Text>
-      </View>
+    <View style={styles.container}>
       <View style={styles.content}>
         <Icon name="cube-outline" size={80} color={theme.colors.primary} />
         <Text style={styles.message}>Inventory Module Screen</Text>
         <Text style={styles.subMessage}>Coming Soon...</Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

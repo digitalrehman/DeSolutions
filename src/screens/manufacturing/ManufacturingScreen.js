@@ -9,22 +9,13 @@ const ManufacturingScreen = ({ navigation }) => {
   const styles = getStyles(theme);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.title}>Manufacturing</Text>
-      </View>
+    <View style={styles.container}>
       <View style={styles.content}>
         <Icon name="settings-outline" size={80} color={theme.colors.primary} />
         <Text style={styles.message}>Manufacturing Module Screen</Text>
         <Text style={styles.subMessage}>Coming Soon...</Text>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
