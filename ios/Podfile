@@ -36,6 +36,7 @@ target 'De2solutionsERP' do
         config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'YES' if config.name == 'Release'
         config.build_settings['COPY_PHASE_STRIP'] = 'YES' if config.name == 'Release'
         config.build_settings['HERMES_RELEASE_DSYM_GENERATE_SYMBOLS'] = 'YES' if config.name == 'Release'
+        config.build_settings['GCC_GENERATE_DEBUGGING_SYMBOLS'] = 'YES'
       end
     end
   end

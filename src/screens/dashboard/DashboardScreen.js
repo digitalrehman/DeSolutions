@@ -1,15 +1,27 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
+  StatusBar,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import { CustomButton, ThemeDropdown } from '@components/common';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { ThemeDropdown } from '@components/common';
 import { logout, selectCurrentUser } from '@store/slices/authSlice';
 import { useTheme } from '@config/useTheme';
 
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const HEADER_HEIGHT = SCREEN_HEIGHT * 0.25;
+
 /**
- * DashboardScreen - Main app screen with theme switcher and logout
+ * DashboardScreen - Professional ERP Dashboard with Grid Navigation
  */
-const DashboardScreen = () => {
+const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
@@ -18,54 +30,118 @@ const DashboardScreen = () => {
     dispatch(logout());
   };
 
+  const menuItems = [
+    {
+      id: 'Dashboard',
+      name: 'Dashboard',
+      icon: 'grid-outline',
+      screen: 'Dashboard',
+    },
+    {
+      id: 'Approvals',
+      name: 'Approvals',
+      icon: 'checkmark-circle-outline',
+      screen: 'Approvals',
+    },
+    { id: 'Sales', name: 'Sales', icon: 'cart-outline', screen: 'Sales' },
+    {
+      id: 'Purchase',
+      name: 'Purchase',
+      icon: 'bag-handle-outline',
+      screen: 'Purchase',
+    },
+    {
+      id: 'Inventory',
+      name: 'Inventory',
+      icon: 'cube-outline',
+      screen: 'Inventory',
+    },
+    { id: 'HCM', name: 'HCM', icon: 'people-outline', screen: 'HCM' },
+    {
+      id: 'Manufacturing',
+      name: 'Manufacturing',
+      icon: 'settings-outline',
+      screen: 'Manufacturing',
+    },
+    { id: 'CRM', name: 'CRM', icon: 'business-outline', screen: 'CRM' },
+    { id: 'Finance', name: 'Finance', icon: 'cash-outline', screen: 'Finance' },
+  ];
+
   const dynamicStyles = getStyles(theme);
 
   return (
-    <SafeAreaView style={dynamicStyles.container}>
+    <View style={dynamicStyles.container}>
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
+
+      {/* Header Section (25% Height) */}
+      <View style={dynamicStyles.header}>
+        <SafeAreaView
+          edges={['top', 'left', 'right']}
+          style={dynamicStyles.headerContent}
+        >
+          <View style={dynamicStyles.topBar}>
+            <View style={dynamicStyles.companyInfo}>
+              <Text style={dynamicStyles.companyName}>Desolutions ERP</Text>
+              <Text style={dynamicStyles.userName}>
+                Welcome, {user?.user_id || 'User'}
+              </Text>
+            </View>
+            <View style={dynamicStyles.headerActions}>
+              <TouchableOpacity style={dynamicStyles.iconBtn}>
+                <Icon name="notifications-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <ThemeDropdown compact style={dynamicStyles.themeIcon} />
+              <TouchableOpacity
+                style={[dynamicStyles.iconBtn, dynamicStyles.logoutBtn]}
+                onPress={handleLogout}
+              >
+                <Icon name="log-out-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={dynamicStyles.headerBranding}>
+            <Icon name="rocket" size={40} color="#FFFFFF" />
+            <Text style={dynamicStyles.dashboardText}>
+              Operational Dashboard
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
+
+      {/* Grid Section */}
       <ScrollView
         contentContainerStyle={dynamicStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={dynamicStyles.header}>
-          <Text style={dynamicStyles.logoText}>Desolutions</Text>
-          <Text style={dynamicStyles.title}>Dashboard</Text>
-        </View>
-
-        <View style={dynamicStyles.card}>
-          <Text style={dynamicStyles.cardTitle}>Account Info</Text>
-          {user && (
-            <View style={dynamicStyles.userInfoRow}>
-              <Text style={dynamicStyles.userLabel}>Logged in as:</Text>
-              <Text style={dynamicStyles.userValue}>
-                {user.user_id || 'User'}
-              </Text>
-            </View>
-          )}
-          <Text style={dynamicStyles.welcomeText}>
-            Welcome to the new professional theme-able dashboard.
-          </Text>
-        </View>
-
-        <View style={dynamicStyles.themeSection}>
-          <Text style={dynamicStyles.sectionTitle}>App Theme</Text>
-          <Text style={dynamicStyles.sectionDescription}>
-            Choose from 20 professional themes to customize your experience.
-          </Text>
-          <ThemeDropdown style={dynamicStyles.dropdown} />
-        </View>
-
-        <View style={dynamicStyles.footer}>
-          <CustomButton
-            title="Logout"
-            onPress={handleLogout}
-            variant="danger"
-            icon="log-out-outline"
-            iconPosition="right"
-            style={dynamicStyles.logoutButton}
-          />
+        <View style={dynamicStyles.gridContainer}>
+          {menuItems.map(item => (
+            <TouchableOpacity
+              key={item.id}
+              style={dynamicStyles.gridBox}
+              activeOpacity={0.7}
+              onPress={() =>
+                item.screen !== 'Dashboard' && navigation.navigate(item.screen)
+              }
+            >
+              <View
+                style={[
+                  dynamicStyles.iconContainer,
+                  { backgroundColor: theme.colors.primary + '15' },
+                ]}
+              >
+                <Icon name={item.icon} size={30} color={theme.colors.primary} />
+              </View>
+              <Text style={dynamicStyles.boxName}>{item.name}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -75,81 +151,98 @@ const getStyles = theme =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    scrollContent: {
-      padding: 20,
-      flexGrow: 1,
-    },
     header: {
-      marginTop: 20,
-      marginBottom: 30,
-      alignItems: 'center',
+      height: HEADER_HEIGHT,
+      backgroundColor: theme.colors.primary,
+      borderBottomLeftRadius: 30,
+      borderBottomRightRadius: 30,
+      ...theme.shadows.lg,
     },
-    logoText: {
-      fontSize: 24,
-      fontWeight: '700',
-      color: theme.colors.primary,
-      marginBottom: 4,
+    headerContent: {
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingBottom: 20,
     },
-    title: {
-      fontSize: 32,
-      fontWeight: '700',
-      color: theme.colors.text,
-    },
-    card: {
-      backgroundColor: theme.colors.surface,
-      padding: 20,
-      borderRadius: 16,
-      marginBottom: 24,
-      ...theme.shadows.md,
-    },
-    cardTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: theme.colors.text,
-      marginBottom: 16,
-    },
-    userInfoRow: {
+    topBar: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 12,
+      alignItems: 'center',
+      marginTop: 10,
     },
-    userLabel: {
-      fontSize: 16,
-      color: theme.colors.textSecondary,
+    companyInfo: {
+      flex: 1,
     },
-    userValue: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: theme.colors.primary,
-    },
-    welcomeText: {
-      fontSize: 15,
-      color: theme.colors.textSecondary,
-      lineHeight: 22,
-    },
-    themeSection: {
-      marginBottom: 30,
-    },
-    sectionTitle: {
+    companyName: {
       fontSize: 20,
-      fontWeight: '700',
-      color: theme.colors.text,
-      marginBottom: 8,
+      fontWeight: '800',
+      color: '#FFFFFF',
     },
-    sectionDescription: {
-      fontSize: 15,
-      color: theme.colors.textSecondary,
-      marginBottom: 16,
+    userName: {
+      fontSize: 14,
+      color: 'rgba(255, 255, 255, 0.8)',
+      marginTop: 2,
     },
-    dropdown: {
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    iconBtn: {
+      padding: 8,
+      marginLeft: 4,
+    },
+    themeIcon: {
+      width: 'auto',
+      marginLeft: 4,
+    },
+    logoutBtn: {
+      marginLeft: 8,
+    },
+    headerBranding: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    dashboardText: {
+      fontSize: 18,
+      fontWeight: '600',
+      color: '#FFFFFF',
       marginTop: 8,
     },
-    footer: {
-      marginTop: 'auto',
-      paddingVertical: 20,
+    scrollContent: {
+      padding: 20,
+      paddingTop: 30,
     },
-    logoutButton: {
-      width: '100%',
+    gridContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    gridBox: {
+      width: '31%', // Roughly 3 in a line with spacing
+      aspectRatio: 1,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 15,
+      ...theme.shadows.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    iconContainer: {
+      width: 50,
+      height: 50,
+      borderRadius: 15,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    boxName: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.text,
+      textAlign: 'center',
     },
   });
 

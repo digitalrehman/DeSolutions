@@ -15,7 +15,7 @@ import { themeList } from '@config/themes';
 /**
  * ThemeDropdown - Professional theme selector with dropdown
  */
-const ThemeDropdown = ({ style }) => {
+const ThemeDropdown = ({ style, compact = false }) => {
   const { theme, themeName, setTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -85,32 +85,38 @@ const ThemeDropdown = ({ style }) => {
   };
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, compact && styles.compactContainer, style]}>
       {/* Dropdown Trigger */}
       <TouchableOpacity
         style={[
           styles.trigger,
+          compact && styles.compactTrigger,
           {
-            backgroundColor: theme.colors.surface,
-            borderColor: theme.colors.border,
+            backgroundColor: compact ? 'transparent' : theme.colors.surface,
+            borderColor: compact ? 'transparent' : theme.colors.border,
+            borderWidth: compact ? 0 : 1,
           },
         ]}
         onPress={() => setIsOpen(true)}
         activeOpacity={0.7}
       >
         <Icon
-          name="color-palette-outline"
-          size={20}
-          color={theme.colors.primary}
+          name="color-palette"
+          size={compact ? 24 : 20}
+          color={compact ? '#FFFFFF' : theme.colors.primary}
         />
-        <Text style={[styles.triggerText, { color: theme.colors.text }]}>
-          {themeList.find(t => t.id === themeName)?.name || 'Select Theme'}
-        </Text>
-        <Icon
-          name={isOpen ? 'chevron-up' : 'chevron-down'}
-          size={20}
-          color={theme.colors.textSecondary}
-        />
+        {!compact && (
+          <>
+            <Text style={[styles.triggerText, { color: theme.colors.text }]}>
+              {themeList.find(t => t.id === themeName)?.name || 'Select Theme'}
+            </Text>
+            <Icon
+              name={isOpen ? 'chevron-up' : 'chevron-down'}
+              size={20}
+              color={theme.colors.textSecondary}
+            />
+          </>
+        )}
       </TouchableOpacity>
 
       {/* Dropdown Modal */}
@@ -170,6 +176,9 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
   },
+  compactContainer: {
+    width: 'auto',
+  },
   trigger: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -177,6 +186,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
+  },
+  compactTrigger: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   triggerText: {
     flex: 1,

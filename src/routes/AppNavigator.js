@@ -8,6 +8,14 @@ import { selectIsAuthenticated, restoreSession } from '@store/slices/authSlice';
 // Screens
 import LoginScreen from '@screens/auth/LoginScreen';
 import DashboardScreen from '@screens/dashboard/DashboardScreen';
+import ApprovalsScreen from '@screens/approvals/ApprovalsScreen';
+import SalesScreen from '@screens/sales/SalesScreen';
+import PurchaseScreen from '@screens/purchase/PurchaseScreen';
+import InventoryScreen from '@screens/inventory/InventoryScreen';
+import HCMScreen from '@screens/hcm/HCMScreen';
+import ManufacturingScreen from '@screens/manufacturing/ManufacturingScreen';
+import CRMScreen from '@screens/crm/CRMScreen';
+import FinanceScreen from '@screens/finance/FinanceScreen';
 import { LoadingSpinner } from '@components/common';
 
 const Stack = createNativeStackNavigator();
@@ -59,7 +67,20 @@ const AppNavigator = () => {
           <Stack.Screen name="Login" component={LoginScreen} />
         ) : (
           // Main App Stack
-          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          <>
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen name="Approvals" component={ApprovalsScreen} />
+            <Stack.Screen name="Sales" component={SalesScreen} />
+            <Stack.Screen name="Purchase" component={PurchaseScreen} />
+            <Stack.Screen name="Inventory" component={InventoryScreen} />
+            <Stack.Screen name="HCM" component={HCMScreen} />
+            <Stack.Screen
+              name="Manufacturing"
+              component={ManufacturingScreen}
+            />
+            <Stack.Screen name="CRM" component={CRMScreen} />
+            <Stack.Screen name="Finance" component={FinanceScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
