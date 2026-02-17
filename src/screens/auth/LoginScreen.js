@@ -54,11 +54,13 @@ const LoginScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
+    company: '',
   });
 
   const [errors, setErrors] = useState({
     username: '',
     password: '',
+    company: '',
   });
 
   const dynamicStyles = getStyles(theme);
@@ -81,6 +83,11 @@ const LoginScreen = ({ navigation }) => {
       isValid = false;
     }
 
+    if (!formData.company.trim()) {
+      newErrors.company = 'Company is required';
+      isValid = false;
+    }
+
     setErrors(newErrors);
     return isValid;
   };
@@ -97,6 +104,7 @@ const LoginScreen = ({ navigation }) => {
       const result = await login({
         username: formData.username,
         password: formData.password,
+        company: formData.company,
       }).unwrap();
 
       dispatch(setCredentials({ user: result.user, token: null }));
@@ -150,6 +158,17 @@ const LoginScreen = ({ navigation }) => {
 
               {/* Form Section */}
               <View style={dynamicStyles.formContainer}>
+                <CustomInput
+                  label="Company"
+                  placeholder="Enter your company name"
+                  value={formData.company}
+                  onChangeText={value => handleInputChange('company', value)}
+                  error={errors.company}
+                  leftIcon="business-outline"
+                  autoCapitalize="none"
+                  returnKeyType="next"
+                />
+
                 <CustomInput
                   label="Username"
                   placeholder="Enter your username"

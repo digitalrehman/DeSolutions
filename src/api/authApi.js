@@ -12,6 +12,8 @@ export const authApi = baseApi.injectEndpoints({
         const params = new URLSearchParams();
         params.append('username', credentials.username);
         params.append('password', credentials.password);
+        params.append('company', credentials.company);
+
         return {
           url: 'users.php',
           method: 'POST',
