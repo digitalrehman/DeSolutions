@@ -77,6 +77,37 @@ const MainScreen = ({ navigation }) => {
         backgroundColor="transparent"
       />
 
+      {/* Custom Header Section */}
+      <View style={dynamicStyles.header}>
+        <SafeAreaView style={dynamicStyles.headerContent} edges={['top']}>
+          <View style={dynamicStyles.topBar}>
+            <View style={dynamicStyles.companyInfo}>
+              <Text style={dynamicStyles.companyName}>Desolutions</Text>
+            </View>
+            <View style={dynamicStyles.headerActions}>
+              <TouchableOpacity style={dynamicStyles.iconBtn}>
+                <Icon name="notifications-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+              <View style={dynamicStyles.themeIcon}>
+                <ThemeDropdown />
+              </View>
+              <TouchableOpacity
+                style={[dynamicStyles.iconBtn, dynamicStyles.logoutBtn]}
+                onPress={handleLogout}
+              >
+                <Icon name="log-out-outline" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={dynamicStyles.userInfoContainer}>
+            <Text style={dynamicStyles.userName}>
+              Welcome back, {user?.real_name || 'User'}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </View>
+
       {/* Grid Section */}
       <ScrollView
         contentContainerStyle={dynamicStyles.scrollContent}
@@ -143,10 +174,14 @@ const getStyles = theme =>
       color: '#FFFFFF',
     },
     userName: {
-      fontSize: 14,
-      color: 'rgba(255, 255, 255, 0.8)',
-      marginTop: 2,
+      fontSize: 24,
+      fontWeight: '700',
+      color: '#FFFFFF',
     },
+    userInfoContainer: {
+      marginTop: 20,
+    },
+
     headerActions: {
       flexDirection: 'row',
       alignItems: 'center',

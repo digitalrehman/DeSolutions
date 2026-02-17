@@ -8,11 +8,20 @@ import Toast from 'react-native-toast-message';
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     login: builder.mutation({
-      query: credentials => ({
-        url: 'users.php',
-        method: 'POST',
-        body: credentials,
-      }),
+      query: credentials => {
+        const params = new URLSearchParams();
+        params.append('username', credentials.username);
+        params.append('password', credentials.password);
+        return {
+          url: 'users.php',
+          method: 'POST',
+          body: params.toString(),
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        };
+      },
+
       transformResponse: (response, meta, arg) => {
         // Transform the API response
         if (response.status === 'true') {
@@ -27,9 +36,14 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
       transformErrorResponse: (response, meta, arg) => {
+        console.log('API Error response:', response);
         return {
           success: false,
-          message: response?.data?.message || 'Network error occurred',
+          message:
+            response?.data?.message ||
+            response?.error ||
+            'Network error occurred',
+          detail: response,
         };
       },
       invalidatesTags: ['Auth', 'User'],
@@ -43,11 +57,13 @@ export const authApi = baseApi.injectEndpoints({
             text2: 'Welcome back!',
           });
         } catch (error) {
+          console.error('Login Query Failed:', error);
           Toast.show({
             type: 'error',
             text1: 'Login Failed',
             text2:
               error?.error?.message ||
+              error?.message ||
               'Please check your credentials and try again.',
           });
         }

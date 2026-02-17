@@ -74,10 +74,11 @@ const AppNavigator = () => {
           // Main App Stack
           <>
             <Stack.Screen
-              initialRouteName="MainScreen"
               name="MainScreen"
               component={MainScreen}
+              options={{ headerShown: false }}
             />
+
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="Approvals" component={ApprovalsScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />
