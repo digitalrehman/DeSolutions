@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,15 +7,30 @@ import {
   Dimensions,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
+import { DateFilter } from '@components/common';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
 
+  // ── Date Filter State ──────────────────────────────────────────────────────
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+
+  const handleClearFilter = () => {
+    setFromDate(null);
+    setToDate(null);
+  };
+
+  const handleApplyFilter = () => {
+    // Empty for now, will be implemented later whenever API is integrated
+    console.log('Applying filter from:', fromDate, 'to:', toDate);
+  };
+
+  // ── Stats Data ─────────────────────────────────────────────────────────────
   const stats = [
     {
       id: '1',
@@ -51,50 +66,169 @@ const DashboardScreen = ({ navigation }) => {
     },
   ];
 
+  // ── Income / Expense List Data ─────────────────────────────────────────────
+  const incomeList = [
+    {
+      id: 'inc-1',
+      title: 'Sales Revenue - Product A',
+      amount: 'PKR 350,000',
+      date: '12 Oct 2023',
+      icon: 'trending-up-outline',
+      color: '#10B981', // Success / Green
+    },
+    {
+      id: 'inc-2',
+      title: 'Consulting Services',
+      amount: 'PKR 120,500',
+      date: '08 Oct 2023',
+      icon: 'trending-up-outline',
+      color: '#10B981',
+    },
+  ];
+
+  const expenseList = [
+    {
+      id: 'exp-1',
+      title: 'Office Rent - Head Office',
+      amount: 'PKR 150,000',
+      date: '05 Oct 2023',
+      icon: 'trending-down-outline',
+      color: '#EF4444', // Error / Red
+    },
+    {
+      id: 'exp-2',
+      title: 'Software Subscriptions',
+      amount: 'PKR 45,200',
+      date: '02 Oct 2023',
+      icon: 'trending-down-outline',
+      color: '#EF4444',
+    },
+  ];
+
+  const handleListItemPress = item => {
+    // For now logging, later will navigate to specific details screen
+    console.log('Clicked item:', item.title);
+  };
+
+  const renderListSection = (title, listData) => (
+    <View style={s.listSection}>
+      <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
+        {title}
+      </Text>
+      <View
+        style={[
+          s.listContainer,
+          {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.border,
+          },
+        ]}
+      >
+        {listData.map((item, index) => (
+          <TouchableOpacity
+            key={item.id}
+            style={[
+              s.listItem,
+              index !== listData.length - 1 && {
+                borderBottomColor: theme.colors.border,
+                borderBottomWidth: 1,
+              },
+            ]}
+            activeOpacity={0.7}
+            onPress={() => handleListItemPress(item)}
+          >
+            {/* Left Side: Icon & Title */}
+            <View style={s.listItemLeft}>
+              <View
+                style={[s.listIconBox, { backgroundColor: item.color + '15' }]}
+              >
+                <Icon name={item.icon} size={20} color={item.color} />
+              </View>
+              <View style={s.listTextContent}>
+                <Text
+                  style={[s.listItemTitle, { color: theme.colors.text }]}
+                  numberOfLines={1}
+                >
+                  {item.title}
+                </Text>
+                <Text
+                  style={[
+                    s.listItemDate,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  {item.date}
+                </Text>
+              </View>
+            </View>
+
+            {/* Right Side: Amount */}
+            <Text style={[s.listItemAmount, { color: item.color }]}>
+              {item.amount}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const s = getStyles(theme);
+
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+    <View style={s.container}>
+      <ScrollView
+        contentContainerStyle={s.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Date Filter ─────────────────────────────────────────────────── */}
+        <DateFilter
+          fromDate={fromDate}
+          toDate={toDate}
+          onFromDate={setFromDate}
+          onToDate={setToDate}
+          onClear={handleClearFilter}
+          onFilter={handleApplyFilter}
+        />
+
+        {/* ── Income & Expense Lists ───────────────────────────────────────── */}
+        {renderListSection('Income', incomeList)}
+        {renderListSection('Expense', expenseList)}
+
+        {/* ── Financial Overview ───────────────────────────────────────────── */}
+        <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
           Financial Overview
         </Text>
 
-        <View style={styles.statsGrid}>
+        <View style={s.statsGrid}>
           {stats.map(stat => (
             <View
               key={stat.id}
               style={[
-                styles.statCard,
+                s.statCard,
                 {
                   backgroundColor: theme.colors.surface,
                   borderColor: theme.colors.border,
                 },
               ]}
             >
-              <View
-                style={[styles.iconBox, { backgroundColor: stat.color + '15' }]}
-              >
+              <View style={[s.iconBox, { backgroundColor: stat.color + '15' }]}>
                 <Icon name={stat.icon} size={24} color={stat.color} />
               </View>
               <Text
-                style={[styles.statValue, { color: theme.colors.text }]}
+                style={[s.statValue, { color: theme.colors.text }]}
                 numberOfLines={1}
               >
                 {stat.value}
               </Text>
               <Text
-                style={[
-                  styles.statTitle,
-                  { color: theme.colors.textSecondary },
-                ]}
+                style={[s.statTitle, { color: theme.colors.textSecondary }]}
               >
                 {stat.title}
               </Text>
-              <View style={styles.trendContainer}>
+              <View style={s.trendContainer}>
                 <Text
                   style={[
-                    styles.trendText,
+                    s.trendText,
                     {
                       color:
                         stat.id === '3'
@@ -110,18 +244,18 @@ const DashboardScreen = ({ navigation }) => {
           ))}
         </View>
 
-        {/* Placeholder for Analytics Charts */}
+        {/* ── Monthly Cash Flow ────────────────────────────────────────────── */}
         <View
           style={[
-            styles.chartSection,
+            s.chartSection,
             {
               backgroundColor: theme.colors.surface,
               borderColor: theme.colors.border,
             },
           ]}
         >
-          <View style={styles.chartHeader}>
-            <Text style={[styles.chartTitle, { color: theme.colors.text }]}>
+          <View style={s.chartHeader}>
+            <Text style={[s.chartTitle, { color: theme.colors.text }]}>
               Monthly Cash Flow
             </Text>
             <Icon
@@ -130,7 +264,7 @@ const DashboardScreen = ({ navigation }) => {
               color={theme.colors.textSecondary}
             />
           </View>
-          <View style={styles.placeholderChart}>
+          <View style={s.placeholderChart}>
             <Icon
               name="stats-chart-outline"
               size={50}
@@ -146,97 +280,137 @@ const DashboardScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  backBtn: {
-    padding: 5,
-  },
-  content: {
-    padding: 20,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 20,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  statCard: {
-    width: (SCREEN_WIDTH - 55) / 2,
-    padding: 15,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginBottom: 15,
-  },
-  iconBox: {
-    width: 45,
-    height: 45,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  statTitle: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-  trendContainer: {
-    marginTop: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  trendText: {
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  chartSection: {
-    marginTop: 10,
-    borderRadius: 25,
-    borderWidth: 1,
-    padding: 20,
-    minHeight: 250,
-  },
-  chartHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  placeholderChart: {
-    flex: 1,
-    height: 150,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    borderStyle: 'dashed',
-    borderRadius: 15,
-  },
-});
+const getStyles = theme =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    content: {
+      padding: 20,
+    },
+
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      marginBottom: 14,
+    },
+
+    // ── Income / Expense List ───────────────────────────────────────────────
+    listSection: {
+      marginBottom: 24,
+    },
+    listContainer: {
+      borderRadius: 16,
+      borderWidth: 1,
+      overflow: 'hidden',
+    },
+    listItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 14,
+      paddingHorizontal: 16,
+    },
+    listItemLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      marginRight: 10,
+    },
+    listIconBox: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 12,
+    },
+    listTextContent: {
+      flex: 1,
+    },
+    listItemTitle: {
+      fontSize: 14,
+      fontWeight: '600',
+      marginBottom: 3,
+    },
+    listItemDate: {
+      fontSize: 11,
+      fontWeight: '500',
+    },
+    listItemAmount: {
+      fontSize: 15,
+      fontWeight: '800',
+    },
+
+    // ── Financial Overview ──────────────────────────────────────────────────
+    statsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+    },
+    statCard: {
+      width: (SCREEN_WIDTH - 55) / 2,
+      padding: 15,
+      borderRadius: 18,
+      borderWidth: 1,
+      marginBottom: 15,
+    },
+    iconBox: {
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    statValue: {
+      fontSize: 17,
+      fontWeight: '800',
+      marginBottom: 2,
+    },
+    statTitle: {
+      fontSize: 11,
+    },
+    trendContainer: {
+      marginTop: 8,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    trendText: {
+      fontSize: 11,
+      fontWeight: '600',
+    },
+
+    // ── Chart ───────────────────────────────────────────────────────────────
+    chartSection: {
+      marginTop: 10,
+      borderRadius: 20,
+      borderWidth: 1,
+      padding: 20,
+      minHeight: 250,
+      marginBottom: 20,
+    },
+    chartHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 20,
+    },
+    chartTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+    },
+    placeholderChart: {
+      flex: 1,
+      height: 150,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderStyle: 'dashed',
+      borderRadius: 15,
+    },
+  });
 
 export default DashboardScreen;

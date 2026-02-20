@@ -16,9 +16,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '@store/slices/authSlice';
 import { useTheme } from '@config/useTheme';
 
-/**
- * AnimatedTypingText - Small sub-component for the typing effect
- */
+
 const AnimatedTypingText = ({ text, style }) => {
   const [displayText, setDisplayText] = useState('');
   const [index, setIndex] = useState(0);
@@ -43,9 +41,7 @@ const AnimatedTypingText = ({ text, style }) => {
   return <Text style={style}>{displayText}|</Text>;
 };
 
-/**
- * LoginScreen - Refined with centered form, keyboard handling, and typing animation
- */
+
 const LoginScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
@@ -68,27 +64,25 @@ const LoginScreen = ({ navigation }) => {
   // Validate form
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { username: '', password: '' };
 
     if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
+      setErrors(prev => ({ ...prev, username: 'Username is required' }));
       isValid = false;
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
+      setErrors(prev => ({ ...prev, password: 'Password is required' }));
       isValid = false;
     } else if (formData.password.length < 3) {
-      newErrors.password = 'Password must be at least 3 characters';
+      setErrors(prev => ({ ...prev, password: 'Password must be at least 3 characters' }));
       isValid = false;
     }
 
     if (!formData.company.trim()) {
-      newErrors.company = 'Company is required';
+      setErrors(prev => ({ ...prev, company: 'Company is required' }));
       isValid = false;
     }
 
-    setErrors(newErrors);
     return isValid;
   };
 

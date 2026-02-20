@@ -16,13 +16,13 @@ const theme = {
     softBlue: '#6E8BA0',
 
     // Semantic Colors
-    primary: '#0037FA', // Bright blue / accent color
-    primaryDark: '#0D2F56', // Dark navy blue
-    background: '#030812', // Deep black
-    surface: '#1E496D', // Medium blue / slate blue
-    text: '#C0C4C3', // Light gray
-    textSecondary: '#6E8BA0', // Soft muted blue
-    textDark: '#565B5F', // Dark gray
+    primary: '#0037FA',
+    primaryDark: '#0D2F56',
+    background: '#030812',
+    surface: '#1E496D',
+    text: '#C0C4C3',
+    textSecondary: '#6E8BA0',
+    textDark: '#565B5F',
     border: '#565B5F',
 
     // Status Colors

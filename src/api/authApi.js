@@ -1,10 +1,6 @@
 import { baseApi } from './baseApi';
 import Toast from 'react-native-toast-message';
 
-/**
- * Auth API endpoints using RTK Query
- * Handles login and authentication-related operations
- */
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     login: builder.mutation({
@@ -25,7 +21,6 @@ export const authApi = baseApi.injectEndpoints({
       },
 
       transformResponse: (response, meta, arg) => {
-        // Transform the API response
         if (response.status === 'true') {
           const user = response.data.find(u => u.user_id === arg.username);
           if (user) {
