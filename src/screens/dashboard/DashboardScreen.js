@@ -16,7 +16,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
 
-  // ── Date Filter State ──────────────────────────────────────────────────────
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
 
@@ -30,7 +29,6 @@ const DashboardScreen = ({ navigation }) => {
     console.log('Applying filter from:', fromDate, 'to:', toDate);
   };
 
-  // ── Stats Data ─────────────────────────────────────────────────────────────
   const stats = [
     {
       id: '1',
@@ -66,7 +64,6 @@ const DashboardScreen = ({ navigation }) => {
     },
   ];
 
-  // ── Income / Expense List Data ─────────────────────────────────────────────
   const incomeList = [
     {
       id: 'inc-1',
@@ -180,7 +177,6 @@ const DashboardScreen = ({ navigation }) => {
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Date Filter ─────────────────────────────────────────────────── */}
         <DateFilter
           fromDate={fromDate}
           toDate={toDate}
@@ -190,11 +186,9 @@ const DashboardScreen = ({ navigation }) => {
           onFilter={handleApplyFilter}
         />
 
-        {/* ── Income & Expense Lists ───────────────────────────────────────── */}
         {renderListSection('Income', incomeList)}
         {renderListSection('Expense', expenseList)}
 
-        {/* ── Financial Overview ───────────────────────────────────────────── */}
         <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
           Financial Overview
         </Text>
@@ -244,7 +238,6 @@ const DashboardScreen = ({ navigation }) => {
           ))}
         </View>
 
-        {/* ── Monthly Cash Flow ────────────────────────────────────────────── */}
         <View
           style={[
             s.chartSection,
@@ -296,7 +289,6 @@ const getStyles = theme =>
       marginBottom: 14,
     },
 
-    // ── Income / Expense List ───────────────────────────────────────────────
     listSection: {
       marginBottom: 24,
     },
@@ -342,8 +334,6 @@ const getStyles = theme =>
       fontSize: 15,
       fontWeight: '800',
     },
-
-    // ── Financial Overview ──────────────────────────────────────────────────
     statsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -381,8 +371,6 @@ const getStyles = theme =>
       fontSize: 11,
       fontWeight: '600',
     },
-
-    // ── Chart ───────────────────────────────────────────────────────────────
     chartSection: {
       marginTop: 10,
       borderRadius: 20,

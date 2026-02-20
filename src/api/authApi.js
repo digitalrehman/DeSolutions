@@ -5,23 +5,19 @@ export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     login: builder.mutation({
       query: credentials => {
-        const params = new URLSearchParams();
-        params.append('username', credentials.username);
-        params.append('password', credentials.password);
-        params.append('company', credentials.company);
-
+        const formData = new FormData();
+        formData.append('username', credentials.username);
+        formData.append('password', credentials.password);
+        formData.append('company', credentials.company);
         return {
           url: 'users.php',
           method: 'POST',
-          body: params.toString(),
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-          },
+          body: formData,
         };
       },
 
       transformResponse: (response, meta, arg) => {
-        if (response.status === 'true') {
+        if (response.status === true) {
           const user = response.data.find(u => u.user_id === arg.username);
           if (user) {
             return { success: true, user, message: response.message };
@@ -44,7 +40,6 @@ export const authApi = baseApi.injectEndpoints({
         };
       },
       invalidatesTags: ['Auth', 'User'],
-      // Handle side effects
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
@@ -67,7 +62,7 @@ export const authApi = baseApi.injectEndpoints({
       },
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const { useLoginMutation } = authApi;
