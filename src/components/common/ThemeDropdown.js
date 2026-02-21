@@ -146,8 +146,8 @@ const ThemeDropdown = ({ style }) => {
               renderItem={renderThemeItem}
               keyExtractor={item => item.id}
               contentContainerStyle={styles.listContent}
-              showsVerticalScrollIndicator={false}
-              scrollEnabled={themeList.length > 4}
+              showsVerticalScrollIndicator={true}
+              scrollEnabled={true}
             />
           </View>
         </TouchableOpacity>
@@ -166,13 +166,12 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-    paddingTop: 90,
-    paddingRight: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   dropdown: {
-    width: 230,
+    width: 280,
+    maxHeight: '70%',
     borderRadius: 14,
     borderWidth: 1,
     overflow: 'hidden',

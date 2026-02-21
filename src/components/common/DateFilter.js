@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Platform,
-  Modal,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import CustomDatePicker from './CustomDatePicker';
 import { useTheme } from '@config/useTheme';
 
 const DateFilter = ({
@@ -21,7 +14,6 @@ const DateFilter = ({
 }) => {
   const { theme } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(null);
-  const [tempDate, setTempDate] = useState(new Date());
 
   const formatDate = (date, placeholder) => {
     if (!date) return placeholder;
@@ -34,37 +26,13 @@ const DateFilter = ({
 
   const hasFilter = fromDate || toDate;
 
-  const handleAndroidChange = (event, selected) => {
-    setPickerVisible(null);
-    if (event.type === 'dismissed' || !selected) return;
-
+  const handleDateSelected = date => {
     if (pickerVisible === 'from') {
-      onFromDate(selected);
+      onFromDate(date);
     } else if (pickerVisible === 'to') {
-      onToDate(selected);
-    }
-  };
-
-  const handleIOSChange = (event, selected) => {
-    if (selected) {
-      setTempDate(selected);
-    }
-  };
-
-  const confirmIOSDate = () => {
-    if (pickerVisible === 'from') {
-      onFromDate(tempDate);
-    } else if (pickerVisible === 'to') {
-      onToDate(tempDate);
+      onToDate(date);
     }
     setPickerVisible(null);
-  };
-
-  const openPicker = type => {
-    const currentDate = type === 'from' ? fromDate : toDate;
-    const initialDate = currentDate || new Date();
-    setTempDate(initialDate);
-    setPickerVisible(type);
   };
 
   const s = getStyles(theme);
@@ -74,7 +42,7 @@ const DateFilter = ({
       <View style={s.row}>
         <TouchableOpacity
           style={[s.dateBox, fromDate && { borderColor: theme.colors.primary }]}
-          onPress={() => openPicker('from')}
+          onPress={() => setPickerVisible('from')}
           activeOpacity={0.75}
         >
           <Icon
@@ -109,7 +77,7 @@ const DateFilter = ({
 
         <TouchableOpacity
           style={[s.dateBox, toDate && { borderColor: theme.colors.primary }]}
-          onPress={() => openPicker('to')}
+          onPress={() => setPickerVisible('to')}
           activeOpacity={0.75}
         >
           <Icon
@@ -163,86 +131,15 @@ const DateFilter = ({
         </View>
       </View>
 
-      {pickerVisible && Platform.OS === 'android' && (
-        <DateTimePicker
-          value={tempDate}
-          mode="date"
-          display="default"
-          onChange={handleAndroidChange}
-          maximumDate={pickerVisible === 'from' && toDate ? toDate : undefined}
-          minimumDate={
-            pickerVisible === 'to' && fromDate ? fromDate : undefined
-          }
-        />
-      )}
-
-      {Platform.OS === 'ios' && (
-        <Modal
-          visible={pickerVisible !== null}
-          transparent
-          animationType="slide"
-        >
-          <TouchableOpacity
-            style={s.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setPickerVisible(null)}
-          >
-            <View
-              style={[
-                s.iosPickerContainer,
-                { backgroundColor: theme.colors.surface },
-              ]}
-              onStartShouldSetResponder={() => true}
-            >
-              <View
-                style={[
-                  s.iosPickerHeader,
-                  { borderBottomColor: theme.colors.border },
-                ]}
-              >
-                <TouchableOpacity onPress={() => setPickerVisible(null)}>
-                  <Text
-                    style={[
-                      s.iosPickerBtnText,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <Text style={[s.iosPickerTitle, { color: theme.colors.text }]}>
-                  {pickerVisible === 'from' ? 'From Date' : 'To Date'}
-                </Text>
-                <TouchableOpacity onPress={confirmIOSDate}>
-                  <Text
-                    style={[
-                      s.iosPickerBtnText,
-                      { color: theme.colors.primary, fontWeight: '700' },
-                    ]}
-                  >
-                    Done
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <DateTimePicker
-                value={tempDate}
-                mode="date"
-                display="spinner"
-                onChange={handleIOSChange}
-                textColor={theme.colors.text}
-                maximumDate={
-                  pickerVisible === 'from' && toDate ? toDate : undefined
-                }
-                minimumDate={
-                  pickerVisible === 'to' && fromDate ? fromDate : undefined
-                }
-                style={s.iosPicker}
-              />
-            </View>
-          </TouchableOpacity>
-        </Modal>
-      )}
+      <CustomDatePicker
+        visible={pickerVisible !== null}
+        onClose={() => setPickerVisible(null)}
+        onSelect={handleDateSelected}
+        selectedDate={pickerVisible === 'from' ? fromDate : toDate}
+        title={pickerVisible === 'from' ? 'From Date' : 'To Date'}
+        maximumDate={pickerVisible === 'from' && toDate ? toDate : undefined}
+        minimumDate={pickerVisible === 'to' && fromDate ? fromDate : undefined}
+      />
     </View>
   );
 };
@@ -306,36 +203,6 @@ const getStyles = theme =>
     },
     clearBtn: {
       borderWidth: 1,
-    },
-
-    // iOS Picker Modal Styles
-    modalOverlay: {
-      flex: 1,
-      justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-    },
-    iosPickerContainer: {
-      borderTopLeftRadius: 20,
-      borderTopRightRadius: 20,
-      paddingBottom: 20,
-    },
-    iosPickerHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: 16,
-      borderBottomWidth: 1,
-    },
-    iosPickerTitle: {
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    iosPickerBtnText: {
-      fontSize: 16,
-    },
-    iosPicker: {
-      height: 250,
-      width: '100%',
     },
   });
 
