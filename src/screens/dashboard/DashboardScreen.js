@@ -10,30 +10,118 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { DateFilter } from '@components/common';
+import { useSelector } from 'react-redux';
+import { useGetIncomeExpenseMutation } from '@api/dashboardApi';
+import {LoadingSpinner} from '@components/common';
+import { useEffect } from 'react';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
+  const company = useSelector(state => state.auth.company);
+  const [getIncomeExpense, { isLoading }] = useGetIncomeExpenseMutation();
 
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
+  const [incomeList, setIncomeList] = useState([]);
+  const [expenseList, setExpenseList] = useState([]);
+
+  // Default dates: last 30 days
+  useEffect(() => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    setFromDate(thirtyDaysAgo);
+    setToDate(today);
+
+    // Format for API
+    const formatDateForAPI = date => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    fetchData(formatDateForAPI(thirtyDaysAgo), formatDateForAPI(today));
+  }, []);
+
+  const fetchData = async (start, end) => {
+    try {
+      // Start and end are already formatted strings here
+      const response = await getIncomeExpense({
+        from_date: start,
+        to_date: end,
+        company: company,
+      }).unwrap();
+
+      if (response.status_income_det === 'true') {
+        const transformedIncome = response.data_income_det.map(
+          (item, index) => ({
+            id: `inc-${index}`,
+            title: item.name,
+            amount: Math.abs(parseFloat(item.total)).toLocaleString(),
+            date: '',
+            icon: 'trending-up-outline',
+            color: '#10B981',
+          }),
+        );
+        setIncomeList(transformedIncome);
+      }
+
+      if (response.status_exp_det === 'true') {
+        const transformedExpense = response.data_exp_det.map((item, index) => ({
+          id: `exp-${index}`,
+          title: item.name,
+          amount: Math.abs(parseFloat(item.total)).toLocaleString(),
+          date: '',
+          icon: 'trending-down-outline',
+          color: '#EF4444',
+        }));
+        setExpenseList(transformedExpense);
+      }
+    } catch (error) {
+      console.log('Dashboard fetch error:', error);
+    }
+  };
 
   const handleClearFilter = () => {
-    setFromDate(null);
-    setToDate(null);
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    setFromDate(thirtyDaysAgo);
+    setToDate(today);
+
+    const formatDateForAPI = date => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    fetchData(formatDateForAPI(thirtyDaysAgo), formatDateForAPI(today));
   };
 
   const handleApplyFilter = () => {
-    // Empty for now, will be implemented later whenever API is integrated
-    console.log('Applying filter from:', fromDate, 'to:', toDate);
+    const formatDateForAPI = date => {
+      if (!date) return '';
+      const d = new Date(date);
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    fetchData(formatDateForAPI(fromDate), formatDateForAPI(toDate));
   };
 
   const stats = [
     {
       id: '1',
       title: 'Bank / Cash',
-      value: 'PKR 1.2M',
+      value: '1.2M',
       icon: 'wallet-outline',
       color: '#3B82F6',
       trend: '+5.2%',
@@ -41,7 +129,7 @@ const DashboardScreen = ({ navigation }) => {
     {
       id: '2',
       title: 'Receivables',
-      value: 'PKR 450K',
+      value: '450K',
       icon: 'arrow-down-circle-outline',
       color: '#10B981',
       trend: '-2.1%',
@@ -49,7 +137,7 @@ const DashboardScreen = ({ navigation }) => {
     {
       id: '3',
       title: 'Payables',
-      value: 'PKR 210K',
+      value: '210K',
       icon: 'arrow-up-circle-outline',
       color: '#EF4444',
       trend: '+1.5%',
@@ -61,44 +149,6 @@ const DashboardScreen = ({ navigation }) => {
       icon: 'cube-outline',
       color: '#F59E0B',
       trend: 'In Stock',
-    },
-  ];
-
-  const incomeList = [
-    {
-      id: 'inc-1',
-      title: 'Sales Revenue - Product A',
-      amount: 'PKR 350,000',
-      date: '12 Oct 2023',
-      icon: 'trending-up-outline',
-      color: '#10B981', // Success / Green
-    },
-    {
-      id: 'inc-2',
-      title: 'Consulting Services',
-      amount: 'PKR 120,500',
-      date: '08 Oct 2023',
-      icon: 'trending-up-outline',
-      color: '#10B981',
-    },
-  ];
-
-  const expenseList = [
-    {
-      id: 'exp-1',
-      title: 'Office Rent - Head Office',
-      amount: 'PKR 150,000',
-      date: '05 Oct 2023',
-      icon: 'trending-down-outline',
-      color: '#EF4444', // Error / Red
-    },
-    {
-      id: 'exp-2',
-      title: 'Software Subscriptions',
-      amount: 'PKR 45,200',
-      date: '02 Oct 2023',
-      icon: 'trending-down-outline',
-      color: '#EF4444',
     },
   ];
 
@@ -173,8 +223,13 @@ const DashboardScreen = ({ navigation }) => {
 
   return (
     <View style={s.container}>
+      {isLoading && (
+        <View style={StyleSheet.absoluteFill}>
+          <LoadingSpinner />
+        </View>
+      )}
       <ScrollView
-        contentContainerStyle={s.content}
+        contentContainerStyle={[s.content, isLoading && { opacity: 0.5 }]}
         showsVerticalScrollIndicator={false}
       >
         <DateFilter

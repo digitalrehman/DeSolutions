@@ -16,7 +16,6 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '@store/slices/authSlice';
 import { useTheme } from '@config/useTheme';
 
-
 const AnimatedTypingText = ({ text, style }) => {
   const [displayText, setDisplayText] = useState('');
   const [index, setIndex] = useState(0);
@@ -40,7 +39,6 @@ const AnimatedTypingText = ({ text, style }) => {
 
   return <Text style={style}>{displayText}|</Text>;
 };
-
 
 const LoginScreen = ({ navigation }) => {
   const { theme } = useTheme();
@@ -74,7 +72,10 @@ const LoginScreen = ({ navigation }) => {
       setErrors(prev => ({ ...prev, password: 'Password is required' }));
       isValid = false;
     } else if (formData.password.length < 3) {
-      setErrors(prev => ({ ...prev, password: 'Password must be at least 3 characters' }));
+      setErrors(prev => ({
+        ...prev,
+        password: 'Password must be at least 3 characters',
+      }));
       isValid = false;
     }
 
@@ -101,7 +102,9 @@ const LoginScreen = ({ navigation }) => {
         company: formData.company,
       }).unwrap();
 
-      dispatch(setCredentials({ user: result.user, token: null }));
+      dispatch(
+        setCredentials({ user: result.user, company: formData.company }),
+      );
     } catch (error) {
       console.log('Login error:', error);
     }

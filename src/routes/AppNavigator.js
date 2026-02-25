@@ -35,11 +35,11 @@ const AppNavigator = () => {
     const restoreUserSession = async () => {
       try {
         const userJson = await AsyncStorage.getItem('user');
-        const token = await AsyncStorage.getItem('token');
+        const company = await AsyncStorage.getItem('company');
 
         if (userJson) {
           const user = JSON.parse(userJson);
-          dispatch(restoreSession({ user, token }));
+          dispatch(restoreSession({ user, company }));
         }
       } catch (error) {
         console.log('Error restoring session:', error);

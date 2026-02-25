@@ -10,7 +10,7 @@ export const authApi = baseApi.injectEndpoints({
         formData.append('password', credentials.password);
         formData.append('company', credentials.company);
         return {
-          url: 'users.php',
+          url: 'auth/users.php',
           method: 'POST',
           body: formData,
         };

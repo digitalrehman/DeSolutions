@@ -6,7 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  */
 const initialState = {
   user: null,
-  token: null,
+  company: null,
   isAuthenticated: false,
   isLoading: false,
 };
@@ -16,34 +16,34 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setCredentials: (state, action) => {
-      const { user, token } = action.payload;
+      const { user, company } = action.payload;
       state.user = user;
-      state.token = token;
+      state.company = company;
       state.isAuthenticated = true;
 
       // Persist to AsyncStorage
       AsyncStorage.setItem('user', JSON.stringify(user));
-      if (token) {
-        AsyncStorage.setItem('token', token);
+      if (company) {
+        AsyncStorage.setItem('company', company);
       }
     },
     logout: state => {
       state.user = null;
-      state.token = null;
+      state.company = null;
       state.isAuthenticated = false;
 
       // Clear AsyncStorage
       AsyncStorage.removeItem('user');
-      AsyncStorage.removeItem('token');
+      AsyncStorage.removeItem('company');
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
     },
     restoreSession: (state, action) => {
-      const { user, token } = action.payload;
+      const { user, company } = action.payload;
       if (user) {
         state.user = user;
-        state.token = token;
+        state.company = company;
         state.isAuthenticated = true;
       }
     },
