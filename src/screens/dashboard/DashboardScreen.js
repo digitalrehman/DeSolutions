@@ -11,8 +11,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { DateFilter } from '@components/common';
 import { useSelector } from 'react-redux';
-import { useGetIncomeExpenseMutation } from '@api/dashboardApi';
-import {LoadingSpinner} from '@components/common';
+import {
+  useGetIncomeExpenseMutation,
+  useGetFinancialOverviewQuery,
+} from '@api/dashboardApi';
+import { LoadingSpinner } from '@components/common';
 import { useEffect } from 'react';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -20,12 +23,19 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
-  const [getIncomeExpense, { isLoading }] = useGetIncomeExpenseMutation();
+  const [getIncomeExpense, { isLoading: isIncomeLoading }] =
+    useGetIncomeExpenseMutation();
+  const { data: financialData, isLoading: isFinancialLoading } =
+    useGetFinancialOverviewQuery();
+
+  const isLoading = isIncomeLoading || isFinancialLoading;
 
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
   const [incomeList, setIncomeList] = useState([]);
   const [expenseList, setExpenseList] = useState([]);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
 
   // Default dates: last 30 days
   useEffect(() => {
@@ -60,26 +70,38 @@ const DashboardScreen = ({ navigation }) => {
         const transformedIncome = response.data_income_det.map(
           (item, index) => ({
             id: `inc-${index}`,
-            title: item.name,
+            title: item.name ? item.name.replace(/&amp;/g, '&') : '',
             amount: Math.abs(parseFloat(item.total)).toLocaleString(),
             date: '',
+            account_type: item.account_type,
             icon: 'trending-up-outline',
             color: '#10B981',
           }),
         );
         setIncomeList(transformedIncome);
+        const total = response.data_income_det.reduce(
+          (acc, item) => acc + Math.abs(parseFloat(item.total)),
+          0,
+        );
+        setTotalIncome(total);
       }
 
       if (response.status_exp_det === 'true') {
         const transformedExpense = response.data_exp_det.map((item, index) => ({
           id: `exp-${index}`,
-          title: item.name,
+          title: item.name ? item.name.replace(/&amp;/g, '&') : '',
           amount: Math.abs(parseFloat(item.total)).toLocaleString(),
           date: '',
+          account_type: item.account_type,
           icon: 'trending-down-outline',
           color: '#EF4444',
         }));
         setExpenseList(transformedExpense);
+        const total = response.data_exp_det.reduce(
+          (acc, item) => acc + Math.abs(parseFloat(item.total)),
+          0,
+        );
+        setTotalExpense(total);
       }
     } catch (error) {
       console.log('Dashboard fetch error:', error);
@@ -117,107 +139,227 @@ const DashboardScreen = ({ navigation }) => {
     fetchData(formatDateForAPI(fromDate), formatDateForAPI(toDate));
   };
 
-  const stats = [
-    {
-      id: '1',
-      title: 'Bank / Cash',
-      value: '1.2M',
-      icon: 'wallet-outline',
-      color: '#3B82F6',
-      trend: '+5.2%',
-    },
-    {
-      id: '2',
-      title: 'Receivables',
-      value: '450K',
-      icon: 'arrow-down-circle-outline',
-      color: '#10B981',
-      trend: '-2.1%',
-    },
-    {
-      id: '3',
-      title: 'Payables',
-      value: '210K',
-      icon: 'arrow-up-circle-outline',
-      color: '#EF4444',
-      trend: '+1.5%',
-    },
-    {
-      id: '4',
-      title: 'Inventory',
-      value: '542 Items',
-      icon: 'cube-outline',
-      color: '#F59E0B',
-      trend: 'In Stock',
-    },
-  ];
-
-  const handleListItemPress = item => {
-    // For now logging, later will navigate to specific details screen
-    console.log('Clicked item:', item.title);
+  const getFormattedAmount = amountStr => {
+    if (!amountStr) return '0';
+    const num = Math.abs(parseFloat(amountStr));
+    return num.toLocaleString(undefined, { maximumFractionDigits: 0 }); // No decimals as requested
   };
 
-  const renderListSection = (title, listData) => (
-    <View style={s.listSection}>
-      <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
-        {title}
-      </Text>
-      <View
-        style={[
-          s.listContainer,
-          {
-            backgroundColor: theme.colors.surface,
-            borderColor: theme.colors.border,
-          },
-        ]}
-      >
-        {listData.map((item, index) => (
-          <TouchableOpacity
-            key={item.id}
-            style={[
-              s.listItem,
-              index !== listData.length - 1 && {
-                borderBottomColor: theme.colors.border,
-                borderBottomWidth: 1,
-              },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => handleListItemPress(item)}
-          >
-            {/* Left Side: Icon & Title */}
-            <View style={s.listItemLeft}>
-              <View
-                style={[s.listIconBox, { backgroundColor: item.color + '15' }]}
-              >
-                <Icon name={item.icon} size={20} color={item.color} />
-              </View>
-              <View style={s.listTextContent}>
-                <Text
-                  style={[s.listItemTitle, { color: theme.colors.text }]}
-                  numberOfLines={1}
-                >
-                  {item.title}
-                </Text>
-                <Text
-                  style={[
-                    s.listItemDate,
-                    { color: theme.colors.textSecondary },
-                  ]}
-                >
-                  {item.date}
-                </Text>
-              </View>
-            </View>
+  const calculateTrend = (curStr, preStr) => {
+    const cur = parseFloat(curStr || 0);
+    const pre = parseFloat(preStr || 0);
 
-            {/* Right Side: Amount */}
-            <Text style={[s.listItemAmount, { color: item.color }]}>
-              {item.amount}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+    if (pre === 0 && cur === 0) return { text: '0%', isPositive: true };
+    if (pre === 0) return { text: '+100%', isPositive: true };
+
+    const diff = Math.abs(cur) - Math.abs(pre);
+    const percentage = (diff / Math.abs(pre)) * 100;
+
+    // Determine sign based on raw values. If it's income/revenue/etc, an increase is usually good.
+    // Assuming for now, if absolute current is > absolute previous, it's an upward trend.
+    const isPositive = Math.abs(cur) >= Math.abs(pre);
+    const sign = isPositive ? '+' : '';
+
+    return {
+      text: `${sign}${percentage.toFixed(1)}%`,
+      isPositive,
+    };
+  };
+
+  // Build dynamic stats array if data is available
+  const stats = [];
+  if (financialData && financialData.slider_data) {
+    const sd = financialData.slider_data;
+
+    // Helper to add card
+    const addCard = (id, title, icon, color, curStr, preStr) => {
+      const trend = calculateTrend(curStr, preStr);
+      stats.push({
+        id,
+        title,
+        value: getFormattedAmount(curStr),
+        icon,
+        color,
+        trend: trend.text,
+        trendIsPositive: trend.isPositive,
+      });
+    };
+
+    addCard(
+      '1',
+      'Income',
+      'wallet-outline',
+      '#10B981',
+      sd.cur_m_income,
+      sd.pre_m_income,
+    );
+    addCard(
+      '2',
+      'Expense',
+      'card-outline',
+      '#EF4444',
+      sd.cur_m_expense,
+      sd.pre_m_expense,
+    );
+    addCard(
+      '3',
+      'Revenue',
+      'cash-outline',
+      '#3B82F6',
+      sd.cur_m_revenue,
+      sd.pre_m_revenue,
+    );
+    addCard(
+      '4',
+      'Equity',
+      'pie-chart-outline',
+      '#8B5CF6',
+      sd.cur_m_equity,
+      sd.pre_m_equity,
+    );
+    addCard(
+      '5',
+      'Recovery',
+      'refresh-circle-outline',
+      '#10B981',
+      sd.cur_m_recovery,
+      sd.pre_m_recovery,
+    );
+    addCard('6', 'Cash', 'cash', '#F59E0B', sd.cur_m_cash, sd.pre_m_cash);
+    addCard(
+      '7',
+      'Bank',
+      'business-outline',
+      '#3B82F6',
+      sd.cur_m_bank,
+      sd.pre_m_bank,
+    );
+    addCard(
+      '8',
+      'Receivable',
+      'arrow-down-circle-outline',
+      '#10B981',
+      sd.cur_m_receivable,
+      sd.pre_m_receivable,
+    );
+    addCard(
+      '9',
+      'Payable',
+      'arrow-up-circle-outline',
+      '#EF4444',
+      sd.cur_m_payable,
+      sd.pre_m_payable,
+    );
+    addCard(
+      '10',
+      'Inventory Val',
+      'cube-outline',
+      '#F59E0B',
+      sd.cur_m_inventory_val,
+      sd.pre_m_inventory_val,
+    );
+  }
+
+  const handleListItemPress = item => {
+    if (item.account_type) {
+      navigation.navigate('AccountDetail', {
+        title: item.title,
+        accountType: item.account_type,
+        initialFromDate: fromDate,
+        initialToDate: toDate,
+      });
+    }
+  };
+
+  const renderTotalRow = (label, value, color) => (
+    <View style={[s.totalRow, { borderTopColor: theme.colors.border }]}>
+      <Text style={[s.totalLabel, { color: theme.colors.textSecondary }]}>
+        {label}
+      </Text>
+      <Text style={[s.totalValue, { color: color || theme.colors.text }]}>
+        {value.toLocaleString()}
+      </Text>
     </View>
   );
+
+  const renderListSection = (title, listData, totalValue, showDifference) => {
+    const isExpense = title.toLowerCase().includes('expense');
+    const accentColor = isExpense ? '#EF4444' : '#10B981';
+
+    return (
+      <View style={s.listSection}>
+        <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
+          {title}
+        </Text>
+        <View
+          style={[
+            s.listContainer,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
+          {listData.map((item, index) => (
+            <TouchableOpacity
+              key={item.id}
+              style={[
+                s.listItem,
+                index !== listData.length - 1 && {
+                  borderBottomColor: theme.colors.border,
+                  borderBottomWidth: 1,
+                },
+              ]}
+              activeOpacity={0.7}
+              onPress={() => handleListItemPress(item)}
+            >
+              {/* Left Side: Icon & Title */}
+              <View style={s.listItemLeft}>
+                <View
+                  style={[
+                    s.listIconBox,
+                    { backgroundColor: item.color + '15' },
+                  ]}
+                >
+                  <Icon name={item.icon} size={20} color={item.color} />
+                </View>
+                <View style={s.listTextContent}>
+                  <Text
+                    style={[s.listItemTitle, { color: theme.colors.text }]}
+                    numberOfLines={1}
+                  >
+                    {item.title}
+                  </Text>
+                  <Text
+                    style={[
+                      s.listItemDate,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
+                    {item.date}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Right Side: Amount */}
+              <Text style={[s.listItemAmount, { color: item.color }]}>
+                {item.amount}
+              </Text>
+            </TouchableOpacity>
+          ))}
+
+          {renderTotalRow(`Total ${title}`, totalValue, accentColor)}
+
+          {showDifference &&
+            renderTotalRow(
+              'Difference (Inc - Exp)',
+              totalIncome - totalExpense,
+              totalIncome - totalExpense >= 0 ? '#10B981' : '#EF4444',
+            )}
+        </View>
+      </View>
+    );
+  };
 
   const s = getStyles(theme);
 
@@ -241,12 +383,29 @@ const DashboardScreen = ({ navigation }) => {
           onFilter={handleApplyFilter}
         />
 
-        {renderListSection('Income', incomeList)}
-        {renderListSection('Expense', expenseList)}
+        {renderListSection('Income', incomeList, totalIncome)}
+        {renderListSection('Expense', expenseList, totalExpense, true)}
 
-        <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
-          Financial Overview
-        </Text>
+        <View style={s.overviewHeader}>
+          <Text
+            style={[
+              s.sectionTitle,
+              { color: theme.colors.text, marginBottom: 0 },
+            ]}
+          >
+            Financial Overview
+          </Text>
+          <View
+            style={[s.badge, { backgroundColor: theme.colors.success + '15' }]}
+          >
+            <View
+              style={[s.badgeDot, { backgroundColor: theme.colors.success }]}
+            />
+            <Text style={[s.badgeText, { color: theme.colors.success }]}>
+              Up to date
+            </Text>
+          </View>
+        </View>
 
         <View style={s.statsGrid}>
           {stats.map(stat => (
@@ -275,14 +434,23 @@ const DashboardScreen = ({ navigation }) => {
                 {stat.title}
               </Text>
               <View style={s.trendContainer}>
+                <Icon
+                  name={stat.trendIsPositive ? 'trending-up' : 'trending-down'}
+                  size={12}
+                  color={
+                    stat.trendIsPositive
+                      ? theme.colors.success
+                      : theme.colors.error
+                  }
+                  style={{ marginRight: 4 }}
+                />
                 <Text
                   style={[
                     s.trendText,
                     {
-                      color:
-                        stat.id === '3'
-                          ? theme.colors.error
-                          : theme.colors.success,
+                      color: stat.trendIsPositive
+                        ? theme.colors.success
+                        : theme.colors.error,
                     },
                   ]}
                 >
@@ -291,37 +459,6 @@ const DashboardScreen = ({ navigation }) => {
               </View>
             </View>
           ))}
-        </View>
-
-        <View
-          style={[
-            s.chartSection,
-            {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.border,
-            },
-          ]}
-        >
-          <View style={s.chartHeader}>
-            <Text style={[s.chartTitle, { color: theme.colors.text }]}>
-              Monthly Cash Flow
-            </Text>
-            <Icon
-              name="ellipsis-horizontal"
-              size={20}
-              color={theme.colors.textSecondary}
-            />
-          </View>
-          <View style={s.placeholderChart}>
-            <Icon
-              name="stats-chart-outline"
-              size={50}
-              color={theme.colors.border}
-            />
-            <Text style={{ color: theme.colors.textSecondary, marginTop: 10 }}>
-              Analytics Visualization
-            </Text>
-          </View>
         </View>
       </ScrollView>
     </View>
@@ -426,33 +563,44 @@ const getStyles = theme =>
       fontSize: 11,
       fontWeight: '600',
     },
-    chartSection: {
-      marginTop: 10,
-      borderRadius: 20,
-      borderWidth: 1,
-      padding: 20,
-      minHeight: 250,
-      marginBottom: 20,
+    overviewHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
     },
-    chartHeader: {
+    badge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+    },
+    badgeDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      marginRight: 4,
+    },
+    badgeText: {
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    totalRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 20,
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderTopWidth: 1,
     },
-    chartTitle: {
-      fontSize: 16,
+    totalLabel: {
+      fontSize: 13,
       fontWeight: '700',
     },
-    placeholderChart: {
-      flex: 1,
-      height: 150,
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderStyle: 'dashed',
-      borderRadius: 15,
+    totalValue: {
+      fontSize: 15,
+      fontWeight: '800',
     },
   });
 

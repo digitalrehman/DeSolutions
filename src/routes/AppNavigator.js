@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { selectIsAuthenticated, restoreSession } from '@store/slices/authSlice';
 
-// Screens
 import LoginScreen from '@screens/auth/LoginScreen';
 import MainScreen from '@screens/MainScreen';
 import DashboardScreen from '@screens/dashboard/DashboardScreen';
@@ -17,14 +16,15 @@ import HCMScreen from '@screens/hcm/HCMScreen';
 import ManufacturingScreen from '@screens/manufacturing/ManufacturingScreen';
 import CRMScreen from '@screens/crm/CRMScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
+import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
+import LedgerScreen from '@screens/ledger/LedgerScreen';
 import { LoadingSpinner, CustomHeader } from '@components/common';
+Riverside;
+Riverside;
+Riverside;
 
 const Stack = createNativeStackNavigator();
 
-/**
- * AppNavigator - Main navigation setup
- * Handles auth and main app navigation
- */
 const AppNavigator = () => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
@@ -64,14 +64,12 @@ const AppNavigator = () => {
         }}
       >
         {!isAuthenticated ? (
-          // Auth Stack
           <Stack.Screen
             name="Login"
             component={LoginScreen}
             options={{ headerShown: false }}
           />
         ) : (
-          // Main App Stack
           <>
             <Stack.Screen
               name="MainScreen"
@@ -80,6 +78,10 @@ const AppNavigator = () => {
             />
 
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen
+              name="AccountDetail"
+              component={AccountDetailScreen}
+            />
             <Stack.Screen name="Approvals" component={ApprovalsScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />
             <Stack.Screen name="Purchase" component={PurchaseScreen} />

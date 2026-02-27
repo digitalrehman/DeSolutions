@@ -109,7 +109,7 @@ const DateFilter = ({
             onPress={onFilter}
             activeOpacity={0.8}
           >
-            <Icon name="filter" size={16} color="#FFFFFF" />
+            <Icon name="search-outline" size={18} color="#FFFFFF" />
           </TouchableOpacity>
 
           {hasFilter && (
@@ -119,13 +119,13 @@ const DateFilter = ({
                 s.clearBtn,
                 {
                   borderColor: theme.colors.error,
-                  backgroundColor: theme.colors.error + '15',
+                  backgroundColor: theme.colors.error,
                 },
               ]}
               onPress={onClear}
               activeOpacity={0.8}
             >
-              <Icon name="close" size={16} color={theme.colors.error} />
+              <Icon name="close-outline" size={20} color="#FFFFFF" />
             </TouchableOpacity>
           )}
         </View>
