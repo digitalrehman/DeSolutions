@@ -13,7 +13,7 @@ import { DateFilter } from '@components/common';
 import { useSelector } from 'react-redux';
 import {
   useGetIncomeExpenseMutation,
-  useGetFinancialOverviewQuery,
+  useGetFinancialOverviewMutation,
 } from '@api/dashboardApi';
 import { LoadingSpinner } from '@components/common';
 import { useEffect } from 'react';
@@ -25,8 +25,10 @@ const DashboardScreen = ({ navigation }) => {
   const company = useSelector(state => state.auth.company);
   const [getIncomeExpense, { isLoading: isIncomeLoading }] =
     useGetIncomeExpenseMutation();
-  const { data: financialData, isLoading: isFinancialLoading } =
-    useGetFinancialOverviewQuery();
+  const [
+    getFinancialOverview,
+    { data: financialData, isLoading: isFinancialLoading },
+  ] = useGetFinancialOverviewMutation();
 
   const isLoading = isIncomeLoading || isFinancialLoading;
 
@@ -55,7 +57,8 @@ const DashboardScreen = ({ navigation }) => {
     };
 
     fetchData(formatDateForAPI(thirtyDaysAgo), formatDateForAPI(today));
-  }, []);
+    getFinancialOverview({ company });
+  }, [company, getFinancialOverview]);
 
   const fetchData = async (start, end) => {
     try {
@@ -265,8 +268,8 @@ const DashboardScreen = ({ navigation }) => {
       navigation.navigate('AccountDetail', {
         title: item.title,
         accountType: item.account_type,
-        initialFromDate: fromDate,
-        initialToDate: toDate,
+        initialFromDate: fromDate?.toISOString(),
+        initialToDate: toDate?.toISOString(),
       });
     }
   };
@@ -361,6 +364,15 @@ const DashboardScreen = ({ navigation }) => {
     );
   };
 
+  const handleStatCardPress = stat => {
+    if (['Receivable', 'Payable', 'Bank'].includes(stat.title)) {
+      navigation.navigate('FinancialDetail', {
+        type: stat.title,
+        title: stat.title,
+      });
+    }
+  };
+
   const s = getStyles(theme);
 
   return (
@@ -409,7 +421,7 @@ const DashboardScreen = ({ navigation }) => {
 
         <View style={s.statsGrid}>
           {stats.map(stat => (
-            <View
+            <TouchableOpacity
               key={stat.id}
               style={[
                 s.statCard,
@@ -418,6 +430,8 @@ const DashboardScreen = ({ navigation }) => {
                   borderColor: theme.colors.border,
                 },
               ]}
+              onPress={() => handleStatCardPress(stat)}
+              activeOpacity={0.7}
             >
               <View style={[s.iconBox, { backgroundColor: stat.color + '15' }]}>
                 <Icon name={stat.icon} size={24} color={stat.color} />
@@ -457,7 +471,7 @@ const DashboardScreen = ({ navigation }) => {
                   {stat.trend}
                 </Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>

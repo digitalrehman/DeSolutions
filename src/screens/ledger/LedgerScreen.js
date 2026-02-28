@@ -4,33 +4,44 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
-  TouchableOpacity,
+  FlatList,
+  Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
 import { DateFilter, LoadingSpinner } from '@components/common';
 import { useGetGLAccountInquiryMutation } from '@api/ledgerApi';
 
-const { width, height } = Dimensions.get('window');
-
 const LedgerScreen = ({ route, navigation }) => {
   const { account, title, fromDate: pFromDate, toDate: pToDate } = route.params;
   const { theme } = useTheme();
-
-  // Screen is meant to be viewed in landscape.
-  // For now, we use a rotation transform to simulate landscape if the library is not installed.
-  // Or simply design it to be wide and scrollable.
 
   const [getGLAccountInquiry, { isLoading }] = useGetGLAccountInquiryMutation();
   const [fromDate, setFromDate] = useState(
     pFromDate ? new Date(pFromDate) : null,
   );
   const [toDate, setToDate] = useState(pToDate ? new Date(pToDate) : null);
+
+  useEffect(() => {
+    const decodedTitle = title ? title.replace(/&amp;/g, '&') : 'Ledger';
+    const truncatedTitle =
+      decodedTitle.length > 25
+        ? decodedTitle.substring(0, 22) + '...'
+        : decodedTitle;
+    navigation.setOptions({
+      title: truncatedTitle,
+    });
+  }, [navigation, title]);
+
   const [ledgerData, setLedgerData] = useState([]);
   const [opening, setOpening] = useState('0');
 
   useEffect(() => {
+    // Lock to landscape on mount
+    Orientation.lockToLandscape();
+
     if (!fromDate && !toDate) {
       const today = new Date();
       const thirtyDaysAgo = new Date();
@@ -41,6 +52,11 @@ const LedgerScreen = ({ route, navigation }) => {
     } else {
       fetchData(fromDate, toDate);
     }
+
+    // Unlock or lock to portrait on unmount
+    return () => {
+      Orientation.lockToPortrait();
+    };
   }, []);
 
   const formatDateForAPI = date => {
@@ -125,7 +141,7 @@ const LedgerScreen = ({ route, navigation }) => {
       <Text
         style={[s.cell, s.cellRef, s.headerText, { color: theme.colors.text }]}
       >
-        Reference
+        Ref/Person
       </Text>
       <Text
         style={[s.cell, s.cellMemo, s.headerText, { color: theme.colors.text }]}
@@ -155,99 +171,147 @@ const LedgerScreen = ({ route, navigation }) => {
     </View>
   );
 
-  return (
-    <View style={s.container}>
-      <View style={s.fixedHeader}>
-        <DateFilter
-          fromDate={fromDate}
-          toDate={toDate}
-          onFromDate={setFromDate}
-          onToDate={setToDate}
-          onFilter={handleApplyFilter}
-        />
-        <Text style={[s.title, { color: theme.colors.text }]}>
-          {title} Ledger
+  const renderRow = ({ item, index }) => (
+    <View
+      style={[
+        s.tableRow,
+        { borderBottomColor: theme.colors.border },
+        index % 2 === 0 && {
+          backgroundColor: theme.colors.surface + '10',
+        },
+      ]}
+    >
+      <View style={[s.cell, s.cellDate]}>
+        <Text style={{ color: theme.colors.text, fontSize: 11 }}>
+          {item.doc_date}
         </Text>
-        {renderHeader()}
       </View>
+      <View style={[s.cell, s.cellRef]}>
+        <Text
+          style={{
+            color: theme.colors.textSecondary,
+            fontSize: 11,
+            fontWeight: '600',
+          }}
+        >
+          {item.reference}
+        </Text>
+        {item.person_name && (
+          <Text
+            style={{ color: theme.colors.primary, fontSize: 10 }}
+            numberOfLines={1}
+          >
+            {item.person_name}
+          </Text>
+        )}
+      </View>
+      <View style={[s.cell, s.cellMemo]}>
+        <Text
+          style={{ color: theme.colors.text, fontSize: 11 }}
+          numberOfLines={2}
+        >
+          {item.memo}
+        </Text>
+      </View>
+      <View style={[s.cell, s.cellAmount]}>
+        <Text
+          style={{
+            color:
+              parseFloat(item.amount) >= 0
+                ? theme.colors.success
+                : theme.colors.error,
+            fontWeight: '700',
+            fontSize: 12,
+          }}
+        >
+          {parseFloat(item.amount).toLocaleString()}
+        </Text>
+      </View>
+      <View style={[s.cell, s.cellBalance]}>
+        <Text
+          style={{
+            color: theme.colors.text,
+            fontWeight: '600',
+            fontSize: 12,
+          }}
+        >
+          {parseFloat(item.balance).toLocaleString()}
+        </Text>
+      </View>
+    </View>
+  );
 
+  return (
+    <SafeAreaView style={s.container}>
       {isLoading ? (
         <LoadingSpinner />
       ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={true}>
-          <View>
-            <TableHeader />
-            <ScrollView style={s.tableScroll}>
-              {ledgerData.length > 0 ? (
-                ledgerData.map((item, index) => (
-                  <View
-                    key={index}
-                    style={[
-                      s.tableRow,
-                      { borderBottomColor: theme.colors.border },
-                      index % 2 === 0 && {
-                        backgroundColor: theme.colors.surface + '20',
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={[s.cell, s.cellDate, { color: theme.colors.text }]}
-                    >
-                      {item.doc_date}
-                    </Text>
-                    <Text
-                      style={[
-                        s.cell,
-                        s.cellRef,
-                        { color: theme.colors.textSecondary },
-                      ]}
-                    >
-                      {item.reference}
-                    </Text>
-                    <Text
-                      style={[s.cell, s.cellMemo, { color: theme.colors.text }]}
-                      numberOfLines={2}
-                    >
-                      {item.memo}
-                    </Text>
-                    <Text
-                      style={[
-                        s.cell,
-                        s.cellAmount,
-                        {
-                          color:
-                            parseFloat(item.amount) >= 0
-                              ? theme.colors.success
-                              : theme.colors.error,
-                          fontWeight: '700',
-                        },
-                      ]}
-                    >
-                      {parseFloat(item.amount).toLocaleString()}
-                    </Text>
-                    <Text
-                      style={[
-                        s.cell,
-                        s.cellBalance,
-                        { color: theme.colors.text, fontWeight: '600' },
-                      ]}
-                    >
-                      {parseFloat(item.balance).toLocaleString()}
-                    </Text>
-                  </View>
-                ))
-              ) : (
-                <View style={s.emptyContainer}>
-                  <Text style={{ color: theme.colors.textSecondary }}>
-                    No transactions found.
-                  </Text>
+        <FlatList
+          data={ledgerData}
+          renderItem={renderRow}
+          keyExtractor={(item, index) => index.toString()}
+          style={s.mainScroll}
+          contentContainerStyle={s.scrollContent}
+          showsVerticalScrollIndicator={true}
+          initialNumToRender={15}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={Platform.OS === 'android'}
+          ListHeaderComponent={
+            <View>
+              {/* Header section that will scroll away */}
+              <View style={s.scrollableHeader}>
+                <View style={s.headerRow}>
+                  <DateFilter
+                    fromDate={fromDate}
+                    toDate={toDate}
+                    onFromDate={setFromDate}
+                    onToDate={setToDate}
+                    onFilter={handleApplyFilter}
+                  />
                 </View>
-              )}
-            </ScrollView>
-          </View>
-        </ScrollView>
+                {renderHeader()}
+              </View>
+
+              {/* Table section header */}
+              <View
+                style={[
+                  s.tableContainer,
+                  { marginBottom: 0, borderBottomWidth: 0 },
+                ]}
+              >
+                <TableHeader />
+              </View>
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={s.emptyContainer}>
+              <Text style={{ color: theme.colors.textSecondary }}>
+                No transactions found.
+              </Text>
+            </View>
+          }
+          // Wrap the flattened items in the same border style
+          ListFooterComponent={<View style={{ height: 10 }} />}
+          CellRendererComponent={({ children, style, ...props }) => (
+            <View
+              {...props}
+              style={[
+                style,
+                {
+                  marginHorizontal: 15,
+                  borderLeftWidth: 1,
+                  borderRightWidth: 1,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+            >
+              {children}
+            </View>
+          )}
+        />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -257,65 +321,84 @@ const getStyles = theme =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    fixedHeader: {
-      padding: 15,
+    mainScroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      flexGrow: 1,
+    },
+    scrollableHeader: {
+      paddingHorizontal: 15,
+      paddingTop: 10,
+    },
+    headerRow: {
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+      marginBottom: 15,
     },
     title: {
       fontSize: 18,
-      fontWeight: '800',
-      marginVertical: 10,
-      textAlign: 'center',
+      fontWeight: '900',
+      marginBottom: 10,
+      width: '100%',
     },
     summaryContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 15,
+      marginBottom: 10,
     },
     summaryCard: {
-      flex: 0.48,
-      padding: 12,
-      borderRadius: 12,
+      flex: 0.49,
+      padding: 8,
+      borderRadius: 10,
       alignItems: 'center',
-      elevation: 2,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
     },
     summaryLabel: {
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: '600',
-      marginBottom: 4,
+      marginBottom: 2,
     },
     summaryValue: {
-      fontSize: 16,
+      fontSize: 14,
       fontWeight: '800',
+    },
+    tableContainer: {
+      flex: 1,
+      marginHorizontal: 15,
+      marginBottom: 10,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      overflow: 'hidden',
     },
     tableRow: {
       flexDirection: 'row',
-      paddingVertical: 12,
-      paddingHorizontal: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 5,
       borderBottomWidth: 1,
-      width: 800, // Fixed width for horizontal scroll to mimic landscape
     },
     tableHeader: {
-      borderTopLeftRadius: 8,
-      borderTopRightRadius: 8,
+      borderBottomWidth: 2,
     },
     headerText: {
       fontWeight: '800',
-      fontSize: 13,
+      fontSize: 12,
     },
     cell: {
-      fontSize: 12,
       paddingHorizontal: 5,
+      justifyContent: 'center',
     },
-    cellDate: { width: 90 },
-    cellRef: { width: 120 },
+    cellDate: { width: '12%' },
+    cellRef: { width: '20%' },
     cellMemo: { flex: 1 },
-    cellAmount: { width: 100, textAlign: 'right' },
-    cellBalance: { width: 110, textAlign: 'right' },
+    cellAmount: { width: '15%', alignItems: 'flex-end' },
+    cellBalance: { width: '15%', alignItems: 'flex-end' },
     tableScroll: {
       flex: 1,
     },
     emptyContainer: {
-      width: 800,
       padding: 40,
       alignItems: 'center',
     },

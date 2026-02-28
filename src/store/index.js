@@ -15,8 +15,8 @@ export const store = configureStore({
   middleware: getDefaultMiddleware =>
     getDefaultMiddleware({
       serializableCheck: {
-        // Ignore these action types for serializable check
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        warnAfter: 128,
       },
     }).concat(baseApi.middleware),
   devTools: __DEV__,

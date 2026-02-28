@@ -39,14 +39,49 @@ export const dashboardApi = baseApi.injectEndpoints({
         return result.data ? { data: result.data } : { error: result.error };
       },
     }),
-    getFinancialOverview: builder.query({
-      async queryFn(_arg, queryApi, _extraOptions, baseQuery) {
-        // According to the user, this is a GET request: /dashboard/financial_overview.php
-        const result = await baseQuery({
+    getFinancialOverview: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+
+        return {
           url: '/dashboard/financial_overview.php',
-          method: 'GET',
-        });
-        return result.data ? { data: result.data } : { error: result.error };
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+    getDashReceivable: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        return {
+          url: 'dashboard/dash_receivable.php',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+    getDashPayable: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        return {
+          url: 'dashboard/dash_payable.php',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+    getDashBanks: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        return {
+          url: 'dashboard/dash_banks.php',
+          method: 'POST',
+          body: formData,
+        };
       },
     }),
   }),
@@ -56,5 +91,8 @@ export const dashboardApi = baseApi.injectEndpoints({
 export const {
   useGetIncomeExpenseMutation,
   useGetParentAccountDetailMutation,
-  useGetFinancialOverviewQuery,
+  useGetFinancialOverviewMutation,
+  useGetDashReceivableMutation,
+  useGetDashPayableMutation,
+  useGetDashBanksMutation,
 } = dashboardApi;

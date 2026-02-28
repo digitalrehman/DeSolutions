@@ -147,7 +147,8 @@ const DateFilter = ({
 const getStyles = theme =>
   StyleSheet.create({
     container: {
-      marginBottom: 16,
+      marginBottom: 0,
+      width: '100%',
     },
     row: {
       flexDirection: 'row',
@@ -162,9 +163,8 @@ const getStyles = theme =>
       borderWidth: 1,
       borderColor: theme.colors.border,
       borderRadius: 10,
-      height: 38,
-      paddingHorizontal: 8,
-      maxWidth: '38%',
+      height: 44, // Increased from 38
+      paddingHorizontal: 12,
     },
     calIcon: {
       marginRight: 6,
@@ -194,8 +194,8 @@ const getStyles = theme =>
       gap: 6,
     },
     actionBtn: {
-      width: 38,
-      height: 38,
+      width: 44, // Matched with dateBox
+      height: 44, // Matched with dateBox
       borderRadius: 10,
       justifyContent: 'center',
       alignItems: 'center',

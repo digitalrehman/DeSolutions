@@ -5,6 +5,8 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  FlatList,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
@@ -17,8 +19,23 @@ const AccountDetailScreen = ({ route, navigation }) => {
 
   const [getParentAccountDetail, { isLoading }] =
     useGetParentAccountDetailMutation();
-  const [fromDate, setFromDate] = useState(initialFromDate || null);
-  const [toDate, setToDate] = useState(initialToDate || null);
+  const [fromDate, setFromDate] = useState(
+    initialFromDate ? new Date(initialFromDate) : null,
+  );
+  const [toDate, setToDate] = useState(
+    initialToDate ? new Date(initialToDate) : null,
+  );
+
+  React.useLayoutEffect(() => {
+    const decodedTitle = title ? title.replace(/&amp;/g, '&') : 'Details';
+    const truncatedTitle =
+      decodedTitle.length > 25
+        ? decodedTitle.substring(0, 22) + '...'
+        : decodedTitle;
+    navigation.setOptions({
+      title: truncatedTitle,
+    });
+  }, [navigation, title]);
   const [details, setDetails] = useState([]);
 
   useEffect(() => {
@@ -79,112 +96,143 @@ const AccountDetailScreen = ({ route, navigation }) => {
 
   const decodedTitle = title ? title.replace(/&amp;/g, '&') : '';
 
-  return (
-    <View style={s.container}>
-      {isLoading && (
-        <View style={StyleSheet.absoluteFill}>
-          <LoadingSpinner />
-        </View>
-      )}
-      <ScrollView
-        contentContainerStyle={[s.content, isLoading && { opacity: 0.5 }]}
-        showsVerticalScrollIndicator={false}
+  const renderItem = ({ item, index }) => {
+    const isFirst = index === 0;
+    const isLast = index === details.length - 1;
+
+    return (
+      <View
+        style={[
+          s.listContainer,
+          {
+            backgroundColor: theme.colors.surface,
+            borderColor: theme.colors.border,
+            borderBottomWidth: isLast ? 1 : 0,
+            borderTopLeftRadius: isFirst ? 16 : 0,
+            borderTopRightRadius: isFirst ? 16 : 0,
+            borderBottomLeftRadius: isLast ? 16 : 0,
+            borderBottomRightRadius: isLast ? 16 : 0,
+          },
+        ]}
       >
-        <DateFilter
-          fromDate={fromDate}
-          toDate={toDate}
-          onFromDate={setFromDate}
-          onToDate={setToDate}
-          onClear={handleClearFilter}
-          onFilter={handleApplyFilter}
-        />
-        <Text style={[s.pageTitle, { color: theme.colors.text }]}>
-          {decodedTitle}
-        </Text>
-        <View style={s.listSection}>
-          {details.length > 0 ? (
+        <TouchableOpacity
+          style={[
+            s.listItem,
+            !isLast && {
+              borderBottomColor: theme.colors.border,
+              borderBottomWidth: 1,
+            },
+          ]}
+          onPress={() =>
+            navigation.navigate('Ledger', {
+              account: item.account_code,
+              title: item.account_name,
+              fromDate: fromDate?.toISOString(),
+              toDate: toDate?.toISOString(),
+            })
+          }
+        >
+          <View style={s.listItemLeft}>
             <View
               style={[
-                s.listContainer,
-                {
-                  backgroundColor: theme.colors.surface,
-                  borderColor: theme.colors.border,
-                },
-              ]}
-            >
-              {details.map((item, index) => (
-                <View
-                  key={index}
-                  style={[
-                    s.listItem,
-                    index !== details.length - 1 && {
-                      borderBottomColor: theme.colors.border,
-                      borderBottomWidth: 1,
-                    },
-                  ]}
-                >
-                  <View style={s.listItemLeft}>
-                    <View
-                      style={[
-                        s.listIconBox,
-                        { backgroundColor: theme.colors.primary + '15' },
-                      ]}
-                    >
-                      <Icon
-                        name="document-text-outline"
-                        size={20}
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                    <View style={s.listTextContent}>
-                      <Text
-                        style={[s.listItemTitle, { color: theme.colors.text }]}
-                        numberOfLines={2}
-                      >
-                        {item.account_name}
-                      </Text>
-                      <Text
-                        style={[
-                          s.listItemDate,
-                          { color: theme.colors.textSecondary },
-                        ]}
-                      >
-                        Code: {item.account_code || 'N/A'}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text
-                    style={[s.listItemAmount, { color: theme.colors.text }]}
-                  >
-                    {Math.abs(parseFloat(item.t_amount)).toLocaleString()}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View
-              style={[
-                s.emptyContainer,
-                {
-                  borderColor: theme.colors.border,
-                  backgroundColor: theme.colors.surface,
-                },
+                s.listIconBox,
+                { backgroundColor: theme.colors.primary + '15' },
               ]}
             >
               <Icon
-                name="folder-open-outline"
-                size={40}
-                color={theme.colors.textSecondary}
+                name="document-text-outline"
+                size={20}
+                color={theme.colors.primary}
               />
+            </View>
+            <View style={s.listTextContent}>
               <Text
-                style={[s.emptyText, { color: theme.colors.textSecondary }]}
+                style={[s.listItemTitle, { color: theme.colors.text }]}
+                numberOfLines={2}
               >
-                No details found for this period.
+                {item.account_name}
+              </Text>
+              <Text
+                style={[s.listItemDate, { color: theme.colors.textSecondary }]}
+              >
+                Code: {item.account_code || 'N/A'}
               </Text>
             </View>
-          )}
-        </View>
-      </ScrollView>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text
+              style={[
+                s.listItemAmount,
+                { color: theme.colors.text, marginRight: 8 },
+              ]}
+            >
+              {Math.abs(parseFloat(item.t_amount)).toLocaleString()}
+            </Text>
+            <Icon
+              name="chevron-forward"
+              size={16}
+              color={theme.colors.textSecondary}
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  return (
+    <View style={s.container}>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <FlatList
+          data={details}
+          renderItem={renderItem}
+          keyExtractor={(item, index) => index.toString()}
+          contentContainerStyle={s.content}
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={10}
+          removeClippedSubviews={Platform.OS === 'android'}
+          ListHeaderComponent={
+            <View>
+              <DateFilter
+                fromDate={fromDate}
+                toDate={toDate}
+                onFromDate={setFromDate}
+                onToDate={setToDate}
+                onClear={handleClearFilter}
+                onFilter={handleApplyFilter}
+              />
+              <View style={s.listSection} />
+            </View>
+          }
+          ListEmptyComponent={
+            <View style={s.listSection}>
+              <View
+                style={[
+                  s.emptyContainer,
+                  {
+                    borderColor: theme.colors.border,
+                    backgroundColor: theme.colors.surface,
+                    borderWidth: 1,
+                    borderStyle: 'dashed',
+                  },
+                ]}
+              >
+                <Icon
+                  name="folder-open-outline"
+                  size={40}
+                  color={theme.colors.textSecondary}
+                />
+                <Text
+                  style={[s.emptyText, { color: theme.colors.textSecondary }]}
+                >
+                  No details found for this period.
+                </Text>
+              </View>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 };
