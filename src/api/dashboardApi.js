@@ -84,6 +84,39 @@ export const dashboardApi = baseApi.injectEndpoints({
         };
       },
     }),
+    getDashCategoryWiseValution: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        return {
+          url: 'dashboard/dash_category_wise_valution.php',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+    getDashLocationWiseValution: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        return {
+          url: 'dashboard/dash_location_wise_valution.php',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
+    getDashItemWiseValution: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        return {
+          url: 'dashboard/dash_item_wise_valution.php',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -95,4 +128,7 @@ export const {
   useGetDashReceivableMutation,
   useGetDashPayableMutation,
   useGetDashBanksMutation,
+  useGetDashCategoryWiseValutionMutation,
+  useGetDashLocationWiseValutionMutation,
+  useGetDashItemWiseValutionMutation,
 } = dashboardApi;

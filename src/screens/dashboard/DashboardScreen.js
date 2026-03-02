@@ -39,7 +39,6 @@ const DashboardScreen = ({ navigation }) => {
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
 
-  // Default dates: last 30 days
   useEffect(() => {
     const today = new Date();
     const thirtyDaysAgo = new Date();
@@ -145,7 +144,7 @@ const DashboardScreen = ({ navigation }) => {
   const getFormattedAmount = amountStr => {
     if (!amountStr) return '0';
     const num = Math.abs(parseFloat(amountStr));
-    return num.toLocaleString(undefined, { maximumFractionDigits: 0 }); // No decimals as requested
+    return num.toLocaleString(undefined, { maximumFractionDigits: 0 });
   };
 
   const calculateTrend = (curStr, preStr) => {
@@ -158,8 +157,6 @@ const DashboardScreen = ({ navigation }) => {
     const diff = Math.abs(cur) - Math.abs(pre);
     const percentage = (diff / Math.abs(pre)) * 100;
 
-    // Determine sign based on raw values. If it's income/revenue/etc, an increase is usually good.
-    // Assuming for now, if absolute current is > absolute previous, it's an upward trend.
     const isPositive = Math.abs(cur) >= Math.abs(pre);
     const sign = isPositive ? '+' : '';
 
@@ -168,8 +165,6 @@ const DashboardScreen = ({ navigation }) => {
       isPositive,
     };
   };
-
-  // Build dynamic stats array if data is available
   const stats = [];
   if (financialData && financialData.slider_data) {
     const sd = financialData.slider_data;
@@ -187,7 +182,38 @@ const DashboardScreen = ({ navigation }) => {
         trendIsPositive: trend.isPositive,
       });
     };
-
+    addCard(
+      '7',
+      'Cash/Bank',
+      'business-outline',
+      '#3B82F6',
+      sd.cur_m_bank,
+      sd.pre_m_bank,
+    );
+    addCard(
+      '8',
+      'Receivable',
+      'arrow-down-circle-outline',
+      '#10B981',
+      sd.cur_m_receivable,
+      sd.pre_m_receivable,
+    );
+    addCard(
+      '9',
+      'Payable',
+      'arrow-up-circle-outline',
+      '#EF4444',
+      sd.cur_m_payable,
+      sd.pre_m_payable,
+    );
+    addCard(
+      '10',
+      'Inventory Val',
+      'cube-outline',
+      '#F59E0B',
+      sd.cur_m_inventory_val,
+      sd.pre_m_inventory_val,
+    );
     addCard(
       '1',
       'Income',
@@ -219,47 +245,6 @@ const DashboardScreen = ({ navigation }) => {
       '#8B5CF6',
       sd.cur_m_equity,
       sd.pre_m_equity,
-    );
-    addCard(
-      '5',
-      'Recovery',
-      'refresh-circle-outline',
-      '#10B981',
-      sd.cur_m_recovery,
-      sd.pre_m_recovery,
-    );
-    addCard('6', 'Cash', 'cash', '#F59E0B', sd.cur_m_cash, sd.pre_m_cash);
-    addCard(
-      '7',
-      'Bank',
-      'business-outline',
-      '#3B82F6',
-      sd.cur_m_bank,
-      sd.pre_m_bank,
-    );
-    addCard(
-      '8',
-      'Receivable',
-      'arrow-down-circle-outline',
-      '#10B981',
-      sd.cur_m_receivable,
-      sd.pre_m_receivable,
-    );
-    addCard(
-      '9',
-      'Payable',
-      'arrow-up-circle-outline',
-      '#EF4444',
-      sd.cur_m_payable,
-      sd.pre_m_payable,
-    );
-    addCard(
-      '10',
-      'Inventory Val',
-      'cube-outline',
-      '#F59E0B',
-      sd.cur_m_inventory_val,
-      sd.pre_m_inventory_val,
     );
   }
 
@@ -370,6 +355,8 @@ const DashboardScreen = ({ navigation }) => {
         type: stat.title,
         title: stat.title,
       });
+    } else if (stat.title === 'Inventory Val') {
+      navigation.navigate('InventoryValuation');
     }
   };
 

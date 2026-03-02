@@ -19,6 +19,7 @@ import FinanceScreen from '@screens/finance/FinanceScreen';
 import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
 import LedgerScreen from '@screens/ledger/LedgerScreen';
 import FinancialDetailScreen from '@screens/dashboard/FinancialDetailScreen';
+import InventoryValuationScreen from '@screens/dashboard/InventoryValuationScreen';
 import { LoadingSpinner, CustomHeader } from '@components/common';
 
 const Stack = createNativeStackNavigator();
@@ -84,6 +85,10 @@ const AppNavigator = () => {
             <Stack.Screen
               name="FinancialDetail"
               component={FinancialDetailScreen}
+            />
+            <Stack.Screen
+              name="InventoryValuation"
+              component={InventoryValuationScreen}
             />
             <Stack.Screen name="Approvals" component={ApprovalsScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />
