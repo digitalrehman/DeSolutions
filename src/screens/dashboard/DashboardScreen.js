@@ -47,7 +47,6 @@ const DashboardScreen = ({ navigation }) => {
     setFromDate(thirtyDaysAgo);
     setToDate(today);
 
-    // Format for API
     const formatDateForAPI = date => {
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -61,7 +60,6 @@ const DashboardScreen = ({ navigation }) => {
 
   const fetchData = async (start, end) => {
     try {
-      // Start and end are already formatted strings here
       const response = await getIncomeExpense({
         from_date: start,
         to_date: end,
@@ -183,7 +181,7 @@ const DashboardScreen = ({ navigation }) => {
       });
     };
     addCard(
-      '7',
+      '1',
       'Cash/Bank',
       'business-outline',
       '#3B82F6',
@@ -191,7 +189,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_bank,
     );
     addCard(
-      '8',
+      '2',
       'Receivable',
       'arrow-down-circle-outline',
       '#10B981',
@@ -199,7 +197,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_receivable,
     );
     addCard(
-      '9',
+      '3',
       'Payable',
       'arrow-up-circle-outline',
       '#EF4444',
@@ -207,7 +205,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_payable,
     );
     addCard(
-      '10',
+      '4',
       'Inventory Val',
       'cube-outline',
       '#F59E0B',
@@ -215,7 +213,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_inventory_val,
     );
     addCard(
-      '1',
+      '5',
       'Income',
       'wallet-outline',
       '#10B981',
@@ -223,7 +221,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_income,
     );
     addCard(
-      '2',
+      '6',
       'Expense',
       'card-outline',
       '#EF4444',
@@ -231,7 +229,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_expense,
     );
     addCard(
-      '3',
+      '7',
       'Revenue',
       'cash-outline',
       '#3B82F6',
@@ -239,7 +237,7 @@ const DashboardScreen = ({ navigation }) => {
       sd.pre_m_revenue,
     );
     addCard(
-      '4',
+      '8',
       'Equity',
       'pie-chart-outline',
       '#8B5CF6',

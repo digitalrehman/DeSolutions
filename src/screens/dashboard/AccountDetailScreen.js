@@ -94,7 +94,6 @@ const AccountDetailScreen = ({ route, navigation }) => {
 
   const s = getStyles(theme);
 
-  const decodedTitle = title ? title.replace(/&amp;/g, '&') : '';
 
   const renderItem = ({ item, index }) => {
     const isFirst = index === 0;

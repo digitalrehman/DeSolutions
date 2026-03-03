@@ -31,7 +31,7 @@ export const dashboardApi = baseApi.injectEndpoints({
         formData.append('company', company);
 
         const result = await baseQuery({
-          url: '/dashboard/parent_account_detail.php',
+          url: 'dashboard/parent_account_detail.php',
           method: 'POST',
           body: formData,
         });
@@ -45,7 +45,7 @@ export const dashboardApi = baseApi.injectEndpoints({
         formData.append('company', body.company);
 
         return {
-          url: '/dashboard/financial_overview.php',
+          url: 'dashboard/financial_overview.php',
           method: 'POST',
           body: formData,
         };
