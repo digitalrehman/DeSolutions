@@ -348,7 +348,7 @@ const DashboardScreen = ({ navigation }) => {
   };
 
   const handleStatCardPress = stat => {
-    if (['Receivable', 'Payable', 'Bank'].includes(stat.title)) {
+    if (['Receivable', 'Payable', 'Cash/Bank'].includes(stat.title)) {
       navigation.navigate('FinancialDetail', {
         type: stat.title,
         title: stat.title,

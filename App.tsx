@@ -38,10 +38,6 @@ const AppContent = () => {
   );
 };
 
-/**
- * App - Root component
- * Sets up Redux, Navigation, and Toast notifications
- */
 const App = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
