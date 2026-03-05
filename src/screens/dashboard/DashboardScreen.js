@@ -299,38 +299,31 @@ const DashboardScreen = ({ navigation }) => {
               activeOpacity={0.7}
               onPress={() => handleListItemPress(item)}
             >
-              {/* Left Side: Icon & Title */}
-              <View style={s.listItemLeft}>
-                <View
+              {/* Left Side: Title Only */}
+              <View style={s.listTextContent}>
+                <Text
+                  style={[s.listItemTitle, { color: theme.colors.text }]}
+                  numberOfLines={1}
+                >
+                  {item.title}
+                </Text>
+                <Text
                   style={[
-                    s.listIconBox,
-                    { backgroundColor: item.color + '15' },
+                    s.listItemDate,
+                    { color: theme.colors.textSecondary },
                   ]}
                 >
-                  <Icon name={item.icon} size={20} color={item.color} />
-                </View>
-                <View style={s.listTextContent}>
-                  <Text
-                    style={[s.listItemTitle, { color: theme.colors.text }]}
-                    numberOfLines={1}
-                  >
-                    {item.title}
-                  </Text>
-                  <Text
-                    style={[
-                      s.listItemDate,
-                      { color: theme.colors.textSecondary },
-                    ]}
-                  >
-                    {item.date}
-                  </Text>
-                </View>
+                  {item.date}
+                </Text>
               </View>
 
-              {/* Right Side: Amount */}
-              <Text style={[s.listItemAmount, { color: item.color }]}>
-                {item.amount}
-              </Text>
+              {/* Right Side: Amount & Icon */}
+              <View style={s.listItemRight}>
+                <Text style={[s.listItemAmount, { color: item.color }]}>
+                  {item.amount}
+                </Text>
+               
+              </View>
             </TouchableOpacity>
           ))}
 
@@ -501,13 +494,17 @@ const getStyles = theme =>
       flex: 1,
       marginRight: 10,
     },
+    listItemRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
     listIconBox: {
       width: 40,
       height: 40,
       borderRadius: 12,
       justifyContent: 'center',
       alignItems: 'center',
-      marginRight: 12,
     },
     listTextContent: {
       flex: 1,

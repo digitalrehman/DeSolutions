@@ -17,7 +17,9 @@ import ManufacturingScreen from '@screens/manufacturing/ManufacturingScreen';
 import CRMScreen from '@screens/crm/CRMScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
 import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
-import LedgerScreen from '@screens/ledger/LedgerScreen';
+import LedgerScreen from '@components/ledger/LedgerScreen';
+import CustomerAgingScreen from '@components/aging/CustomerAgingScreen';
+import CustomerBalanceDetailsScreen from '@components/aging/CustomerBalanceDetailsScreen';
 import FinancialDetailScreen from '@screens/dashboard/FinancialDetailScreen';
 import InventoryValuationScreen from '@screens/dashboard/InventoryValuationScreen';
 import { LoadingSpinner, CustomHeader } from '@components/common';
@@ -82,6 +84,14 @@ const AppNavigator = () => {
               component={AccountDetailScreen}
             />
             <Stack.Screen name="Ledger" component={LedgerScreen} />
+            <Stack.Screen
+              name="CustomerAging"
+              component={CustomerAgingScreen}
+            />
+            <Stack.Screen
+              name="CustomerBalanceDetails"
+              component={CustomerBalanceDetailsScreen}
+            />
             <Stack.Screen
               name="FinancialDetail"
               component={FinancialDetailScreen}

@@ -113,7 +113,7 @@ const FinancialDetailScreen = ({ route, navigation }) => {
     const name = item.name || item.supp_name || item.bank_name;
     const balance = item.Balance || item.bank_balance || '0';
     const accountCode = item.account;
-    const isReceivableOrPayable = type === 'Receivable' || type === 'Payable';
+    const customerId = item.customer_id || item.person_id;
     const isBank = type === 'Cash/Bank';
 
     // Simple Bank Card UI
@@ -215,11 +215,7 @@ const FinancialDetailScreen = ({ route, navigation }) => {
               >
                 {name}
               </Text>
-              {accountCode && (
-                <Text style={[s.itemCode, { color: theme.colors.textSecondary }]}>
-                  {accountCode}
-                </Text>
-              )}
+
             </View>
           </View>
           <View style={s.cardRight}>
@@ -236,8 +232,10 @@ const FinancialDetailScreen = ({ route, navigation }) => {
           <TouchableOpacity
             style={[s.actionBtn, { backgroundColor: theme.colors.primary + '10' }]}
             onPress={() => {
-              // TODO: View Detail
-              console.log('View Detail:', name);
+              navigation.navigate('CustomerBalanceDetails', {
+                customerId: customerId,
+                customerName: name,
+              });
             }}
             activeOpacity={0.7}
           >
@@ -268,8 +266,10 @@ const FinancialDetailScreen = ({ route, navigation }) => {
           <TouchableOpacity
             style={[s.actionBtn, { backgroundColor: theme.colors.warning + '10' }]}
             onPress={() => {
-              // TODO: Aging
-              console.log('Aging:', name);
+              navigation.navigate('CustomerAging', {
+                customerId: customerId,
+                customerName: name,
+              });
             }}
             activeOpacity={0.7}
           >

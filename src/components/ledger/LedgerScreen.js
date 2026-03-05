@@ -3,12 +3,10 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   FlatList,
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Icon from 'react-native-vector-icons/Ionicons';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
 import { DateFilter, LoadingSpinner } from '@components/common';
