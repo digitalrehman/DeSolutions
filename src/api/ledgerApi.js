@@ -4,7 +4,7 @@ export const ledgerApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     getGLAccountInquiry: builder.mutation({
       queryFn: async (body, api, extraOptions, baseQuery) => {
-        const { from_date, to_date, company, account } = body;
+        const { from_date, to_date, company, account, person_id } = body;
 
         const state = api.getState();
         const activeCompany = company || state.auth.company;
@@ -13,7 +13,8 @@ export const ledgerApi = baseApi.injectEndpoints({
         formData.append('from_date', from_date);
         formData.append('to_date', to_date);
         formData.append('company', activeCompany);
-        formData.append('account', account);
+        formData.append('person_id', person_id || '');
+        formData.append('account', account || '');
 
         const result = await baseQuery({
           url: 'ledger/gl_account_inquiry.php',
@@ -54,7 +55,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append('company', activeCompany);
         formData.append('customer_id', customer_id);
-        formData.append('from_Date', from_date);
+        formData.append('from_date', from_date);
         formData.append('to_date', to_date);
 
         const result = await baseQuery({

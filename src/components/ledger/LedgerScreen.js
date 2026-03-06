@@ -13,7 +13,7 @@ import { DateFilter, LoadingSpinner } from '@components/common';
 import { useGetGLAccountInquiryMutation } from '@api/ledgerApi';
 
 const LedgerScreen = ({ route, navigation }) => {
-  const { account, title, fromDate: pFromDate, toDate: pToDate } = route.params;
+  const { account, title, fromDate: pFromDate, toDate: pToDate, personId } = route.params;
   const { theme } = useTheme();
 
   const [getGLAccountInquiry, { isLoading }] = useGetGLAccountInquiryMutation();
@@ -37,7 +37,6 @@ const LedgerScreen = ({ route, navigation }) => {
   const [opening, setOpening] = useState('0');
 
   useEffect(() => {
-    // Lock to landscape on mount
     Orientation.lockToLandscape();
 
     if (!fromDate && !toDate) {
@@ -51,7 +50,6 @@ const LedgerScreen = ({ route, navigation }) => {
       fetchData(fromDate, toDate);
     }
 
-    // Unlock or lock to portrait on unmount
     return () => {
       Orientation.lockToPortrait();
     };
@@ -72,6 +70,7 @@ const LedgerScreen = ({ route, navigation }) => {
         from_date: formatDateForAPI(start),
         to_date: formatDateForAPI(end),
         account: account,
+        person_id: personId,
       }).unwrap();
 
       if (response && response.status === 'true') {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -42,32 +42,28 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
+
+    const formattedStart = formatDateForAPI(thirtyDaysAgo);
+    const formattedEnd = formatDateForAPI(today);
+
     setFromDate(thirtyDaysAgo);
     setToDate(today);
 
-    fetchData(thirtyDaysAgo, today);
+    // Fetch data with formatted dates
+    fetchDataWithFormattedDates(formattedStart, formattedEnd);
 
     return () => {
       Orientation.lockToPortrait();
     };
   }, []);
 
-  const formatDateForAPI = date => {
-    if (!date) return '';
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const fetchData = async (start, end) => {
+  const fetchDataWithFormattedDates = async (fromDateStr, toDateStr) => {
     try {
       const response = await getCustomerBalanceDetails({
         company: company,
         customer_id: customerId,
-        from_date: formatDateForAPI(start),
-        to_date: formatDateForAPI(end),
+        from_date: fromDateStr,
+        to_date: toDateStr,
       }).unwrap();
 
       if (response && response.status_cust_age === 'true') {
@@ -84,18 +80,32 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     }
   };
 
+  const formatDateForAPI = date => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const fetchData = async (start, end) => {
+    const formattedStart = formatDateForAPI(start);
+    const formattedEnd = formatDateForAPI(end);
+    await fetchDataWithFormattedDates(formattedStart, formattedEnd);
+  };
+
   const handleApplyFilter = () => {
     fetchData(fromDate, toDate);
   };
 
   const calculateClosing = () => {
-    const openNum = parseFloat(opening || 0);
-    const transSum = balanceData.reduce((acc, item) => {
-      const debit = parseFloat(item.debit || 0);
-      const credit = parseFloat(item.credit || 0);
-      return acc + (debit !== 0 ? debit : -credit);
-    }, 0);
-    return (openNum + transSum).toLocaleString();
+    // Get the last transaction's balance from the table
+    if (balanceData.length > 0) {
+      const lastItem = balanceData[balanceData.length - 1];
+      return parseAmount(lastItem.balance).toLocaleString();
+    }
+    return parseAmount(opening).toLocaleString();
   };
 
   const s = getStyles(theme);
@@ -140,14 +150,34 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
         Date
       </Text>
       <Text
+        style={[s.cell, s.cellRate, s.headerText, { color: theme.colors.text }]}
+      >
+        Rate
+      </Text>
+      <Text
+        style={[s.cell, s.cellQty, s.headerText, { color: theme.colors.text }]}
+      >
+        Qty
+      </Text>
+      <Text
+        style={[s.cell, s.cellDisc, s.headerText, { color: theme.colors.text }]}
+      >
+        Disc%
+      </Text>
+      <Text
+        style={[s.cell, s.cellTotal, s.headerText, { color: theme.colors.text }]}
+      >
+        Total
+      </Text>
+      <Text
         style={[s.cell, s.cellDebit, s.headerText, { color: theme.colors.text }]}
       >
-        Debit
+        Dr
       </Text>
       <Text
         style={[s.cell, s.cellCredit, s.headerText, { color: theme.colors.text }]}
       >
-        Credit
+        Cr
       </Text>
       <Text
         style={[s.cell, s.cellBalance, s.headerText, { color: theme.colors.text }]}
@@ -156,6 +186,20 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
       </Text>
     </View>
   );
+
+  const parseAmount = (amountStr) => {
+    if (!amountStr) return 0;
+    return parseFloat(amountStr.toString().replace(/,/g, '')) || 0;
+  };
+
+  const calculateItemTotal = (item) => {
+    const rate = parseFloat(item.unit_price || 0);
+    const qty = parseFloat(item.quantity || 0);
+    const disc = parseFloat(item.discount_percent || 0);
+    const total = rate * qty;
+    const discountAmount = total * (disc / 100);
+    return total - discountAmount;
+  };
 
   const renderItemRow = (item, index, isNested = false) => (
     <View
@@ -168,36 +212,91 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
         isNested && { backgroundColor: theme.colors.primary + '05' },
       ]}
     >
-      <View style={[s.cell, s.cellReference]}>
-        <Text style={{ color: theme.colors.text, fontSize: isNested ? 10 : 11, fontStyle: isNested ? 'italic' : 'normal' }}>
-          {isNested ? `  ↳ ${item.description}` : item.reference}
+      {/* For nested items: merge Reference and Date columns for description */}
+      {isNested ? (
+        <View style={[s.cell, s.cellNestedDescription]}>
+          <Text style={{ color: theme.colors.text, fontSize: 10, fontStyle: 'italic' }}>
+            ↳ {item.description || '-'}
+          </Text>
+        </View>
+      ) : (
+        <>
+          <View style={[s.cell, s.cellReference]}>
+            <Text style={{ color: theme.colors.text, fontSize: 11 }}>
+              {item.reference}
+            </Text>
+          </View>
+          <View style={[s.cell, s.cellDate]}>
+            <Text style={{ color: theme.colors.textSecondary, fontSize: 11 }}>
+              {item.tran_date}
+            </Text>
+          </View>
+        </>
+      )}
+      <View style={[s.cell, s.cellRate]}>
+        <Text
+          style={{
+            color: isNested ? theme.colors.text : theme.colors.textSecondary,
+            fontSize: isNested ? 10 : 11,
+            fontWeight: isNested ? '500' : '400',
+          }}
+        >
+          {isNested ? parseFloat(item.unit_price || 0).toLocaleString() : '-'}
         </Text>
       </View>
-      <View style={[s.cell, s.cellDate]}>
-        <Text style={{ color: theme.colors.textSecondary, fontSize: isNested ? 10 : 11 }}>
-          {isNested ? '' : item.tran_date}
+      <View style={[s.cell, s.cellQty]}>
+        <Text
+          style={{
+            color: isNested ? theme.colors.text : theme.colors.textSecondary,
+            fontSize: isNested ? 10 : 11,
+            fontWeight: isNested ? '500' : '400',
+          }}
+        >
+          {isNested ? parseFloat(item.quantity || 0).toLocaleString() : '-'}
+        </Text>
+      </View>
+      <View style={[s.cell, s.cellDisc]}>
+        <Text
+          style={{
+            color: isNested ? theme.colors.warning : theme.colors.textSecondary,
+            fontSize: isNested ? 10 : 11,
+            fontWeight: isNested ? '500' : '400',
+          }}
+        >
+          {isNested ? `${item.discount_percent || 0}%` : '-'}
+        </Text>
+      </View>
+      <View style={[s.cell, s.cellTotal]}>
+        <Text
+          style={{
+            color: isNested ? theme.colors.success : theme.colors.textSecondary,
+            fontSize: isNested ? 10 : 11,
+            fontWeight: isNested ? '600' : '400',
+          }}
+        >
+          {isNested ? calculateItemTotal(item).toLocaleString() : '-'}
         </Text>
       </View>
       <View style={[s.cell, s.cellDebit]}>
         <Text
           style={{
-            color: isNested ? theme.colors.textSecondary : parseFloat(item.debit || 0) !== 0 ? theme.colors.error : theme.colors.textSecondary,
+            color: isNested ? theme.colors.textSecondary : parseAmount(item.debit) !== 0 ? theme.colors.error : theme.colors.textSecondary,
             fontSize: isNested ? 10 : 11,
             fontWeight: isNested ? '400' : '600',
           }}
         >
-          {isNested ? item.unit_price : parseFloat(item.debit || 0) !== 0 ? parseFloat(item.debit).toLocaleString() : '-'}
+          {isNested ? '-' : parseAmount(item.debit) !== 0 ? parseAmount(item.debit).toLocaleString() : '-'}
         </Text>
       </View>
       <View style={[s.cell, s.cellCredit]}>
         <Text
           style={{
-            color: isNested ? theme.colors.textSecondary : parseFloat(item.credit || 0) !== 0 ? theme.colors.success : theme.colors.textSecondary,
+            color: isNested ? theme.colors.textSecondary : parseAmount(item.credit) !== 0 ? theme.colors.success : theme.colors.textSecondary,
             fontSize: isNested ? 10 : 11,
             fontWeight: isNested ? '400' : '600',
           }}
         >
-          {isNested ? `Qty: ${item.quantity}` : parseFloat(item.credit || 0) !== 0 ? parseFloat(item.credit).toLocaleString() : '-'}
+          {isNested ? '-' : parseAmount(item.credit) !== 0 ? parseAmount(item.credit).toLocaleString() : '-'}
         </Text>
       </View>
       <View style={[s.cell, s.cellBalance]}>
@@ -208,7 +307,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
             fontWeight: isNested ? '400' : '700',
           }}
         >
-          {isNested ? `Disc: ${item.discount_percent}%` : parseFloat(item.balance || 0).toLocaleString()}
+          {isNested ? '-' : parseAmount(item.balance).toLocaleString()}
         </Text>
       </View>
     </View>
@@ -216,18 +315,24 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
 
   const renderRow = ({ item, index }) => {
     const hasItems = item.items && item.items.length > 0;
-    
+    const isLastItem = index === balanceData.length - 1;
+
     return (
       <View>
         {/* Main Transaction Row */}
         {renderItemRow(item, index)}
-        
+
         {/* Nested Items Rows */}
         {hasItems && item.items.map((nestedItem, nestedIndex) => (
           <View key={`${index}-nested-${nestedIndex}`}>
             {renderItemRow(nestedItem, nestedIndex, true)}
           </View>
         ))}
+
+        {/* Separator after each header's nested items (except last item) */}
+        {!isLastItem && (
+          <View style={[s.separator, { backgroundColor: theme.colors.primary + '30' }]} />
+        )}
       </View>
     );
   };
@@ -274,6 +379,41 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
                 <TableHeader />
               </View>
             </View>
+          }
+          ListFooterComponent={
+            balanceData.length > 0 ? (
+              <View
+                style={[
+                  s.tableRow,
+                  s.totalRow,
+                  { backgroundColor: theme.colors.primary + '15', marginHorizontal: 15, borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: theme.colors.border },
+                ]}
+              >
+                <View style={[s.cell, s.cellReference]}>
+                  <Text style={[s.totalText, { color: theme.colors.text }]}>Total</Text>
+                </View>
+                <View style={[s.cell, s.cellDate]} />
+                <View style={[s.cell, s.cellRate]} />
+                <View style={[s.cell, s.cellQty]} />
+                <View style={[s.cell, s.cellDisc]} />
+                <View style={[s.cell, s.cellTotal]} />
+                <View style={[s.cell, s.cellDebit]}>
+                  <Text style={[s.totalText, { color: theme.colors.error }]}>
+                    {balanceData.reduce((acc, item) => acc + parseAmount(item.debit), 0).toLocaleString()}
+                  </Text>
+                </View>
+                <View style={[s.cell, s.cellCredit]}>
+                  <Text style={[s.totalText, { color: theme.colors.success }]}>
+                    {balanceData.reduce((acc, item) => acc + parseAmount(item.credit), 0).toLocaleString()}
+                  </Text>
+                </View>
+                <View style={[s.cell, s.cellBalance]}>
+                  <Text style={[s.totalText, { color: theme.colors.text }]}>
+                    {balanceData[balanceData.length - 1]?.balance ? parseAmount(balanceData[balanceData.length - 1].balance).toLocaleString() : '0'}
+                  </Text>
+                </View>
+              </View>
+            ) : null
           }
           ListEmptyComponent={
             <View style={s.emptyContainer}>
@@ -366,7 +506,15 @@ const getStyles = theme =>
     tableHeader: {
       borderBottomWidth: 2,
     },
+    totalRow: {
+      borderTopWidth: 2,
+      borderTopColor: theme.colors.primary,
+    },
     headerText: {
+      fontWeight: '800',
+      fontSize: 11,
+    },
+    totalText: {
       fontWeight: '800',
       fontSize: 11,
     },
@@ -374,11 +522,20 @@ const getStyles = theme =>
       paddingHorizontal: 4,
       justifyContent: 'center',
     },
-    cellReference: { width: '30%', paddingLeft: 5 },
-    cellDate: { width: '15%' },
-    cellDebit: { width: '18%', alignItems: 'flex-end' },
-    cellCredit: { width: '18%', alignItems: 'flex-end' },
-    cellBalance: { width: '19%', alignItems: 'flex-end' },
+    cellReference: { width: '18%', paddingLeft: 5 },
+    cellDate: { width: '11%' },
+    cellNestedDescription: { width: '29%', paddingLeft: 5 },
+    cellRate: { width: '10%', alignItems: 'flex-end' },
+    cellQty: { width: '8%', alignItems: 'flex-end' },
+    cellDisc: { width: '8%', alignItems: 'flex-end' },
+    cellTotal: { width: '12%', alignItems: 'flex-end' },
+    cellDebit: { width: '11%', alignItems: 'flex-end' },
+    cellCredit: { width: '11%', alignItems: 'flex-end' },
+    cellBalance: { width: '11%', alignItems: 'flex-end' },
+    separator: {
+      height: 2,
+      marginVertical: 2,
+    },
     emptyContainer: {
       padding: 40,
       alignItems: 'center',

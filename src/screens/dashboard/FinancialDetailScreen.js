@@ -252,6 +252,7 @@ const FinancialDetailScreen = ({ route, navigation }) => {
                 navigation.navigate('Ledger', {
                   account: accountCode,
                   title: name,
+                  personId: customerId,
                 });
               }}
               activeOpacity={0.7}
