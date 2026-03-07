@@ -7,6 +7,7 @@ import Toast from 'react-native-toast-message';
 import BootSplash from 'react-native-bootsplash';
 import store from './src/store';
 import AppNavigator from './src/routes/AppNavigator';
+import { dashboardApi } from './src/api/dashboardApi';
 
 import { ThemeProvider } from './src/config/ThemeContext';
 import { useTheme } from './src/config/useTheme';
@@ -16,7 +17,40 @@ const AppContent = () => {
 
   React.useEffect(() => {
     const init = async () => {
-      // …do some stuff (fetch some data, etc.)
+      // Preload dashboard data in background
+      const state = store.getState();
+      const company = state.auth.company;
+
+      if (company) {
+        const today = new Date();
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        const formatDate = (d: Date) =>
+          `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+            2,
+            '0',
+          )}-${String(d.getDate()).padStart(2, '0')}`;
+
+        store.dispatch(
+          dashboardApi.endpoints.getFinancialOverview.initiate({ company }),
+        );
+        store.dispatch(
+          dashboardApi.endpoints.getDashReceivable.initiate({ company }),
+        );
+        store.dispatch(
+          dashboardApi.endpoints.getDashPayable.initiate({ company }),
+        );
+        store.dispatch(
+          dashboardApi.endpoints.getDashBanks.initiate({ company }),
+        );
+        store.dispatch(
+          dashboardApi.endpoints.getIncomeExpense.initiate({
+            company,
+            from_date: formatDate(thirtyDaysAgo),
+            to_date: formatDate(today),
+          }),
+        );
+      }
     };
 
     init().finally(async () => {

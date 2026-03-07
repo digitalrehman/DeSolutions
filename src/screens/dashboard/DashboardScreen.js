@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,27 +10,37 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { DateFilter } from '@components/common';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   useGetIncomeExpenseMutation,
   useGetFinancialOverviewMutation,
+  dashboardApi,
 } from '@api/dashboardApi';
 import { LoadingSpinner } from '@components/common';
-import { useEffect } from 'react';
+
+
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const DashboardScreen = ({ navigation }) => {
   const { theme } = useTheme();
+  const dispatch = useDispatch();
   const company = useSelector(state => state.auth.company);
+  
+  // Get cached data from RTK Query cache
+  const apiCache = useSelector(state => state.api);
+  const cachedIncomeData = apiCache?.queries?.['getIncomeExpense']?.data;
+  const cachedFinancialData = apiCache?.queries?.['getFinancialOverview']?.data;
+  
   const [getIncomeExpense, { isLoading: isIncomeLoading }] =
     useGetIncomeExpenseMutation();
   const [
     getFinancialOverview,
     { data: financialData, isLoading: isFinancialLoading },
   ] = useGetFinancialOverviewMutation();
-
-  const isLoading = isIncomeLoading || isFinancialLoading;
+  
+  // Use cached data if available
+  const effectiveFinancialData = financialData || cachedFinancialData;
 
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
@@ -40,6 +50,8 @@ const DashboardScreen = ({ navigation }) => {
   const [totalExpense, setTotalExpense] = useState(0);
 
   useEffect(() => {
+    if (!company) return;
+
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
@@ -54,9 +66,61 @@ const DashboardScreen = ({ navigation }) => {
       return `${year}-${month}-${day}`;
     };
 
-    fetchData(formatDateForAPI(thirtyDaysAgo), formatDateForAPI(today));
-    getFinancialOverview({ company });
+    // Restore from cache if available
+    if (cachedIncomeData && incomeList.length === 0) {
+      processIncomeData(cachedIncomeData);
+    } else if (incomeList.length === 0 && !isIncomeLoading) {
+      fetchData(formatDateForAPI(thirtyDaysAgo), formatDateForAPI(today));
+    }
+    
+    if (!financialData && !isFinancialLoading && !cachedFinancialData) {
+      getFinancialOverview({ company });
+    }
   }, [company, getFinancialOverview]);
+
+  // Don't show loader if we already have data (including cache)
+  const isLoading = (isIncomeLoading && incomeList.length === 0 && !cachedIncomeData) || 
+                    (isFinancialLoading && !effectiveFinancialData);
+
+  const processIncomeData = (response) => {
+    if (response.status_income_det === 'true') {
+      const transformedIncome = response.data_income_det.map(
+        (item, index) => ({
+          id: `inc-${index}`,
+          title: item.name ? item.name.replace(/&amp;/g, '&') : '',
+          amount: Math.abs(parseFloat(item.total)).toLocaleString(),
+          date: '',
+          account_type: item.account_type,
+          icon: 'trending-up-outline',
+          color: '#10B981',
+        }),
+      );
+      setIncomeList(transformedIncome);
+      const total = response.data_income_det.reduce(
+        (acc, item) => acc + Math.abs(parseFloat(item.total)),
+        0,
+      );
+      setTotalIncome(total);
+    }
+
+    if (response.status_exp_det === 'true') {
+      const transformedExpense = response.data_exp_det.map((item, index) => ({
+        id: `exp-${index}`,
+        title: item.name ? item.name.replace(/&amp;/g, '&') : '',
+        amount: Math.abs(parseFloat(item.total)).toLocaleString(),
+        date: '',
+        account_type: item.account_type,
+        icon: 'trending-down-outline',
+        color: '#EF4444',
+      }));
+      setExpenseList(transformedExpense);
+      const total = response.data_exp_det.reduce(
+        (acc, item) => acc + Math.abs(parseFloat(item.total)),
+        0,
+      );
+      setTotalExpense(total);
+    }
+  };
 
   const fetchData = async (start, end) => {
     try {
@@ -65,44 +129,8 @@ const DashboardScreen = ({ navigation }) => {
         to_date: end,
         company: company,
       }).unwrap();
-
-      if (response.status_income_det === 'true') {
-        const transformedIncome = response.data_income_det.map(
-          (item, index) => ({
-            id: `inc-${index}`,
-            title: item.name ? item.name.replace(/&amp;/g, '&') : '',
-            amount: Math.abs(parseFloat(item.total)).toLocaleString(),
-            date: '',
-            account_type: item.account_type,
-            icon: 'trending-up-outline',
-            color: '#10B981',
-          }),
-        );
-        setIncomeList(transformedIncome);
-        const total = response.data_income_det.reduce(
-          (acc, item) => acc + Math.abs(parseFloat(item.total)),
-          0,
-        );
-        setTotalIncome(total);
-      }
-
-      if (response.status_exp_det === 'true') {
-        const transformedExpense = response.data_exp_det.map((item, index) => ({
-          id: `exp-${index}`,
-          title: item.name ? item.name.replace(/&amp;/g, '&') : '',
-          amount: Math.abs(parseFloat(item.total)).toLocaleString(),
-          date: '',
-          account_type: item.account_type,
-          icon: 'trending-down-outline',
-          color: '#EF4444',
-        }));
-        setExpenseList(transformedExpense);
-        const total = response.data_exp_det.reduce(
-          (acc, item) => acc + Math.abs(parseFloat(item.total)),
-          0,
-        );
-        setTotalExpense(total);
-      }
+      
+      processIncomeData(response);
     } catch (error) {
       console.log('Dashboard fetch error:', error);
     }
@@ -164,8 +192,8 @@ const DashboardScreen = ({ navigation }) => {
     };
   };
   const stats = [];
-  if (financialData && financialData.slider_data) {
-    const sd = financialData.slider_data;
+  if (effectiveFinancialData && effectiveFinancialData.slider_data) {
+    const sd = effectiveFinancialData.slider_data;
 
     // Helper to add card
     const addCard = (id, title, icon, color, curStr, preStr) => {

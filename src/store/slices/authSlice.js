@@ -35,6 +35,7 @@ const authSlice = createSlice({
       // Clear AsyncStorage
       AsyncStorage.removeItem('user');
       AsyncStorage.removeItem('company');
+      
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;

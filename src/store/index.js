@@ -3,10 +3,6 @@ import { setupListeners } from '@reduxjs/toolkit/query';
 import { baseApi } from '../api/baseApi';
 import authReducer from './slices/authSlice';
 
-/**
- * Redux Store Configuration
- * Combines RTK Query API and auth slice
- */
 export const store = configureStore({
   reducer: {
     [baseApi.reducerPath]: baseApi.reducer,
@@ -21,6 +17,16 @@ export const store = configureStore({
     }).concat(baseApi.middleware),
   devTools: __DEV__,
 });
+
+// Listen for logout action and reset API cache
+const originalDispatch = store.dispatch;
+store.dispatch = (action) => {
+  if (action.type === 'auth/logout') {
+    // Reset RTK Query cache on logout
+    originalDispatch(baseApi.util.resetApiState());
+  }
+  return originalDispatch(action);
+};
 
 // Enable refetchOnFocus/refetchOnReconnect behaviors
 setupListeners(store.dispatch);
