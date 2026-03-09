@@ -10,19 +10,25 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
 import { LoadingSpinner } from '@components/common';
-import { useGetCustomerAgingMutation } from '@api/ledgerApi';
+import { useGetCustomerAgingMutation, useGetSupplierAgingMutation } from '@api/ledgerApi';
 import { useSelector } from 'react-redux';
 
 const CustomerAgingScreen = ({ route, navigation }) => {
-  const { customerId, customerName } = route.params;
+  const { customerId, customerName, supplierId, supplierName, type } = route.params;
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
+  
+  const isSupplier = type === 'supplier' || !!supplierId;
+  const displayName = customerName || supplierName;
+  const entityId = customerId || supplierId;
 
-  const [getCustomerAging, { isLoading }] = useGetCustomerAgingMutation();
+  const [getCustomerAging, { isLoading: isCustomerLoading }] = useGetCustomerAgingMutation();
+  const [getSupplierAging, { isLoading: isSupplierLoading }] = useGetSupplierAgingMutation();
+  const isLoading = isCustomerLoading || isSupplierLoading;
   const [agingData, setAgingData] = useState([]);
 
   useEffect(() => {
-    const decodedName = customerName ? customerName.replace(/&amp;/g, '&') : 'Customer Aging';
+    const decodedName = displayName ? displayName.replace(/&amp;/g, '&') : (isSupplier ? 'Supplier Aging' : 'Customer Aging');
     const truncatedName =
       decodedName.length > 25
         ? decodedName.substring(0, 22) + '...'
@@ -30,7 +36,7 @@ const CustomerAgingScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: truncatedName,
     });
-  }, [navigation, customerName]);
+  }, [navigation, displayName, isSupplier]);
 
   useEffect(() => {
     Orientation.lockToLandscape();
@@ -44,17 +50,25 @@ const CustomerAgingScreen = ({ route, navigation }) => {
 
   const fetchData = async () => {
     try {
-      const response = await getCustomerAging({
-        company: company,
-        customer_id: customerId,
-      }).unwrap();
+      let response;
+      if (isSupplier) {
+        response = await getSupplierAging({
+          company: company,
+          supplier_id: entityId,
+        }).unwrap();
+      } else {
+        response = await getCustomerAging({
+          company: company,
+          customer_id: entityId,
+        }).unwrap();
+      }
       if (response && response.status_cust_age === 'true') {
         setAgingData(response.data_cust_age || []);
       } else {
         setAgingData([]);
       }
     } catch (error) {
-      console.log('Customer aging fetch error:', error);
+      console.log('Aging fetch error:', error);
       setAgingData([]);
     }
   };

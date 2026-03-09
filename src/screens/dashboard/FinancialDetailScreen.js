@@ -110,7 +110,8 @@ const FinancialDetailScreen = ({ route, navigation }) => {
   }, 0);
 
   const renderItemComp = ({ item, index }) => {
-    const name = item.name || item.supp_name || item.bank_name;
+    const rawName = item.name || item.supp_name || item.bank_name || '';
+    const name = rawName.replace(/&amp;/g, '&');
     const balance = item.Balance || item.bank_balance || '0';
     const accountCode = item.account;
     const customerId = item.customer_id || item.person_id;
@@ -267,9 +268,13 @@ const FinancialDetailScreen = ({ route, navigation }) => {
           <TouchableOpacity
             style={[s.actionBtn, { backgroundColor: theme.colors.warning + '10' }]}
             onPress={() => {
+              const isPayable = type === 'Payable';
               navigation.navigate('CustomerAging', {
-                customerId: customerId,
-                customerName: name,
+                customerId: isPayable ? undefined : customerId,
+                customerName: isPayable ? undefined : name,
+                supplierId: isPayable ? customerId : undefined,
+                supplierName: isPayable ? name : undefined,
+                type: isPayable ? 'supplier' : 'customer',
               });
             }}
             activeOpacity={0.7}

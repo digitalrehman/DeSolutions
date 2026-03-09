@@ -313,6 +313,70 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     </View>
   );
 
+  const calculateSubtotal = (items) => {
+    return items.reduce((acc, item) => {
+      const rate = parseFloat(item.unit_price || 0);
+      const qty = parseFloat(item.quantity || 0);
+      const disc = parseFloat(item.discount_percent || 0);
+      const total = rate * qty;
+      const discountAmount = total * (disc / 100);
+      return acc + (total - discountAmount);
+    }, 0);
+  };
+
+  const renderExtraCharges = (item) => {
+    const charges = [];
+    
+    if (parseFloat(item.shiping_charges || 0) > 0) {
+      charges.push({ label: 'Shipping Charges', value: parseFloat(item.shiping_charges) });
+    }
+    if (parseFloat(item.tax_amount || 0) > 0) {
+      charges.push({ label: 'Tax Amount', value: parseFloat(item.tax_amount) });
+    }
+    if (parseFloat(item.total_discount || 0) > 0) {
+      charges.push({ label: 'Total Discount', value: parseFloat(item.total_discount) });
+    }
+    
+    if (charges.length === 0) return null;
+    
+    return (
+      <View style={s.extraChargesContainer}>
+        {charges.map((charge, idx) => (
+          <View key={idx} style={s.extraChargeRow}>
+            <Text style={[s.extraChargeLabel, { color: theme.colors.textSecondary }]}>
+              {charge.label}
+            </Text>
+            <Text style={[s.extraChargeValue, { color: theme.colors.text }]}>
+              {charge.value.toLocaleString()}
+            </Text>
+          </View>
+        ))}
+      </View>
+    );
+  };
+
+  const renderGrandTotal = (item) => {
+    if (!item.items || item.items.length === 0) return null;
+    
+    const subtotal = calculateSubtotal(item.items);
+    const shipping = parseFloat(item.shiping_charges || 0);
+    const tax = parseFloat(item.tax_amount || 0);
+    const discount = parseFloat(item.total_discount || 0);
+    
+    const grandTotal = subtotal + shipping + tax - discount;
+    
+    return (
+      <View style={[s.grandTotalRow, { backgroundColor: theme.colors.primary + '10' }]}>
+        <Text style={[s.grandTotalLabel, { color: theme.colors.text }]}>
+          Grand Total
+        </Text>
+        <Text style={[s.grandTotalValue, { color: theme.colors.success }]}>
+          {grandTotal.toLocaleString()}
+        </Text>
+      </View>
+    );
+  };
+
   const renderRow = ({ item, index }) => {
     const hasItems = item.items && item.items.length > 0;
     const isLastItem = index === balanceData.length - 1;
@@ -328,6 +392,12 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
             {renderItemRow(nestedItem, nestedIndex, true)}
           </View>
         ))}
+
+        {/* Extra Charges (Shipping, Tax, Discount) */}
+        {hasItems && renderExtraCharges(item)}
+
+        {/* Grand Total */}
+        {hasItems && renderGrandTotal(item)}
 
         {/* Separator after each header's nested items (except last item) */}
         {!isLastItem && (
@@ -535,6 +605,46 @@ const getStyles = theme =>
     separator: {
       height: 2,
       marginVertical: 2,
+    },
+    extraChargesContainer: {
+      marginHorizontal: 15,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderLeftWidth: 1,
+      borderRightWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    extraChargeRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 4,
+    },
+    extraChargeLabel: {
+      fontSize: 10,
+      fontWeight: '500',
+    },
+    extraChargeValue: {
+      fontSize: 10,
+      fontWeight: '600',
+    },
+    grandTotalRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+      marginHorizontal: 15,
+      borderLeftWidth: 1,
+      borderRightWidth: 1,
+      borderBottomWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    grandTotalLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    grandTotalValue: {
+      fontSize: 12,
+      fontWeight: '800',
     },
     emptyContainer: {
       padding: 40,

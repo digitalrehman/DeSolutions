@@ -45,6 +45,26 @@ export const ledgerApi = baseApi.injectEndpoints({
         return result.data ? { data: result.data } : { error: result.error };
       },
     }),
+    getSupplierAging: builder.mutation({
+      queryFn: async (body, api, extraOptions, baseQuery) => {
+        const { company, supplier_id } = body;
+
+        const state = api.getState();
+        const activeCompany = company || state.auth.company;
+
+        const formData = new FormData();
+        formData.append('company', activeCompany);
+        formData.append('supplier_id', supplier_id);
+
+        const result = await baseQuery({
+          url: 'ledger/supplier_aging.php',
+          method: 'POST',
+          body: formData,
+        });
+
+        return result.data ? { data: result.data } : { error: result.error };
+      },
+    }),
     getCustomerBalanceDetails: builder.mutation({
       queryFn: async (body, api, extraOptions, baseQuery) => {
         const { company, customer_id, from_date, to_date } = body;
@@ -71,4 +91,4 @@ export const ledgerApi = baseApi.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useGetGLAccountInquiryMutation, useGetCustomerAgingMutation, useGetCustomerBalanceDetailsMutation } = ledgerApi;
+export const { useGetGLAccountInquiryMutation, useGetCustomerAgingMutation, useGetSupplierAgingMutation, useGetCustomerBalanceDetailsMutation } = ledgerApi;

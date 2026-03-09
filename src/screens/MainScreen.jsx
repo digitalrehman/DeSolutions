@@ -121,12 +121,7 @@ const MainScreen = ({ navigation }) => {
               activeOpacity={0.7}
               onPress={() => navigation.navigate(item.screen)}
             >
-              <View
-                style={[
-                  dynamicStyles.iconContainer,
-                  { backgroundColor: theme.colors.primary + '15' },
-                ]}
-              >
+              <View style={[dynamicStyles.iconContainer]}>
                 <Icon name={item.icon} size={30} color={theme.colors.primary} />
               </View>
               <Text style={dynamicStyles.boxName}>{item.name}</Text>
@@ -219,7 +214,7 @@ const getStyles = theme =>
       justifyContent: 'space-between',
     },
     gridBox: {
-      width: '31%', // Roughly 3 in a line with spacing
+      width: '31%',
       aspectRatio: 1,
       backgroundColor: theme.colors.surface,
       borderRadius: 20,
