@@ -233,9 +233,13 @@ const FinancialDetailScreen = ({ route, navigation }) => {
           <TouchableOpacity
             style={[s.actionBtn, { backgroundColor: theme.colors.primary + '10' }]}
             onPress={() => {
+              const isPayable = type === 'Payable';
               navigation.navigate('CustomerBalanceDetails', {
-                customerId: customerId,
-                customerName: name,
+                customerId: isPayable ? undefined : customerId,
+                customerName: isPayable ? undefined : name,
+                supplierId: isPayable ? customerId : undefined,
+                supplierName: isPayable ? name : undefined,
+                type: isPayable ? 'supplier' : 'customer',
               });
             }}
             activeOpacity={0.7}

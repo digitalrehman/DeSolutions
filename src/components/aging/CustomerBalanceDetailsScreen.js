@@ -10,22 +10,28 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
 import { DateFilter, LoadingSpinner } from '@components/common';
-import { useGetCustomerBalanceDetailsMutation } from '@api/ledgerApi';
+import { useGetCustomerBalanceDetailsMutation, useGetSupplierBalanceDetailsMutation } from '@api/ledgerApi';
 import { useSelector } from 'react-redux';
 
 const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
-  const { customerId, customerName } = route.params;
+  const { customerId, customerName, supplierId, supplierName, type } = route.params;
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
+  
+  const isSupplier = type === 'supplier' || !!supplierId;
+  const displayName = customerName || supplierName;
+  const entityId = customerId || supplierId;
 
-  const [getCustomerBalanceDetails, { isLoading }] = useGetCustomerBalanceDetailsMutation();
+  const [getCustomerBalanceDetails, { isLoading: isCustomerLoading }] = useGetCustomerBalanceDetailsMutation();
+  const [getSupplierBalanceDetails, { isLoading: isSupplierLoading }] = useGetSupplierBalanceDetailsMutation();
+  const isLoading = isCustomerLoading || isSupplierLoading;
   const [balanceData, setBalanceData] = useState([]);
   const [opening, setOpening] = useState('0');
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(null);
 
   useEffect(() => {
-    const decodedName = customerName ? customerName.replace(/&amp;/g, '&') : 'Balance Details';
+    const decodedName = displayName ? displayName.replace(/&amp;/g, '&') : (isSupplier ? 'Supplier Balance Details' : 'Balance Details');
     const truncatedName =
       decodedName.length > 25
         ? decodedName.substring(0, 22) + '...'
@@ -33,7 +39,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: truncatedName,
     });
-  }, [navigation, customerName]);
+  }, [navigation, displayName, isSupplier]);
 
   useEffect(() => {
     Orientation.lockToLandscape();
@@ -59,12 +65,22 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
 
   const fetchDataWithFormattedDates = async (fromDateStr, toDateStr) => {
     try {
-      const response = await getCustomerBalanceDetails({
-        company: company,
-        customer_id: customerId,
-        from_date: fromDateStr,
-        to_date: toDateStr,
-      }).unwrap();
+      let response;
+      if (isSupplier) {
+        response = await getSupplierBalanceDetails({
+          company: company,
+          supplier_id: entityId,
+          from_date: fromDateStr,
+          to_date: toDateStr,
+        }).unwrap();
+      } else {
+        response = await getCustomerBalanceDetails({
+          company: company,
+          customer_id: entityId,
+          from_date: fromDateStr,
+          to_date: toDateStr,
+        }).unwrap();
+      }
 
       if (response && response.status_cust_age === 'true') {
         setBalanceData(response.data_cust_age || []);
@@ -74,7 +90,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
         setOpening('0');
       }
     } catch (error) {
-      console.log('Customer balance details fetch error:', error);
+      console.log('Balance details fetch error:', error);
       setBalanceData([]);
       setOpening('0');
     }
