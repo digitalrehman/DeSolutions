@@ -24,7 +24,7 @@ const TAB_CATEGORY = 'category';
 const TAB_LOCATION = 'location';
 const TAB_ITEM = 'item';
 
-const InventoryValuationScreen = ({ navigation }) => {
+const InventoryValuationScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
   const [activeTab, setActiveTab] = useState(TAB_CATEGORY);
@@ -48,7 +48,8 @@ const InventoryValuationScreen = ({ navigation }) => {
   const fetchCategoryData = useCallback(async () => {
     if (categoryFetched) return;
     try {
-      const response = await getCategoryWise({ company }).unwrap();
+      const dimension_id = route.params?.dimensionId || '';
+      const response = await getCategoryWise({ company, dimension_id }).unwrap();
       if (response.status_cate_wise_valutions === 'true') {
         setCategoryData(response.data_cate_wise_valutions || []);
         setCategoryFetched(true);
@@ -62,7 +63,8 @@ const InventoryValuationScreen = ({ navigation }) => {
   const fetchLocationData = useCallback(async () => {
     if (locationFetched) return;
     try {
-      const response = await getLocationWise({ company }).unwrap();
+      const dimension_id = route.params?.dimensionId || '';
+      const response = await getLocationWise({ company, dimension_id }).unwrap();
       if (response.status_loc_wise_valutions === 'true') {
         setLocationData(response.data_loc_wise_valutions || []);
         setLocationFetched(true);
@@ -76,7 +78,8 @@ const InventoryValuationScreen = ({ navigation }) => {
   const fetchItemData = useCallback(async () => {
     if (itemFetched) return;
     try {
-      const response = await getItemWise({ company }).unwrap();
+      const dimension_id = route.params?.dimensionId || '';
+      const response = await getItemWise({ company, dimension_id }).unwrap();
       if (response.status_item_wise_valutions === 'true') {
         setItemData(response.data_item_wise_valutions || []);
         setItemFetched(true);

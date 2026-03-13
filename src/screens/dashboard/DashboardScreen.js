@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
-import { DateFilter } from '@components/common';
+import { DateFilter, DimensionDropdown } from '@components/common';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   useGetIncomeExpenseMutation,
@@ -22,7 +22,7 @@ import { LoadingSpinner } from '@components/common';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const DashboardScreen = ({ navigation }) => {
+const DashboardScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const company = useSelector(state => state.auth.company);
@@ -48,6 +48,14 @@ const DashboardScreen = ({ navigation }) => {
   const [expenseList, setExpenseList] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [selectedDimensionId, setSelectedDimensionId] = useState(null);
+
+  // Update selectedDimensionId when route.params change
+  useEffect(() => {
+    if (route.params?.dimensionId !== undefined) {
+      setSelectedDimensionId(route.params.dimensionId);
+    }
+  }, [route.params?.dimensionId]);
 
   useEffect(() => {
     if (!company) return;
@@ -66,17 +74,21 @@ const DashboardScreen = ({ navigation }) => {
       return `${year}-${month}-${day}`;
     };
 
-    // Restore from cache if available
-    if (cachedIncomeData && incomeList.length === 0) {
+    // Only run this exact effect on initial load (when dates are set) or when dimension changes
+    const fetchFreshData = () => {
+      const formattedFrom = formatDateForAPI(thirtyDaysAgo);
+      const formattedTo = formatDateForAPI(today);
+      fetchData(formattedFrom, formattedTo);
+      getFinancialOverview({ company, dimension_id: selectedDimensionId || '' });
+    };
+
+    // If cache available & first load, use it, else fetch fresh
+    if (cachedIncomeData && incomeList.length === 0 && !selectedDimensionId) {
       processIncomeData(cachedIncomeData);
-    } else if (incomeList.length === 0 && !isIncomeLoading) {
-      fetchData(formatDateForAPI(thirtyDaysAgo), formatDateForAPI(today));
+    } else {
+      fetchFreshData();
     }
-    
-    if (!financialData && !isFinancialLoading && !cachedFinancialData) {
-      getFinancialOverview({ company });
-    }
-  }, [company, getFinancialOverview]);
+  }, [company, getFinancialOverview, selectedDimensionId]);
 
   // Don't show loader if we already have data (including cache)
   const isLoading = (isIncomeLoading && incomeList.length === 0 && !cachedIncomeData) || 
@@ -128,6 +140,7 @@ const DashboardScreen = ({ navigation }) => {
         from_date: start,
         to_date: end,
         company: company,
+        dimension_id: selectedDimensionId || '',
       }).unwrap();
       
       processIncomeData(response);
@@ -281,6 +294,7 @@ const DashboardScreen = ({ navigation }) => {
         accountType: item.account_type,
         initialFromDate: fromDate?.toISOString(),
         initialToDate: toDate?.toISOString(),
+        dimensionId: selectedDimensionId,
       });
     }
   };
@@ -373,9 +387,10 @@ const DashboardScreen = ({ navigation }) => {
       navigation.navigate('FinancialDetail', {
         type: stat.title,
         title: stat.title,
+        dimensionId: selectedDimensionId,
       });
     } else if (stat.title === 'Inventory Val') {
-      navigation.navigate('InventoryValuation');
+      navigation.navigate('InventoryValuation', { dimensionId: selectedDimensionId });
     }
   };
 
@@ -400,6 +415,14 @@ const DashboardScreen = ({ navigation }) => {
           onClear={handleClearFilter}
           onFilter={handleApplyFilter}
         />
+
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, width: '100%' }}>
+          <DimensionDropdown 
+            onDimensionSelect={(dimensionId) => {
+              navigation.setParams({ dimensionId });
+            }} 
+          />
+        </View>
 
         {renderListSection('Income', incomeList, totalIncome)}
         {renderListSection('Expense', expenseList, totalExpense, true)}

@@ -8,6 +8,7 @@ export const dashboardApi = baseApi.injectEndpoints({
         formData.append('from_date', body.from_date);
         formData.append('to_date', body.to_date);
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
 
         return {
           url: 'dashboard/income_and_expense.php',
@@ -29,6 +30,7 @@ export const dashboardApi = baseApi.injectEndpoints({
         formData.append('to_date', body.to_date);
         formData.append('account_type', body.account_type);
         formData.append('company', company);
+        formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
           url: 'dashboard/parent_account_detail.php',
@@ -43,6 +45,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
 
         return {
           url: 'dashboard/financial_overview.php',
@@ -55,6 +58,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
         return {
           url: 'dashboard/dash_receivable.php',
           method: 'POST',
@@ -66,6 +70,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
         return {
           url: 'dashboard/dash_payable.php',
           method: 'POST',
@@ -77,6 +82,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
         return {
           url: 'dashboard/dash_banks.php',
           method: 'POST',
@@ -88,6 +94,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
         return {
           url: 'dashboard/dash_category_wise_valution.php',
           method: 'POST',
@@ -99,6 +106,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
         return {
           url: 'dashboard/dash_location_wise_valution.php',
           method: 'POST',
@@ -110,6 +118,7 @@ export const dashboardApi = baseApi.injectEndpoints({
       query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
+        formData.append('dimension_id', body.dimension_id || '');
         return {
           url: 'dashboard/dash_item_wise_valution.php',
           method: 'POST',

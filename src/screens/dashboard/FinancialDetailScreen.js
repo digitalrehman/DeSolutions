@@ -68,16 +68,17 @@ const FinancialDetailScreen = ({ route, navigation }) => {
   }, [type, company, theme, navigation, title]);
 
   const fetchData = async () => {
+    const dimension_id = route.params?.dimensionId || '';
     try {
       let response;
       if (type === 'Receivable') {
-        response = await getReceivable({ company }).unwrap();
+        response = await getReceivable({ company, dimension_id }).unwrap();
         if (response.status_cust_bal === 'true') {
           setData(response.data_cust_bal || []);
           setFullData(response.data_view_cust_bal || []);
         }
       } else if (type === 'Payable') {
-        response = await getPayable({ company }).unwrap();
+        response = await getPayable({ company, dimension_id }).unwrap();
         if (
           response.status_supp_bal === 'true' ||
           response.status_supp_bal_view_all === 'true'
@@ -86,7 +87,7 @@ const FinancialDetailScreen = ({ route, navigation }) => {
           setFullData(response.data_supp_bal_view_all || []);
         }
       } else if (type === 'Cash/Bank') {
-        response = await getBanks({ company }).unwrap();
+        response = await getBanks({ company, dimension_id }).unwrap();
         if (response.status_cash_bank === 'true') {
           setData(response.data_bank_bal || []);
           setFullData(response.data_bank_bal_view_all || []);

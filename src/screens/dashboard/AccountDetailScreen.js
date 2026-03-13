@@ -66,6 +66,7 @@ const AccountDetailScreen = ({ route, navigation }) => {
         from_date: formatDateForAPI(start),
         to_date: formatDateForAPI(end),
         account_type: accountType,
+        dimension_id: route.params?.dimensionId || '',
       }).unwrap();
 
       if (response && response.status === 'true' && response.data) {

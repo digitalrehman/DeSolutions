@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { selectIsAuthenticated, restoreSession } from '@store/slices/authSlice';
+import { View } from 'react-native';
 
 import LoginScreen from '@screens/auth/LoginScreen';
 import MainScreen from '@screens/MainScreen';
@@ -22,7 +23,7 @@ import CustomerAgingScreen from '@components/aging/CustomerAgingScreen';
 import CustomerBalanceDetailsScreen from '@components/aging/CustomerBalanceDetailsScreen';
 import FinancialDetailScreen from '@screens/dashboard/FinancialDetailScreen';
 import InventoryValuationScreen from '@screens/dashboard/InventoryValuationScreen';
-import { LoadingSpinner, CustomHeader } from '@components/common';
+import { LoadingSpinner, CustomHeader, DimensionDropdown } from '@components/common';
 
 const Stack = createNativeStackNavigator();
 
@@ -78,7 +79,10 @@ const AppNavigator = () => {
               options={{ headerShown: false }}
             />
 
-            <Stack.Screen name="Dashboard" component={DashboardScreen} />
+            <Stack.Screen
+              name="Dashboard"
+              component={DashboardScreen}
+            />
             <Stack.Screen
               name="AccountDetail"
               component={AccountDetailScreen}

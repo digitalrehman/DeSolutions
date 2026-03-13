@@ -48,8 +48,9 @@ const CustomHeader = ({ navigation, route, options, back }) => {
           </Text>
         </View>
 
-        {/* Right: Home Button */}
+        {/* Right Buttons */}
         <View style={styles.rightContainer}>
+          {options?.headerRight ? options.headerRight() : null}
           {!isMainScreen ? (
             <TouchableOpacity
               onPress={() => navigation.navigate('MainScreen')}
@@ -92,8 +93,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rightContainer: {
-    width: 40,
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   title: {
     color: '#FFFFFF',
