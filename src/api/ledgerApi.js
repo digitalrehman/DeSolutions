@@ -15,6 +15,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         formData.append('company', activeCompany);
         formData.append('person_id', person_id || '');
         formData.append('account', account || '');
+        formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
           url: 'ledger/gl_account_inquiry.php',
@@ -35,6 +36,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append('company', activeCompany);
         formData.append('customer_id', customer_id);
+        formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
           url: 'ledger/customer_aging.php',
@@ -55,6 +57,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append('company', activeCompany);
         formData.append('supplier_id', supplier_id);
+        formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
           url: 'ledger/supplier_aging.php',
@@ -77,6 +80,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         formData.append('customer_id', customer_id);
         formData.append('from_date', from_date);
         formData.append('to_date', to_date);
+        formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
           url: 'ledger/customer_balance_details.php',
@@ -99,6 +103,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         formData.append('supplier_id', supplier_id);
         formData.append('from_date', from_date);
         formData.append('to_date', to_date);
+        formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
           url: 'ledger/supplier_balance_details.php',

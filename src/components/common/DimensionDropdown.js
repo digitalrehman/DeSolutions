@@ -40,10 +40,7 @@ const DimensionDropdown = ({ onDimensionSelect }) => {
   useEffect(() => {
     if (dimensionData?.status === 'true' && dimensionData.data) {
       setFilteredDimensions(dimensionData.data);
-      // Set first dimension as default if available
-      if (dimensionData.data.length > 0 && !selectedDimension) {
-        handleSelectDimension(dimensionData.data[0]);
-      }
+      // Default: no API item selected (show "All"), do not auto-select first dimension
     }
   }, [dimensionData]);
 
@@ -63,7 +60,16 @@ const DimensionDropdown = ({ onDimensionSelect }) => {
     setShowDropdown(false);
     setSearchText('');
     if (onDimensionSelect) {
-      onDimensionSelect(dimension.id);
+      onDimensionSelect(dimension ? dimension.id : 0);
+    }
+  };
+
+  const handleSelectAll = () => {
+    setSelectedDimension(null);
+    setShowDropdown(false);
+    setSearchText('');
+    if (onDimensionSelect) {
+      onDimensionSelect(0);
     }
   };
 
@@ -88,7 +94,7 @@ const DimensionDropdown = ({ onDimensionSelect }) => {
         <Icon name="grid-outline" size={18} color={theme.colors.textSecondary} />
         <View style={{ flex: 1 }}>
           <Text style={[styles.selectedText, { color: theme.colors.text }]}>
-            {selectedDimension?.name || 'Select Dimension'}
+            {selectedDimension?.name || 'All'}
           </Text>
         </View>
         <Icon name="chevron-down" size={16} color={theme.colors.textSecondary} />
@@ -130,6 +136,24 @@ const DimensionDropdown = ({ onDimensionSelect }) => {
                 onChangeText={setSearchText}
               />
             </View>
+
+            <TouchableOpacity
+              style={[
+                styles.itemRow,
+                !selectedDimension && { backgroundColor: theme.colors.primary + '15' }
+              ]}
+              onPress={handleSelectAll}
+              activeOpacity={0.7}
+            >
+              <View style={styles.itemContent}>
+                <Text style={[styles.itemName, { color: theme.colors.text }]}>
+                  All
+                </Text>
+              </View>
+              {!selectedDimension && (
+                <Icon name="checkmark-circle" size={20} color={theme.colors.primary} />
+              )}
+            </TouchableOpacity>
 
             <FlatList
               data={filteredDimensions}

@@ -79,7 +79,7 @@ const DashboardScreen = ({ navigation, route }) => {
       const formattedFrom = formatDateForAPI(thirtyDaysAgo);
       const formattedTo = formatDateForAPI(today);
       fetchData(formattedFrom, formattedTo);
-      getFinancialOverview({ company, dimension_id: selectedDimensionId || '' });
+      getFinancialOverview({ company, dimension_id: selectedDimensionId ?? 0 });
     };
 
     // If cache available & first load, use it, else fetch fresh
@@ -140,7 +140,7 @@ const DashboardScreen = ({ navigation, route }) => {
         from_date: start,
         to_date: end,
         company: company,
-        dimension_id: selectedDimensionId || '',
+        dimension_id: selectedDimensionId ?? 0,
       }).unwrap();
       
       processIncomeData(response);
@@ -416,7 +416,7 @@ const DashboardScreen = ({ navigation, route }) => {
           onFilter={handleApplyFilter}
         />
 
-        <View style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 16, width: '100%' }}>
+        <View style={{paddingTop: 16, paddingBottom: 16, width: '100%' }}>
           <DimensionDropdown 
             onDimensionSelect={(dimensionId) => {
               navigation.setParams({ dimensionId });

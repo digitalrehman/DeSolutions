@@ -10,6 +10,11 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { useSelector } from 'react-redux';
+import ReactNativeBlobUtil from 'react-native-blob-util';
+import * as XLSX from 'xlsx';
+import { generatePDF } from 'react-native-html-to-pdf';
+import Toast from 'react-native-toast-message';
+import notifee, { AndroidImportance } from '@notifee/react-native';
 import {
   useGetDashReceivableMutation,
   useGetDashPayableMutation,
@@ -37,35 +42,10 @@ const FinancialDetailScreen = ({ route, navigation }) => {
   useEffect(() => {
     navigation.setOptions({
       title: title,
-      headerRight: () => (
-        <View style={{ flexDirection: 'row', marginRight: 8 }}>
-          <TouchableOpacity
-            style={[
-              s.headerBtn,
-              { backgroundColor: theme.colors.success + '15' },
-            ]}
-            onPress={() => handleDownload('excel')}
-            activeOpacity={0.7}
-          >
-            <Icon name="document-text-outline" size={18} color={theme.colors.success} />
-            <Text style={[s.headerBtnText, { color: theme.colors.success }]}>Excel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              s.headerBtn,
-              { backgroundColor: theme.colors.error + '15', marginLeft: 8 },
-            ]}
-            onPress={() => handleDownload('pdf')}
-            activeOpacity={0.7}
-          >
-            <Icon name="document-outline" size={18} color={theme.colors.error} />
-            <Text style={[s.headerBtnText, { color: theme.colors.error }]}>PDF</Text>
-          </TouchableOpacity>
-        </View>
-      ),
+      headerTitleAlign: 'center',
     });
     fetchData();
-  }, [type, company, theme, navigation, title]);
+  }, [type, company, navigation, title]);
 
   const fetchData = async () => {
     const dimension_id = route.params?.dimensionId || '';
@@ -98,9 +78,131 @@ const FinancialDetailScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleDownload = format => {
-    // TODO: Implement download functionality
-    console.log(`Download ${format} for ${type}`);
+  const getExportData = () => {
+    const list = fullData || [];
+    return list.map(item => {
+      const rawName = item.name || item.supp_name || item.bank_name || '';
+      const name = String(rawName).replace(/&amp;/g, '&');
+      const value = item.Balance ?? item.bank_balance ?? '0';
+      return { name, value };
+    });
+  };
+
+  const DOWNLOAD_CHANNEL_ID = 'downloads';
+
+  const showDownloadNotification = async (format, fullFilename) => {
+    try {
+      if (Platform.OS === 'android') {
+        await notifee.createChannel({
+          id: DOWNLOAD_CHANNEL_ID,
+          name: 'Downloads',
+          importance: AndroidImportance.DEFAULT,
+        });
+      }
+      if (Platform.OS === 'ios') {
+        await notifee.requestPermission();
+      }
+      const label = format === 'excel' ? 'Excel' : 'PDF';
+      await notifee.displayNotification({
+        title: `${label} Downloaded`,
+        body: fullFilename,
+        android: { channelId: DOWNLOAD_CHANNEL_ID },
+      });
+    } catch (e) {
+      console.warn('Notification error:', e);
+    }
+  };
+
+  const saveFileToDevice = async (fullFilename, base64Data, mimeType) => {
+    const dirs = ReactNativeBlobUtil.fs.dirs;
+
+    if (Platform.OS === 'android') {
+      const tempPath = `${dirs.CacheDir}/${fullFilename}`;
+      await ReactNativeBlobUtil.fs.writeFile(tempPath, base64Data, 'base64');
+      try {
+        const mime = mimeType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        if (ReactNativeBlobUtil.MediaCollection?.copyToMediaStore) {
+          await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+            { name: fullFilename, parentFolder: '', mimeType: mime },
+            'Download',
+            tempPath,
+          );
+        } else if (ReactNativeBlobUtil.MediaCollection?.createMediafile) {
+          const mediaPath = await ReactNativeBlobUtil.MediaCollection.createMediafile(
+            { name: fullFilename, parentFolder: '', mimeType: mime },
+            'Download',
+          );
+          await ReactNativeBlobUtil.MediaCollection.writeToMediafile(mediaPath, tempPath);
+        } else {
+          const downloadDir = dirs.LegacyDownloadDir || dirs.DownloadDir;
+          const destPath = `${downloadDir}/${fullFilename}`;
+          await ReactNativeBlobUtil.fs.writeFile(destPath, base64Data, 'base64');
+        }
+      } finally {
+        try {
+          await ReactNativeBlobUtil.fs.unlink(tempPath);
+        } catch (_) {}
+      }
+      Toast.show({ type: 'success', text1: 'Saved', text2: `File saved to Downloads/${fullFilename}` });
+    } else {
+      const path = `${dirs.DocumentDir}/${fullFilename}`;
+      await ReactNativeBlobUtil.fs.writeFile(path, base64Data, 'base64');
+      Toast.show({
+        type: 'success',
+        text1: 'Saved',
+        text2: 'Files app → On My iPhone → Desolutions',
+      });
+    }
+  };
+
+  const handleDownload = async format => {
+    const rows = getExportData();
+    if (!rows.length) {
+      Toast.show({ type: 'info', text1: 'No data', text2: 'No records to export' });
+      return;
+    }
+
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const safeType = type.replace(/[^a-zA-Z0-9]/g, '_');
+
+    try {
+      if (format === 'excel') {
+        const aoa = [['Name', 'Value'], ...rows.map(r => [r.name, String(r.value)])];
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+        const base64 = XLSX.write(wb, { type: 'base64', bookType: 'xlsx' });
+        const filename = `${safeType}_${timestamp}.xlsx`;
+        await saveFileToDevice(filename, base64, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        await showDownloadNotification('excel', filename);
+      } else if (format === 'pdf') {
+        const tableRows = rows
+          .map(
+            r =>
+              `<tr><td style="padding:6px;border:1px solid #ddd">${String(r.name).replace(/</g, '&lt;')}</td><td style="padding:6px;border:1px solid #ddd;text-align:right">${String(r.value)}</td></tr>`,
+          )
+          .join('');
+        const html = `
+          <!DOCTYPE html><html><head><meta charset="utf-8"><title>${type}</title></head>
+          <body><h2 style="margin:8px">${type} - All Records</h2>
+          <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <tr><th style="padding:8px;border:1px solid #333;background:#eee">Name</th><th style="padding:8px;border:1px solid #333;background:#eee">Value</th></tr>
+            ${tableRows}
+          </table></body></html>`;
+        const options = { html, fileName: `${safeType}_${timestamp}`, base64: true };
+        const res = await generatePDF(options);
+        if (res?.base64) {
+          const pdfFilename = `${safeType}_${timestamp}.pdf`;
+          await saveFileToDevice(pdfFilename, res.base64, 'application/pdf');
+          await showDownloadNotification('pdf', pdfFilename);
+        } else {
+          Toast.show({ type: 'error', text1: 'PDF failed', text2: 'Could not generate PDF' });
+        }
+      }
+    } catch (err) {
+      console.warn('Export error:', err);
+      Toast.show({ type: 'error', text1: 'Export failed', text2: err?.message || 'Please try again' });
+    }
   };
 
   const currentList = viewAll ? fullData : data;
@@ -359,20 +461,38 @@ const FinancialDetailScreen = ({ route, navigation }) => {
               )}
 
               <View style={s.header}>
-                <Text style={[s.sectionTitle, { color: theme.colors.text }]}>
+                <Text
+                  style={[s.sectionTitle, s.sectionTitleFlex, { color: theme.colors.text }]}
+                  numberOfLines={1}
+                >
                   {viewAll ? 'All Records' : 'Top 10 Records'}
                 </Text>
-                <TouchableOpacity
-                  style={[
-                    s.toggleBtn,
-                    { backgroundColor: theme.colors.primary + '15' },
-                  ]}
-                  onPress={() => setViewAll(!viewAll)}
-                >
-                  <Text style={[s.toggleText, { color: theme.colors.primary }]}>
-                    {viewAll ? 'Show Top 10' : 'View All'}
-                  </Text>
-                </TouchableOpacity>
+                <View style={s.headerActions}>
+                  <TouchableOpacity
+                    style={[s.toggleBtn, { backgroundColor: theme.colors.primary + '15' }]}
+                    onPress={() => handleDownload('excel')}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name="document-text-outline" size={14} color={theme.colors.primary} />
+                    <Text style={[s.toggleText, { color: theme.colors.primary }]}>Excel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[s.toggleBtn, { backgroundColor: theme.colors.primary + '15' }]}
+                    onPress={() => handleDownload('pdf')}
+                    activeOpacity={0.7}
+                  >
+                    <Icon name="document-outline" size={14} color={theme.colors.primary} />
+                    <Text style={[s.toggleText, { color: theme.colors.primary }]}>PDF</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[s.toggleBtn, { backgroundColor: theme.colors.primary + '15' }]}
+                    onPress={() => setViewAll(!viewAll)}
+                  >
+                    <Text style={[s.toggleText, { color: theme.colors.primary }]}>
+                      {viewAll ? 'Show Top 10' : 'View All'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           }
@@ -439,10 +559,24 @@ const getStyles = theme =>
       fontSize: 18,
       fontWeight: '800',
     },
+    sectionTitleFlex: {
+      flex: 1,
+      minWidth: 0,
+      marginRight: 8,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexShrink: 0,
+      gap: 8,
+    },
     toggleBtn: {
-      paddingHorizontal: 16,
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: Platform.OS === 'ios' ? 14 : 12,
       paddingVertical: 8,
       borderRadius: 20,
+      gap: 6,
     },
     toggleText: {
       fontSize: 13,
@@ -508,18 +642,6 @@ const getStyles = theme =>
       fontSize: 11,
       fontWeight: '600',
     },
-    headerBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      borderRadius: 8,
-      gap: 4,
-    },
-    headerBtnText: {
-      fontSize: 12,
-      fontWeight: '600',
-    },
     summaryCard: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -545,25 +667,6 @@ const getStyles = theme =>
     summaryAmount: {
       fontSize: 18,
       fontWeight: '800',
-    },
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 10,
-    },
-    sectionTitle: {
-      fontSize: 16,
-      fontWeight: '700',
-    },
-    toggleBtn: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 16,
-    },
-    toggleText: {
-      fontSize: 12,
-      fontWeight: '700',
     },
     cardRight: {
       flexDirection: 'row',

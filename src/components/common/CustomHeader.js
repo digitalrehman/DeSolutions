@@ -41,8 +41,8 @@ const CustomHeader = ({ navigation, route, options, back }) => {
           ) : null}
         </View>
 
-        {/* Center: Title */}
-        <View style={styles.centerContainer}>
+        {/* Center: Title - absolute so it stays centered on iOS & Android */}
+        <View style={styles.centerContainer} pointerEvents="none">
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
@@ -59,7 +59,7 @@ const CustomHeader = ({ navigation, route, options, back }) => {
               <Icon name="home-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           ) : (
-            <View style={{ width: 40 }} /> // Spacer to keep title centered on MainScreen if needed
+            <View style={{ width: 40 }} />
           )}
         </View>
       </View>
@@ -87,14 +87,19 @@ const styles = StyleSheet.create({
   leftContainer: {
     width: 40,
     alignItems: 'flex-start',
+    zIndex: 1,
   },
   centerContainer: {
-    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    zIndex: 1,
   },
   title: {
     color: '#FFFFFF',
