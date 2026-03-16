@@ -148,7 +148,6 @@ const DailyActivitiesSlider = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 25,
     paddingHorizontal: 20,
     height: 250,
   },

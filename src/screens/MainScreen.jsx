@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +18,7 @@ import DailyActivitiesSlider from '@components/dashboard/DailyActivitiesSlider';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = SCREEN_HEIGHT * 0.25;
+const MAX_VISIBLE = 8; // Show first 8 tiles; 9th slot is the More button
 
 /**
  * MainScreen - Professional ERP Dashboard with Grid Navigation
@@ -26,56 +28,50 @@ const MainScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
 
+  const [showMore, setShowMore] = useState(false);
+  const [systemEnabled, setSystemEnabled] = useState(true);
+
   const handleLogout = () => {
     dispatch(logout());
   };
 
   const menuItems = [
-    {
-      id: 'Dashboard',
-      name: 'Dashboard',
-      icon: 'grid-outline',
-      screen: 'Dashboard',
-    },
-    {
-      id: 'Approvals',
-      name: 'Approvals',
-      icon: 'checkmark-circle-outline',
-      screen: 'Approvals',
-    },
-    { id: 'Sales', name: 'Sales', icon: 'cart-outline', screen: 'Sales' },
-    {
-      id: 'Purchase',
-      name: 'Purchase',
-      icon: 'bag-handle-outline',
-      screen: 'Purchase',
-    },
-    {
-      id: 'Inventory',
-      name: 'Inventory',
-      icon: 'cube-outline',
-      screen: 'Inventory',
-    },
-    { id: 'HCM', name: 'HCM', icon: 'people-outline', screen: 'HCM' },
-    {
-      id: 'Manufacturing',
-      name: 'Manufacturing',
-      icon: 'settings-outline',
-      screen: 'Manufacturing',
-    },
-    { id: 'CRM', name: 'CRM', icon: 'business-outline', screen: 'CRM' },
-    { id: 'Finance', name: 'Finance', icon: 'cash-outline', screen: 'Finance' },
+    { id: 'Dashboard',     name: 'Dashboard',     icon: 'grid-outline',             screen: 'Dashboard' },
+    { id: 'Approvals',     name: 'Approvals',     icon: 'checkmark-circle-outline', screen: 'Approvals' },
+    { id: 'Sales',         name: 'Sales',         icon: 'cart-outline',             screen: 'Sales' },
+    { id: 'Purchase',      name: 'Purchase',      icon: 'bag-handle-outline',       screen: 'Purchase' },
+    { id: 'Inventory',     name: 'Inventory',     icon: 'cube-outline',             screen: 'Inventory' },
+    { id: 'HCM',          name: 'HCM',           icon: 'people-outline',           screen: 'HCM' },
+    { id: 'Manufacturing', name: 'Manufacturing', icon: 'settings-outline',         screen: 'Manufacturing' },
+    { id: 'CRM',          name: 'CRM',           icon: 'business-outline',         screen: 'CRM' },
+    { id: 'Finance',       name: 'Finance',       icon: 'cash-outline',             screen: 'Finance' },
+    { id: 'Reporting',     name: 'Reporting',     icon: 'bar-chart-outline',        screen: 'Reporting' },
   ];
+
+  // Split items: first 9 always visible, rest shown when expanded
+  const visibleItems = menuItems.slice(0, MAX_VISIBLE);
+  const extraItems = menuItems.slice(MAX_VISIBLE);
+  const hasMore = extraItems.length > 0;
 
   const dynamicStyles = getStyles(theme);
 
+  const renderTile = (item) => (
+    <TouchableOpacity
+      key={item.id}
+      style={dynamicStyles.gridBox}
+      activeOpacity={0.7}
+      onPress={() => navigation.navigate(item.screen)}
+    >
+      <View style={dynamicStyles.iconContainer}>
+        <Icon name={item.icon} size={30} color={theme.colors.primary} />
+      </View>
+      <Text style={dynamicStyles.boxName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={dynamicStyles.container}>
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="transparent"
-      />
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
       {/* Custom Header Section */}
       <View style={dynamicStyles.header}>
@@ -85,12 +81,30 @@ const MainScreen = ({ navigation }) => {
               <Text style={dynamicStyles.companyName}>Desolutions</Text>
             </View>
             <View style={dynamicStyles.headerActions}>
+              {/* On/Off Toggle Button */}
+              {/* On/Off Power Toggle Icon */}
+              <TouchableOpacity
+                style={dynamicStyles.iconBtn}
+                onPress={() => setSystemEnabled(prev => !prev)}
+              >
+                <Icon
+                  name={systemEnabled ? 'power' : 'power-outline'}
+                  size={24}
+                  color={systemEnabled ? '#4ADE80' : 'rgba(255,255,255,0.5)'}
+                />
+              </TouchableOpacity>
+
+              {/* Notification Bell */}
               <TouchableOpacity style={dynamicStyles.iconBtn}>
                 <Icon name="notifications-outline" size={24} color="#FFFFFF" />
               </TouchableOpacity>
+
+              {/* Theme Switcher */}
               <View style={dynamicStyles.themeIcon}>
                 <ThemeDropdown />
               </View>
+
+              {/* Logout */}
               <TouchableOpacity
                 style={[dynamicStyles.iconBtn, dynamicStyles.logoutBtn]}
                 onPress={handleLogout}
@@ -114,19 +128,44 @@ const MainScreen = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={dynamicStyles.gridContainer}>
-          {menuItems.map(item => (
+          {/* First 9 visible tiles */}
+          {visibleItems.map(renderTile)}
+
+          {/* MORE button — only shown if there are extra items */}
+          {hasMore && !showMore && (
             <TouchableOpacity
-              key={item.id}
-              style={dynamicStyles.gridBox}
+              style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
               activeOpacity={0.7}
-              onPress={() => navigation.navigate(item.screen)}
+              onPress={() => setShowMore(true)}
             >
-              <View style={[dynamicStyles.iconContainer]}>
-                <Icon name={item.icon} size={30} color={theme.colors.primary} />
+              <View style={[dynamicStyles.iconContainer, { backgroundColor: theme.colors.primary + '15' }]}>
+                <Icon name="ellipsis-horizontal-circle-outline" size={30} color={theme.colors.primary} />
               </View>
-              <Text style={dynamicStyles.boxName}>{item.name}</Text>
+              <Text style={dynamicStyles.boxName}>More</Text>
+              {extraItems.length > 0 && (
+                <View style={[dynamicStyles.moreBadge, { backgroundColor: theme.colors.primary }]}>
+                  <Text style={dynamicStyles.moreBadgeText}>{extraItems.length}</Text>
+                </View>
+              )}
             </TouchableOpacity>
-          ))}
+          )}
+
+          {/* Extra items shown after pressing More */}
+          {showMore && extraItems.map(renderTile)}
+
+          {/* Less button — shown when expanded */}
+          {showMore && (
+            <TouchableOpacity
+              style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
+              activeOpacity={0.7}
+              onPress={() => setShowMore(false)}
+            >
+              <View style={dynamicStyles.iconContainer}>
+                <Icon name="chevron-up-circle-outline" size={30} color={theme.colors.primary} />
+              </View>
+              <Text style={dynamicStyles.boxName}>Less</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Daily Activities Slider */}
@@ -176,10 +215,18 @@ const getStyles = theme =>
     userInfoContainer: {
       marginTop: 20,
     },
-
     headerActions: {
       flexDirection: 'row',
       alignItems: 'center',
+    },
+    toggleWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 4,
+      backgroundColor: 'rgba(255,255,255,0.1)',
+      borderRadius: 20,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
     },
     iconBtn: {
       padding: 8,
@@ -191,18 +238,6 @@ const getStyles = theme =>
     },
     logoutBtn: {
       marginLeft: 8,
-    },
-    headerBranding: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      marginTop: 10,
-    },
-    dashboardText: {
-      fontSize: 18,
-      fontWeight: '600',
-      color: '#FFFFFF',
-      marginTop: 8,
     },
     scrollContent: {
       padding: 20,
@@ -224,6 +259,26 @@ const getStyles = theme =>
       ...theme.shadows.md,
       borderWidth: 1,
       borderColor: theme.colors.border,
+    },
+    moreBox: {
+      borderStyle: 'dashed',
+      borderColor: theme.colors.primary,
+      position: 'relative',
+    },
+    moreBadge: {
+      position: 'absolute',
+      top: 8,
+      right: 8,
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    moreBadgeText: {
+      color: '#FFFFFF',
+      fontSize: 10,
+      fontWeight: '800',
     },
     iconContainer: {
       width: 50,

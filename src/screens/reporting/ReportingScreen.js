@@ -18,45 +18,42 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const approvalGroups = [
+const reportingGroups = [
   {
     id: 'sale',
-    title: 'Sale Approval',
+    title: 'Sale Report',
     icon: 'cart-outline',
     color: '#3B82F6',
-    items: ['Sale Quotation', 'Sale Order', 'Delivery Note'],
+    items: ['Customer Balance', 'Customer Aging', 'Customer Detail'],
+    screens: ['CustomerBalance', 'CustomerAging', 'CustomerBalanceDetails'],
   },
   {
-    id: 'purchase',
-    title: 'Purchase Approval',
+    id: 'supplier',
+    title: 'Supplier Report',
     icon: 'bag-handle-outline',
     color: '#10B981',
-    items: ['Purchase Order', 'GRN Approval'],
+    items: ['Supplier Balance', 'Supplier Aging', 'Supplier Detail'],
+    screens: ['SupplierBalance', 'SupplierAging', 'SupplierDetail'],
   },
   {
     id: 'inventory',
-    title: 'Inventory Approval',
+    title: 'Inventory Report',
     icon: 'cube-outline',
     color: '#F59E0B',
-    items: ['Location Transfer'],
+    items: ['Category Valuation', 'Location Valuation', 'Item Valuation'],
+    screens: ['InventoryValuation', 'InventoryValuation', 'InventoryValuation'],
   },
   {
     id: 'account',
-    title: 'Account Approval',
-    icon: 'cash-outline',
+    title: 'Account Report',
+    icon: 'bar-chart-outline',
     color: '#8B5CF6',
-    items: ['Voucher Approval'],
-  },
-  {
-    id: 'jobcard',
-    title: 'Job Card Approval',
-    icon: 'construct-outline',
-    color: '#EF4444',
-    items: ['Electrical Approval', 'Mechanical Approval'],
+    items: ['Ledger Report'],
+    screens: ['Ledger'],
   },
 ];
 
-const AccordionItem = ({ group, theme }) => {
+const AccordionItem = ({ group, theme, navigation }) => {
   const [expanded, setExpanded] = useState(false);
   const rotateAnim = useRef(new Animated.Value(0)).current;
 
@@ -74,6 +71,16 @@ const AccordionItem = ({ group, theme }) => {
     inputRange: [0, 1],
     outputRange: ['0deg', '180deg'],
   });
+
+  const handleItemPress = (screenName) => {
+    if (screenName && navigation) {
+      try {
+        navigation.navigate(screenName);
+      } catch (e) {
+        // screen might not be registered yet
+      }
+    }
+  };
 
   return (
     <View
@@ -122,6 +129,7 @@ const AccordionItem = ({ group, theme }) => {
                 },
               ]}
               activeOpacity={0.6}
+              onPress={() => handleItemPress(group.screens[index])}
             >
               <View style={[styles.subItemDot, { backgroundColor: group.color }]} />
               <Text style={[styles.subItemText, { color: theme.colors.text }]}>
@@ -136,7 +144,7 @@ const AccordionItem = ({ group, theme }) => {
   );
 };
 
-const ApprovalsScreen = ({ navigation }) => {
+const ReportingScreen = ({ navigation }) => {
   const { theme } = useTheme();
 
   return (
@@ -145,8 +153,8 @@ const ApprovalsScreen = ({ navigation }) => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {approvalGroups.map(group => (
-          <AccordionItem key={group.id} group={group} theme={theme} />
+        {reportingGroups.map(group => (
+          <AccordionItem key={group.id} group={group} theme={theme} navigation={navigation} />
         ))}
       </ScrollView>
     </View>
@@ -226,4 +234,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ApprovalsScreen;
+export default ReportingScreen;
