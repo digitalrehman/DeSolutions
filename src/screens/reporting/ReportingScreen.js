@@ -25,7 +25,11 @@ const reportingGroups = [
     icon: 'cart-outline',
     color: '#3B82F6',
     items: ['Customer Balance', 'Customer Aging', 'Customer Detail'],
-    screens: ['CustomerBalance', 'CustomerAging', 'CustomerBalanceDetails'],
+    navParams: [
+      { screen: 'ReportPersonSelect', params: { type: 'customer', mode: 'balance' } },
+      { screen: 'ReportPersonSelect', params: { type: 'customer', mode: 'aging' } },
+      { screen: 'ReportPersonSelect', params: { type: 'customer', mode: 'detail' } },
+    ],
   },
   {
     id: 'supplier',
@@ -33,7 +37,11 @@ const reportingGroups = [
     icon: 'bag-handle-outline',
     color: '#10B981',
     items: ['Supplier Balance', 'Supplier Aging', 'Supplier Detail'],
-    screens: ['SupplierBalance', 'SupplierAging', 'SupplierDetail'],
+    navParams: [
+      { screen: 'ReportPersonSelect', params: { type: 'supplier', mode: 'balance' } },
+      { screen: 'ReportPersonSelect', params: { type: 'supplier', mode: 'aging' } },
+      { screen: 'ReportPersonSelect', params: { type: 'supplier', mode: 'detail' } },
+    ],
   },
   {
     id: 'inventory',
@@ -41,7 +49,11 @@ const reportingGroups = [
     icon: 'cube-outline',
     color: '#F59E0B',
     items: ['Category Valuation', 'Location Valuation', 'Item Valuation'],
-    screens: ['InventoryValuation', 'InventoryValuation', 'InventoryValuation'],
+    navParams: [
+      { screen: 'InventoryValuation', params: {} },
+      { screen: 'InventoryValuation', params: {} },
+      { screen: 'InventoryValuation', params: {} },
+    ],
   },
   {
     id: 'account',
@@ -49,7 +61,9 @@ const reportingGroups = [
     icon: 'bar-chart-outline',
     color: '#8B5CF6',
     items: ['Ledger Report'],
-    screens: ['Ledger'],
+    navParams: [
+      { screen: 'Ledger', params: {} },
+    ],
   },
 ];
 
@@ -72,10 +86,11 @@ const AccordionItem = ({ group, theme, navigation }) => {
     outputRange: ['0deg', '180deg'],
   });
 
-  const handleItemPress = (screenName) => {
-    if (screenName && navigation) {
+  const handleItemPress = (index) => {
+    const nav = group.navParams?.[index];
+    if (nav && navigation) {
       try {
-        navigation.navigate(screenName);
+        navigation.navigate(nav.screen, nav.params || {});
       } catch (e) {
         // screen might not be registered yet
       }
@@ -129,7 +144,7 @@ const AccordionItem = ({ group, theme, navigation }) => {
                 },
               ]}
               activeOpacity={0.6}
-              onPress={() => handleItemPress(group.screens[index])}
+              onPress={() => handleItemPress(index)}
             >
               <View style={[styles.subItemDot, { backgroundColor: group.color }]} />
               <Text style={[styles.subItemText, { color: theme.colors.text }]}>

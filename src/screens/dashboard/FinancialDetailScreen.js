@@ -92,15 +92,14 @@ const FinancialDetailScreen = ({ route, navigation }) => {
 
   const showDownloadNotification = async (format, fullFilename) => {
     try {
+      await notifee.requestPermission();
+
       if (Platform.OS === 'android') {
         await notifee.createChannel({
           id: DOWNLOAD_CHANNEL_ID,
           name: 'Downloads',
-          importance: AndroidImportance.DEFAULT,
+          importance: AndroidImportance.HIGH,
         });
-      }
-      if (Platform.OS === 'ios') {
-        await notifee.requestPermission();
       }
       const label = format === 'excel' ? 'Excel' : 'PDF';
       await notifee.displayNotification({

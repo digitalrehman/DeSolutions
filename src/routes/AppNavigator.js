@@ -24,6 +24,7 @@ import CustomerBalanceDetailsScreen from '@components/aging/CustomerBalanceDetai
 import FinancialDetailScreen from '@screens/dashboard/FinancialDetailScreen';
 import InventoryValuationScreen from '@screens/dashboard/InventoryValuationScreen';
 import ReportingScreen from '@screens/reporting/ReportingScreen';
+import ReportPersonSelectScreen from '@screens/reporting/ReportPersonSelectScreen';
 import { LoadingSpinner, CustomHeader } from '@components/common';
 
 const Stack = createNativeStackNavigator();
@@ -107,6 +108,7 @@ const AppNavigator = () => {
             />
             <Stack.Screen name="Approvals" component={ApprovalsScreen} />
             <Stack.Screen name="Reporting" component={ReportingScreen} />
+            <Stack.Screen name="ReportPersonSelect" component={ReportPersonSelectScreen} />
             <Stack.Screen name="Sales" component={SalesScreen} />
             <Stack.Screen name="Purchase" component={PurchaseScreen} />
             <Stack.Screen name="Inventory" component={InventoryScreen} />
