@@ -26,9 +26,9 @@ const reportingGroups = [
     color: '#3B82F6',
     items: ['Customer Balance', 'Customer Aging', 'Customer Detail'],
     navParams: [
-      { screen: 'ReportPersonSelect', params: { type: 'customer', mode: 'balance' } },
-      { screen: 'ReportPersonSelect', params: { type: 'customer', mode: 'aging' } },
-      { screen: 'ReportPersonSelect', params: { type: 'customer', mode: 'detail' } },
+      { screen: 'Ledger', params: { type: 'customer' } },
+      { screen: 'CustomerAging', params: { type: 'customer' } },
+      { screen: 'CustomerBalanceDetails', params: { type: 'customer' } },
     ],
   },
   {
@@ -38,9 +38,9 @@ const reportingGroups = [
     color: '#10B981',
     items: ['Supplier Balance', 'Supplier Aging', 'Supplier Detail'],
     navParams: [
-      { screen: 'ReportPersonSelect', params: { type: 'supplier', mode: 'balance' } },
-      { screen: 'ReportPersonSelect', params: { type: 'supplier', mode: 'aging' } },
-      { screen: 'ReportPersonSelect', params: { type: 'supplier', mode: 'detail' } },
+      { screen: 'Ledger', params: { type: 'supplier' } },
+      { screen: 'CustomerAging', params: { type: 'supplier' } },
+      { screen: 'CustomerBalanceDetails', params: { type: 'supplier' } },
     ],
   },
   {

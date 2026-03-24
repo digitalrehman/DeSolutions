@@ -9,18 +9,28 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
-import { LoadingSpinner } from '@components/common';
+import { LoadingSpinner, DateFilter, PersonDropdown } from '@components/common';
 import { useGetCustomerAgingMutation, useGetSupplierAgingMutation } from '@api/ledgerApi';
 import { useSelector } from 'react-redux';
 
 const CustomerAgingScreen = ({ route, navigation }) => {
-  const { customerId, customerName, supplierId, supplierName, type } = route.params;
+  const { customerId, customerName, supplierId, supplierName, type } = route.params || {};
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
   
   const isSupplier = type === 'supplier' || !!supplierId;
   const displayName = customerName || supplierName;
-  const entityId = customerId || supplierId;
+  const initialEntityId = customerId || supplierId;
+
+  // Generic report mode means it was opened without a specific person, so we show the dropdown
+  const isGenericReport = !!type && !initialEntityId;
+
+  const [entityId, setEntityId] = useState(initialEntityId);
+  const [selectedPersonObj, setSelectedPersonObj] = useState(null);
+  
+  // Date states
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
 
   const [getCustomerAging, { isLoading: isCustomerLoading }] = useGetCustomerAgingMutation();
   const [getSupplierAging, { isLoading: isSupplierLoading }] = useGetSupplierAgingMutation();
@@ -28,7 +38,8 @@ const CustomerAgingScreen = ({ route, navigation }) => {
   const [agingData, setAgingData] = useState([]);
 
   useEffect(() => {
-    const decodedName = displayName ? displayName.replace(/&amp;/g, '&') : (isSupplier ? 'Supplier Aging' : 'Customer Aging');
+    const currentName = selectedPersonObj ? selectedPersonObj.name : displayName;
+    const decodedName = currentName ? currentName.replace(/&amp;/g, '&') : (isSupplier ? 'Supplier Aging' : 'Customer Aging');
     const truncatedName =
       decodedName.length > 25
         ? decodedName.substring(0, 22) + '...'
@@ -36,30 +47,57 @@ const CustomerAgingScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: truncatedName,
     });
-  }, [navigation, displayName, isSupplier]);
+  }, [navigation, displayName, selectedPersonObj, isSupplier]);
 
   useEffect(() => {
     Orientation.lockToLandscape();
 
-    fetchData();
+    // Set default one month range
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 30);
+    setFromDate(thirtyDaysAgo);
+    setToDate(today);
+
+    // Only fetch automatically if we have an entity ID initially
+    if (initialEntityId) {
+      fetchData(initialEntityId, thirtyDaysAgo, today);
+    }
 
     return () => {
       Orientation.lockToPortrait();
     };
   }, []);
 
-  const fetchData = async () => {
+  const formatDateForAPI = date => {
+    if (!date) return '';
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const fetchData = async (idToFetch, start, end) => {
+    if (!idToFetch) return;
     try {
+      const formattedStart = formatDateForAPI(start);
+      const formattedEnd = formatDateForAPI(end);
+
       let response;
       if (isSupplier) {
         response = await getSupplierAging({
           company: company,
-          supplier_id: entityId,
+          supplier_id: idToFetch,
+          from_date: formattedStart,
+          to_date: formattedEnd,
         }).unwrap();
       } else {
         response = await getCustomerAging({
           company: company,
-          customer_id: entityId,
+          customer_id: idToFetch,
+          from_date: formattedStart,
+          to_date: formattedEnd,
         }).unwrap();
       }
       if (response && response.status_cust_age === 'true') {
@@ -71,6 +109,18 @@ const CustomerAgingScreen = ({ route, navigation }) => {
       console.log('Aging fetch error:', error);
       setAgingData([]);
     }
+  };
+
+  const handleApplyFilter = () => {
+    if (entityId) {
+      fetchData(entityId, fromDate, toDate);
+    }
+  };
+
+  const handlePersonSelect = (person) => {
+    setSelectedPersonObj(person);
+    setEntityId(person.id);
+    fetchData(person.id, fromDate, toDate);
   };
 
   const s = getStyles(theme);
@@ -249,15 +299,37 @@ const CustomerAgingScreen = ({ route, navigation }) => {
           removeClippedSubviews={Platform.OS === 'android'}
           ListHeaderComponent={
             <View>
+              {isGenericReport && (
+                <View style={{ marginTop: 10 }}>
+                  <PersonDropdown
+                    type={isSupplier ? 'supplier' : 'customer'}
+                    selectedPersonId={entityId}
+                    onSelect={handlePersonSelect}
+                  />
+                  {entityId && (
+                     <View style={{ paddingHorizontal: 15, marginBottom: 10 }}>
+                      <DateFilter
+                        fromDate={fromDate}
+                        toDate={toDate}
+                        onFromDate={setFromDate}
+                        onToDate={setToDate}
+                        onFilter={handleApplyFilter}
+                      />
+                    </View>
+                  )}
+                </View>
+              )}
               {/* Table section header */}
-              <View
-                style={[
-                  s.tableContainer,
-                  { marginBottom: 0, borderBottomWidth: 0 },
-                ]}
-              >
-                <TableHeader />
-              </View>
+              {(entityId || !isGenericReport) && (
+                <View
+                  style={[
+                    s.tableContainer,
+                    { marginBottom: 0, borderBottomWidth: 0 },
+                  ]}
+                >
+                  <TableHeader />
+                </View>
+              )}
             </View>
           }
           ListFooterComponent={

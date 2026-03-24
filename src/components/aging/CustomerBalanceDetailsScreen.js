@@ -9,18 +9,23 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
-import { DateFilter, LoadingSpinner } from '@components/common';
+import { DateFilter, LoadingSpinner, PersonDropdown } from '@components/common';
 import { useGetCustomerBalanceDetailsMutation, useGetSupplierBalanceDetailsMutation } from '@api/ledgerApi';
 import { useSelector } from 'react-redux';
 
 const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
-  const { customerId, customerName, supplierId, supplierName, type } = route.params;
+  const { customerId, customerName, supplierId, supplierName, type } = route.params || {};
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
   
   const isSupplier = type === 'supplier' || !!supplierId;
   const displayName = customerName || supplierName;
-  const entityId = customerId || supplierId;
+  const initialEntityId = customerId || supplierId;
+
+  const isGenericReport = !!type && !initialEntityId;
+
+  const [entityId, setEntityId] = useState(initialEntityId);
+  const [selectedPersonObj, setSelectedPersonObj] = useState(null);
 
   const [getCustomerBalanceDetails, { isLoading: isCustomerLoading }] = useGetCustomerBalanceDetailsMutation();
   const [getSupplierBalanceDetails, { isLoading: isSupplierLoading }] = useGetSupplierBalanceDetailsMutation();
@@ -31,7 +36,8 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
   const [toDate, setToDate] = useState(null);
 
   useEffect(() => {
-    const decodedName = displayName ? displayName.replace(/&amp;/g, '&') : (isSupplier ? 'Supplier Balance Details' : 'Balance Details');
+    const currentName = selectedPersonObj ? selectedPersonObj.name : displayName;
+    const decodedName = currentName ? currentName.replace(/&amp;/g, '&') : (isSupplier ? 'Supplier Balance Details' : 'Balance Details');
     const truncatedName =
       decodedName.length > 25
         ? decodedName.substring(0, 22) + '...'
@@ -39,7 +45,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: truncatedName,
     });
-  }, [navigation, displayName, isSupplier]);
+  }, [navigation, displayName, selectedPersonObj, isSupplier]);
 
   useEffect(() => {
     Orientation.lockToLandscape();
@@ -55,28 +61,31 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     setFromDate(thirtyDaysAgo);
     setToDate(today);
 
-    // Fetch data with formatted dates
-    fetchDataWithFormattedDates(formattedStart, formattedEnd);
+    // Fetch data with formatted dates only if we have an entityId initially
+    if (initialEntityId) {
+      fetchDataWithFormattedDates(initialEntityId, formattedStart, formattedEnd);
+    }
 
     return () => {
       Orientation.lockToPortrait();
     };
   }, []);
 
-  const fetchDataWithFormattedDates = async (fromDateStr, toDateStr) => {
+  const fetchDataWithFormattedDates = async (idToFetch, fromDateStr, toDateStr) => {
+    if (!idToFetch) return;
     try {
       let response;
       if (isSupplier) {
         response = await getSupplierBalanceDetails({
           company: company,
-          supplier_id: entityId,
+          supplier_id: idToFetch,
           from_date: fromDateStr,
           to_date: toDateStr,
         }).unwrap();
       } else {
         response = await getCustomerBalanceDetails({
           company: company,
-          customer_id: entityId,
+          customer_id: idToFetch,
           from_date: fromDateStr,
           to_date: toDateStr,
         }).unwrap();
@@ -106,13 +115,23 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
   };
 
   const fetchData = async (start, end) => {
-    const formattedStart = formatDateForAPI(start);
-    const formattedEnd = formatDateForAPI(end);
-    await fetchDataWithFormattedDates(formattedStart, formattedEnd);
+    if (entityId) {
+      const formattedStart = formatDateForAPI(start);
+      const formattedEnd = formatDateForAPI(end);
+      await fetchDataWithFormattedDates(entityId, formattedStart, formattedEnd);
+    }
   };
 
   const handleApplyFilter = () => {
     fetchData(fromDate, toDate);
+  };
+
+  const handlePersonSelect = (person) => {
+    setSelectedPersonObj(person);
+    setEntityId(person.id);
+    const formattedStart = formatDateForAPI(fromDate);
+    const formattedEnd = formatDateForAPI(toDate);
+    fetchDataWithFormattedDates(person.id, formattedStart, formattedEnd);
   };
 
   const calculateClosing = () => {
@@ -441,29 +460,42 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
           removeClippedSubviews={Platform.OS === 'android'}
           ListHeaderComponent={
             <View>
-              {/* Header section with Date Filter */}
-              <View style={s.scrollableHeader}>
-                <View style={s.headerRow}>
-                  <DateFilter
-                    fromDate={fromDate}
-                    toDate={toDate}
-                    onFromDate={setFromDate}
-                    onToDate={setToDate}
-                    onFilter={handleApplyFilter}
+              {isGenericReport && (
+                <View style={{ marginTop: 10 }}>
+                  <PersonDropdown
+                    type={isSupplier ? 'supplier' : 'customer'}
+                    selectedPersonId={entityId}
+                    onSelect={handlePersonSelect}
                   />
                 </View>
-                {renderHeader()}
-              </View>
+              )}
+              {/* Header section with Date Filter */}
+              {(entityId || !isGenericReport) && (
+                <View style={s.scrollableHeader}>
+                  <View style={s.headerRow}>
+                    <DateFilter
+                      fromDate={fromDate}
+                      toDate={toDate}
+                      onFromDate={setFromDate}
+                      onToDate={setToDate}
+                      onFilter={handleApplyFilter}
+                    />
+                  </View>
+                  {renderHeader()}
+                </View>
+              )}
 
               {/* Table section header */}
-              <View
-                style={[
-                  s.tableContainer,
-                  { marginBottom: 0, borderBottomWidth: 0 },
-                ]}
-              >
-                <TableHeader />
-              </View>
+              {(entityId || !isGenericReport) && (
+                <View
+                  style={[
+                    s.tableContainer,
+                    { marginBottom: 0, borderBottomWidth: 0 },
+                  ]}
+                >
+                  <TableHeader />
+                </View>
+              )}
             </View>
           }
           ListFooterComponent={

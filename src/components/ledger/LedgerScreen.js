@@ -9,12 +9,19 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
-import { DateFilter, LoadingSpinner } from '@components/common';
+import { DateFilter, LoadingSpinner, PersonDropdown } from '@components/common';
 import { useGetGLAccountInquiryMutation } from '@api/ledgerApi';
 
 const LedgerScreen = ({ route, navigation }) => {
-  const { account, title, fromDate: pFromDate, toDate: pToDate, personId } = route.params;
+  const { account: initialAccount, title, fromDate: pFromDate, toDate: pToDate, personId: initialPersonId, type } = route.params || {};
   const { theme } = useTheme();
+
+  const isGenericReport = !!type;
+  const isSupplier = type === 'supplier';
+
+  const [account, setAccount] = useState(initialAccount);
+  const [personId, setPersonId] = useState(initialPersonId);
+  const [selectedPersonObj, setSelectedPersonObj] = useState(null);
 
   const [getGLAccountInquiry, { isLoading }] = useGetGLAccountInquiryMutation();
   const [fromDate, setFromDate] = useState(
@@ -23,7 +30,8 @@ const LedgerScreen = ({ route, navigation }) => {
   const [toDate, setToDate] = useState(pToDate ? new Date(pToDate) : null);
 
   useEffect(() => {
-    const decodedTitle = title ? title.replace(/&amp;/g, '&') : 'Ledger';
+    const currentName = selectedPersonObj ? selectedPersonObj.name : title;
+    const decodedTitle = currentName ? currentName.replace(/&amp;/g, '&') : (isGenericReport ? (isSupplier ? 'Supplier Balance' : 'Customer Balance') : 'Ledger');
     const truncatedTitle =
       decodedTitle.length > 25
         ? decodedTitle.substring(0, 22) + '...'
@@ -31,7 +39,7 @@ const LedgerScreen = ({ route, navigation }) => {
     navigation.setOptions({
       title: truncatedTitle,
     });
-  }, [navigation, title]);
+  }, [navigation, title, selectedPersonObj, isGenericReport, isSupplier]);
 
   const [ledgerData, setLedgerData] = useState([]);
   const [opening, setOpening] = useState('0');
@@ -45,9 +53,13 @@ const LedgerScreen = ({ route, navigation }) => {
       thirtyDaysAgo.setDate(today.getDate() - 30);
       setFromDate(thirtyDaysAgo);
       setToDate(today);
-      fetchData(thirtyDaysAgo, today);
+      if (account || personId) {
+        fetchData(thirtyDaysAgo, today, account, personId);
+      }
     } else {
-      fetchData(fromDate, toDate);
+      if (account || personId) {
+        fetchData(fromDate, toDate, account, personId);
+      }
     }
 
     return () => {
@@ -64,13 +76,14 @@ const LedgerScreen = ({ route, navigation }) => {
     return `${year}-${month}-${day}`;
   };
 
-  const fetchData = async (start, end) => {
+  const fetchData = async (start, end, accToFetch, personToFetch) => {
+    if (!accToFetch && !personToFetch) return;
     try {
       const response = await getGLAccountInquiry({
         from_date: formatDateForAPI(start),
         to_date: formatDateForAPI(end),
-        account: account,
-        person_id: personId,
+        account: accToFetch,
+        person_id: personToFetch,
       }).unwrap();
 
       if (response && response.status === 'true') {
@@ -87,7 +100,16 @@ const LedgerScreen = ({ route, navigation }) => {
   };
 
   const handleApplyFilter = () => {
-    fetchData(fromDate, toDate);
+    if (account || personId) {
+      fetchData(fromDate, toDate, account, personId);
+    }
+  };
+
+  const handlePersonSelect = (person) => {
+    setSelectedPersonObj(person);
+    setAccount(person.account);
+    setPersonId(person.id);
+    fetchData(fromDate, toDate, person.account, person.id);
   };
 
   const calculateClosing = () => {
@@ -256,29 +278,42 @@ const LedgerScreen = ({ route, navigation }) => {
           removeClippedSubviews={Platform.OS === 'android'}
           ListHeaderComponent={
             <View>
-              {/* Header section that will scroll away */}
-              <View style={s.scrollableHeader}>
-                <View style={s.headerRow}>
-                  <DateFilter
-                    fromDate={fromDate}
-                    toDate={toDate}
-                    onFromDate={setFromDate}
-                    onToDate={setToDate}
-                    onFilter={handleApplyFilter}
+              {isGenericReport && (
+                <View style={{ marginTop: 10 }}>
+                  <PersonDropdown
+                    type={isSupplier ? 'supplier' : 'customer'}
+                    selectedPersonId={personId}
+                    onSelect={handlePersonSelect}
                   />
                 </View>
-                {renderHeader()}
-              </View>
+              )}
+              {/* Header section that will scroll away */}
+              {(account || personId || !isGenericReport) && (
+                <View style={s.scrollableHeader}>
+                  <View style={s.headerRow}>
+                    <DateFilter
+                      fromDate={fromDate}
+                      toDate={toDate}
+                      onFromDate={setFromDate}
+                      onToDate={setToDate}
+                      onFilter={handleApplyFilter}
+                    />
+                  </View>
+                  {renderHeader()}
+                </View>
+              )}
 
               {/* Table section header */}
-              <View
-                style={[
-                  s.tableContainer,
-                  { marginBottom: 0, borderBottomWidth: 0 },
-                ]}
-              >
-                <TableHeader />
-              </View>
+              {(account || personId || !isGenericReport) && (
+                <View
+                  style={[
+                    s.tableContainer,
+                    { marginBottom: 0, borderBottomWidth: 0 },
+                  ]}
+                >
+                  <TableHeader />
+                </View>
+              )}
             </View>
           }
           ListEmptyComponent={

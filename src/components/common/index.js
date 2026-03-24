@@ -6,3 +6,4 @@ export { default as CustomHeader } from './CustomHeader';
 export { default as DateFilter } from './DateFilter';
 export { default as DimensionDropdown } from './DimensionDropdown';
 export { default as ModuleQuickActionButton } from './ModuleQuickActionButton';
+export { default as PersonDropdown } from './PersonDropdown';

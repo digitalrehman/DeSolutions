@@ -28,7 +28,7 @@ export const ledgerApi = baseApi.injectEndpoints({
     }),
     getCustomerAging: builder.mutation({
       queryFn: async (body, api, extraOptions, baseQuery) => {
-        const { company, customer_id } = body;
+        const { company, customer_id, from_date, to_date } = body;
 
         const state = api.getState();
         const activeCompany = company || state.auth.company;
@@ -36,6 +36,8 @@ export const ledgerApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append('company', activeCompany);
         formData.append('customer_id', customer_id);
+        if (from_date) formData.append('from_date', from_date);
+        if (to_date) formData.append('to_date', to_date);
         formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
@@ -49,7 +51,7 @@ export const ledgerApi = baseApi.injectEndpoints({
     }),
     getSupplierAging: builder.mutation({
       queryFn: async (body, api, extraOptions, baseQuery) => {
-        const { company, supplier_id } = body;
+        const { company, supplier_id, from_date, to_date } = body;
 
         const state = api.getState();
         const activeCompany = company || state.auth.company;
@@ -57,6 +59,8 @@ export const ledgerApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append('company', activeCompany);
         formData.append('supplier_id', supplier_id);
+        if (from_date) formData.append('from_date', from_date);
+        if (to_date) formData.append('to_date', to_date);
         formData.append('dimension_id', body.dimension_id || '');
 
         const result = await baseQuery({
