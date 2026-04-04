@@ -12,74 +12,54 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { useSelector } from 'react-redux';
-import { useGetDashReceivableMutation, useGetDashPayableMutation } from '@api/dashboardApi';
+import { useGetGLAccountDropdownMutation } from '@api/ledgerApi';
 
 /**
- * PersonDropdown
- * A reusable dropdown component to select a Customer or Supplier based on type.
- * It automatically fetches from dash_receivable or dash_payable.
+ * GLAccountDropdown
+ * A reusable dropdown component to select GL Accounts.
  */
-const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }) => {
+const GLAccountDropdown = ({ selectedAccountId, onSelect, style }) => {
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
 
-  const isSupplier = type === 'supplier';
+  const [getGLAccountDropdown, { isLoading }] = useGetGLAccountDropdownMutation();
 
-  const [getDashReceivable, { isLoading: recLoading }] = useGetDashReceivableMutation();
-  const [getDashPayable, { isLoading: payLoading }] = useGetDashPayableMutation();
-  const isLoading = recLoading || payLoading;
-
-  const [people, setPeople] = useState([]);
+  const [accounts, setAccounts] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredPeople = people.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredAccounts = accounts.filter(a =>
+    a.account_name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    a.account_code.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   useEffect(() => {
-    fetchPeople();
-  }, [type, company]);
+    fetchAccounts();
+  }, [company]);
 
-  const fetchPeople = async () => {
+  const fetchAccounts = async () => {
     try {
-      let response;
-      if (isSupplier) {
-        response = await getDashPayable({ company, dimension_id: '' }).unwrap();
-        const raw = response?.data_supp_bal || response?.data_supp_bal_view_all || [];
-        setPeople(
-          raw.map(p => ({
-            id: p.person_id || p.customer_id,
-            name: (p.supp_name || p.name || '').replace(/&amp;/g, '&'),
-            account: p.account || '',
-            balance: p.Balance || p.bank_balance || '0',
-          }))
-        );
-      } else {
-        response = await getDashReceivable({ company, dimension_id: '' }).unwrap();
-        const raw = response?.data_cust_bal || [];
-        setPeople(
-          raw.map(p => ({
-            id: p.customer_id || p.person_id,
-            name: (p.name || '').replace(/&amp;/g, '&'),
-            account: p.account || '',
-            balance: p.Balance || '0',
-          }))
-        );
-      }
+      const response = await getGLAccountDropdown({ company }).unwrap();
+      const raw = response?.data || [];
+      setAccounts(
+        raw.map(a => ({
+          account_code: a.account_code,
+          account_name: (a.account_name || '').replace(/&amp;/g, '&'),
+        }))
+      );
     } catch (e) {
-      console.warn('PersonDropdown fetch error:', e);
+      console.warn('GLAccountDropdown fetch error:', e);
     }
   };
 
-  const selectedData = people.find(p => p.id === selectedPersonId);
-  const accentColor = isSupplier ? '#10B981' : '#3B82F6';
+  const selectedData = accounts.find(a => a.account_code === selectedAccountId);
+  const accentColor = '#8B5CF6'; 
   const s = getStyles(theme, accentColor);
 
   return (
     <View style={[s.container, style]}>
       <Text style={[s.label, { color: theme.colors.textSecondary }]}>
-        Select {isSupplier ? 'Supplier' : 'Customer'}
+        Select GL Account
       </Text>
 
       <TouchableOpacity
@@ -102,7 +82,7 @@ const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }
           <>
             <View style={[s.dropdownIconBox, { backgroundColor: accentColor + '20' }]}>
               <Icon
-                name={isSupplier ? 'bag-handle-outline' : 'person-outline'}
+                name="wallet-outline"
                 size={18}
                 color={accentColor}
               />
@@ -114,7 +94,7 @@ const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }
               ]}
               numberOfLines={1}
             >
-              {selectedData ? selectedData.name : `Choose ${isSupplier ? 'supplier' : 'customer'}...`}
+              {selectedData ? `${selectedData.account_code} - ${selectedData.account_name}` : `Choose account...`}
             </Text>
             <Icon name="chevron-down" size={18} color={theme.colors.textSecondary} />
           </>
@@ -132,14 +112,14 @@ const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }
           <View style={[s.modalSheet, { backgroundColor: theme.colors.surface }]}>
             <View style={[s.handle, { backgroundColor: theme.colors.border }]} />
             <Text style={[s.modalTitle, { color: theme.colors.text }]}>
-              Select {isSupplier ? 'Supplier' : 'Customer'}
+              Select GL Account
             </Text>
 
             <View style={[s.searchContainer, { backgroundColor: theme.colors.background }]}>
               <Icon name="search-outline" size={18} color={theme.colors.textSecondary} />
               <TextInput
                 style={[s.searchInput, { color: theme.colors.text }]}
-                placeholder="Search by name..."
+                placeholder="Search account..."
                 placeholderTextColor={theme.colors.textSecondary}
                 value={searchQuery}
                 onChangeText={setSearchQuery}
@@ -153,13 +133,13 @@ const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }
             </View>
 
             <FlatList
-              data={filteredPeople}
+              data={filteredAccounts}
               keyExtractor={(item, i) => i.toString()}
               contentContainerStyle={{ paddingBottom: 20 }}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
                 <Text style={[s.emptyText, { color: theme.colors.textSecondary }]}>
-                  {isLoading ? 'Loading...' : 'No records found.'}
+                  {isLoading ? 'Loading...' : 'No accounts found.'}
                 </Text>
               }
               renderItem={({ item }) => (
@@ -169,7 +149,7 @@ const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }
                     {
                       borderBottomColor: theme.colors.border,
                       backgroundColor:
-                        selectedPersonId === item.id ? accentColor + '12' : 'transparent',
+                        selectedAccountId === item.account_code ? accentColor + '12' : 'transparent',
                     },
                   ]}
                   onPress={() => {
@@ -180,14 +160,9 @@ const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }
                 >
                   <View style={[s.modalItemDot, { backgroundColor: accentColor }]} />
                   <Text style={[s.modalItemName, { color: theme.colors.text }]} numberOfLines={1}>
-                    {item.name}
+                    {item.account_code} - {item.account_name}
                   </Text>
-                  <Text style={[s.modalItemBalance, { color: accentColor }]}>
-                    {parseFloat(item.balance).toLocaleString(undefined, {
-                      maximumFractionDigits: 0,
-                    })}
-                  </Text>
-                  {selectedPersonId === item.id && (
+                  {selectedAccountId === item.account_code && (
                     <Icon
                       name="checkmark-circle"
                       size={18}
@@ -267,8 +242,7 @@ const getStyles = (theme, accentColor) =>
     },
     modalItemDot: { width: 8, height: 8, borderRadius: 4 },
     modalItemName: { flex: 1, fontSize: 14, fontWeight: '600' },
-    modalItemBalance: { fontSize: 13, fontWeight: '700' },
     emptyText: { textAlign: 'center', padding: 30 },
   });
 
-export default PersonDropdown;
+export default GLAccountDropdown;

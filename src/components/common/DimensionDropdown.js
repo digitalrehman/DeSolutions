@@ -5,7 +5,7 @@ import { useTheme } from '@config/useTheme';
 import { useSelector } from 'react-redux';
 import { useGetFunctionalityCheckMutation, useGetDimensionDropdownMutation } from '@api/baseApi';
 
-const DimensionDropdown = ({ onDimensionSelect }) => {
+const DimensionDropdown = ({ onDimensionSelect, style, showLabel = false }) => {
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
   
@@ -78,7 +78,21 @@ const DimensionDropdown = ({ onDimensionSelect }) => {
   }
 
   return (
-    <View style={{ width: '100%' }}>
+    <View style={[{ width: '100%' }, style]}>
+      {showLabel && (
+        <Text
+          style={{
+            fontSize: 12,
+            fontWeight: '700',
+            textTransform: 'uppercase',
+            letterSpacing: 0.5,
+            marginBottom: 8,
+            color: theme.colors.textSecondary,
+          }}
+        >
+          Select Dimension
+        </Text>
+      )}
       <TouchableOpacity
         style={[
           styles.dropdownButton, 

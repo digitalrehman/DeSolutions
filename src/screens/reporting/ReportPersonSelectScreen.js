@@ -8,6 +8,7 @@ import {
   Modal,
   FlatList,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
@@ -38,6 +39,11 @@ const ReportPersonSelectScreen = ({ route, navigation }) => {
   const [people, setPeople] = useState([]);
   const [selected, setSelected] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredPeople = people.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const modeLabels = { balance: 'Balance', aging: 'Aging', detail: 'Detail' };
   const title = `${isSupplier ? 'Supplier' : 'Customer'} ${modeLabels[mode] || 'Report'}`;
@@ -142,7 +148,10 @@ const ReportPersonSelectScreen = ({ route, navigation }) => {
               backgroundColor: theme.colors.surface,
               borderColor: dropdownOpen ? accentColor : theme.colors.border,
             }]}
-            onPress={() => setDropdownOpen(true)}
+            onPress={() => {
+              setSearchQuery('');
+              setDropdownOpen(true);
+            }}
             activeOpacity={0.7}
           >
             {isLoading ? (
@@ -223,8 +232,25 @@ const ReportPersonSelectScreen = ({ route, navigation }) => {
               Select {isSupplier ? 'Supplier' : 'Customer'}
             </Text>
 
+            <View style={[s.searchContainer, { backgroundColor: theme.colors.background }]}>
+              <Icon name="search-outline" size={18} color={theme.colors.textSecondary} />
+              <TextInput
+                style={[s.searchInput, { color: theme.colors.text }]}
+                placeholder="Search by name..."
+                placeholderTextColor={theme.colors.textSecondary}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')}>
+                  <Icon name="close-circle" size={18} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+              )}
+            </View>
+
             <FlatList
-              data={people}
+              data={filteredPeople}
               keyExtractor={(item, i) => i.toString()}
               contentContainerStyle={{ paddingBottom: 20 }}
               showsVerticalScrollIndicator={false}
@@ -334,6 +360,21 @@ const getStyles = theme =>
     },
     handle: { width: 40, height: 4, borderRadius: 2, alignSelf: 'center', marginBottom: 14 },
     modalTitle: { fontSize: 17, fontWeight: '800', marginBottom: 14, paddingHorizontal: 4 },
+    searchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderRadius: 12,
+      marginBottom: 14,
+      gap: 8,
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: 15,
+      padding: 0,
+      minHeight: 24,
+    },
     modalItem: {
       flexDirection: 'row',
       alignItems: 'center',

@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
-import { LoadingSpinner, DateFilter, PersonDropdown } from '@components/common';
+import { LoadingSpinner, DateFilter, PersonDropdown, DimensionDropdown } from '@components/common';
 import { useGetCustomerAgingMutation, useGetSupplierAgingMutation } from '@api/ledgerApi';
 import { useSelector } from 'react-redux';
 
@@ -27,6 +27,7 @@ const CustomerAgingScreen = ({ route, navigation }) => {
 
   const [entityId, setEntityId] = useState(initialEntityId);
   const [selectedPersonObj, setSelectedPersonObj] = useState(null);
+  const [dimensionId, setDimensionId] = useState(0);
   
   // Date states
   const [fromDate, setFromDate] = useState(null);
@@ -61,7 +62,7 @@ const CustomerAgingScreen = ({ route, navigation }) => {
 
     // Only fetch automatically if we have an entity ID initially
     if (initialEntityId) {
-      fetchData(initialEntityId, thirtyDaysAgo, today);
+      fetchData(initialEntityId, thirtyDaysAgo, today, 0);
     }
 
     return () => {
@@ -78,7 +79,7 @@ const CustomerAgingScreen = ({ route, navigation }) => {
     return `${year}-${month}-${day}`;
   };
 
-  const fetchData = async (idToFetch, start, end) => {
+  const fetchData = async (idToFetch, start, end, dimToFetch) => {
     if (!idToFetch) return;
     try {
       const formattedStart = formatDateForAPI(start);
@@ -91,6 +92,7 @@ const CustomerAgingScreen = ({ route, navigation }) => {
           supplier_id: idToFetch,
           from_date: formattedStart,
           to_date: formattedEnd,
+          dimension_id: dimToFetch || 0,
         }).unwrap();
       } else {
         response = await getCustomerAging({
@@ -98,6 +100,7 @@ const CustomerAgingScreen = ({ route, navigation }) => {
           customer_id: idToFetch,
           from_date: formattedStart,
           to_date: formattedEnd,
+          dimension_id: dimToFetch || 0,
         }).unwrap();
       }
       if (response && response.status_cust_age === 'true') {
@@ -113,14 +116,13 @@ const CustomerAgingScreen = ({ route, navigation }) => {
 
   const handleApplyFilter = () => {
     if (entityId) {
-      fetchData(entityId, fromDate, toDate);
+      fetchData(entityId, fromDate, toDate, dimensionId);
     }
   };
 
   const handlePersonSelect = (person) => {
     setSelectedPersonObj(person);
     setEntityId(person.id);
-    fetchData(person.id, fromDate, toDate);
   };
 
   const s = getStyles(theme);
@@ -299,26 +301,32 @@ const CustomerAgingScreen = ({ route, navigation }) => {
           removeClippedSubviews={Platform.OS === 'android'}
           ListHeaderComponent={
             <View>
-              {isGenericReport && (
-                <View style={{ marginTop: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 15, paddingTop: 10, gap: 10, zIndex: 10 }}>
+                {isGenericReport && (
                   <PersonDropdown
                     type={isSupplier ? 'supplier' : 'customer'}
                     selectedPersonId={entityId}
                     onSelect={handlePersonSelect}
+                    style={{ flex: 1.5, marginBottom: 0, paddingHorizontal: 0, paddingTop: 0 }}
                   />
-                  {entityId && (
-                     <View style={{ paddingHorizontal: 15, marginBottom: 10 }}>
-                      <DateFilter
-                        fromDate={fromDate}
-                        toDate={toDate}
-                        onFromDate={setFromDate}
-                        onToDate={setToDate}
-                        onFilter={handleApplyFilter}
-                      />
-                    </View>
-                  )}
+                )}
+                
+                <DimensionDropdown 
+                  showLabel={true}
+                  onDimensionSelect={setDimensionId}
+                  style={{ flex: 1, marginBottom: 0 }} 
+                />
+                
+                <View style={{ flex: isGenericReport ? 2 : 1.5, marginBottom: 0 }}>
+                  <DateFilter
+                    fromDate={fromDate}
+                    toDate={toDate}
+                    onFromDate={setFromDate}
+                    onToDate={setToDate}
+                    onFilter={handleApplyFilter}
+                  />
                 </View>
-              )}
+              </View>
               {/* Table section header */}
               {(entityId || !isGenericReport) && (
                 <View

@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Orientation from 'react-native-orientation-locker';
 import { useTheme } from '@config/useTheme';
-import { DateFilter, LoadingSpinner, PersonDropdown } from '@components/common';
+import { DateFilter, LoadingSpinner, PersonDropdown, DimensionDropdown } from '@components/common';
 import { useGetCustomerBalanceDetailsMutation, useGetSupplierBalanceDetailsMutation } from '@api/ledgerApi';
 import { useSelector } from 'react-redux';
 
@@ -26,6 +26,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
 
   const [entityId, setEntityId] = useState(initialEntityId);
   const [selectedPersonObj, setSelectedPersonObj] = useState(null);
+  const [dimensionId, setDimensionId] = useState(0);
 
   const [getCustomerBalanceDetails, { isLoading: isCustomerLoading }] = useGetCustomerBalanceDetailsMutation();
   const [getSupplierBalanceDetails, { isLoading: isSupplierLoading }] = useGetSupplierBalanceDetailsMutation();
@@ -63,7 +64,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
 
     // Fetch data with formatted dates only if we have an entityId initially
     if (initialEntityId) {
-      fetchDataWithFormattedDates(initialEntityId, formattedStart, formattedEnd);
+      fetchDataWithFormattedDates(initialEntityId, formattedStart, formattedEnd, 0);
     }
 
     return () => {
@@ -71,7 +72,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     };
   }, []);
 
-  const fetchDataWithFormattedDates = async (idToFetch, fromDateStr, toDateStr) => {
+  const fetchDataWithFormattedDates = async (idToFetch, fromDateStr, toDateStr, dimToFetch) => {
     if (!idToFetch) return;
     try {
       let response;
@@ -81,6 +82,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
           supplier_id: idToFetch,
           from_date: fromDateStr,
           to_date: toDateStr,
+          dimension_id: dimToFetch || 0,
         }).unwrap();
       } else {
         response = await getCustomerBalanceDetails({
@@ -88,6 +90,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
           customer_id: idToFetch,
           from_date: fromDateStr,
           to_date: toDateStr,
+          dimension_id: dimToFetch || 0,
         }).unwrap();
       }
 
@@ -118,7 +121,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
     if (entityId) {
       const formattedStart = formatDateForAPI(start);
       const formattedEnd = formatDateForAPI(end);
-      await fetchDataWithFormattedDates(entityId, formattedStart, formattedEnd);
+      await fetchDataWithFormattedDates(entityId, formattedStart, formattedEnd, dimensionId);
     }
   };
 
@@ -129,9 +132,6 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
   const handlePersonSelect = (person) => {
     setSelectedPersonObj(person);
     setEntityId(person.id);
-    const formattedStart = formatDateForAPI(fromDate);
-    const formattedEnd = formatDateForAPI(toDate);
-    fetchDataWithFormattedDates(person.id, formattedStart, formattedEnd);
   };
 
   const calculateClosing = () => {
@@ -460,27 +460,36 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
           removeClippedSubviews={Platform.OS === 'android'}
           ListHeaderComponent={
             <View>
-              {isGenericReport && (
-                <View style={{ marginTop: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', paddingHorizontal: 15, paddingTop: 10, gap: 10, zIndex: 10 }}>
+                {isGenericReport && (
                   <PersonDropdown
                     type={isSupplier ? 'supplier' : 'customer'}
                     selectedPersonId={entityId}
                     onSelect={handlePersonSelect}
+                    style={{ flex: 1.5, marginBottom: 0, paddingHorizontal: 0, paddingTop: 0 }}
+                  />
+                )}
+                
+                <DimensionDropdown 
+                  showLabel={true}
+                  onDimensionSelect={setDimensionId}
+                  style={{ flex: 1, marginBottom: 0 }} 
+                />
+                
+                <View style={{ flex: isGenericReport ? 2 : 1.5, marginBottom: 0 }}>
+                  <DateFilter
+                    fromDate={fromDate}
+                    toDate={toDate}
+                    onFromDate={setFromDate}
+                    onToDate={setToDate}
+                    onFilter={handleApplyFilter}
                   />
                 </View>
-              )}
-              {/* Header section with Date Filter */}
+              </View>
+
+              {/* Header section Summary */}
               {(entityId || !isGenericReport) && (
                 <View style={s.scrollableHeader}>
-                  <View style={s.headerRow}>
-                    <DateFilter
-                      fromDate={fromDate}
-                      toDate={toDate}
-                      onFromDate={setFromDate}
-                      onToDate={setToDate}
-                      onFilter={handleApplyFilter}
-                    />
-                  </View>
                   {renderHeader()}
                 </View>
               )}

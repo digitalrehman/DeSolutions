@@ -16,7 +16,7 @@ import {
   useGetDashLocationWiseValutionMutation,
   useGetDashItemWiseValutionMutation,
 } from '@api/dashboardApi';
-import { LoadingSpinner } from '@components/common';
+import { LoadingSpinner, DimensionDropdown } from '@components/common';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -34,6 +34,7 @@ const InventoryValuationScreen = ({ navigation, route }) => {
   const [categoryFetched, setCategoryFetched] = useState(false);
   const [locationFetched, setLocationFetched] = useState(false);
   const [itemFetched, setItemFetched] = useState(false);
+  const [dimensionId, setDimensionId] = useState(route.params?.dimensionId || 0);
 
   const [getCategoryWise, { isLoading: categoryLoading }] =
     useGetDashCategoryWiseValutionMutation();
@@ -45,11 +46,10 @@ const InventoryValuationScreen = ({ navigation, route }) => {
   const isLoading = categoryLoading || locationLoading || itemLoading;
 
   // Fetch category data only once
-  const fetchCategoryData = useCallback(async () => {
-    if (categoryFetched) return;
+  const fetchCategoryData = useCallback(async (force = false) => {
+    if (categoryFetched && !force) return;
     try {
-      const dimension_id = route.params?.dimensionId || '';
-      const response = await getCategoryWise({ company, dimension_id }).unwrap();
+      const response = await getCategoryWise({ company, dimension_id: dimensionId }).unwrap();
       if (response.status_cate_wise_valutions === 'true') {
         setCategoryData(response.data_cate_wise_valutions || []);
         setCategoryFetched(true);
@@ -57,14 +57,13 @@ const InventoryValuationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Category fetch error:', error);
     }
-  }, [company, getCategoryWise, categoryFetched]);
+  }, [company, getCategoryWise, categoryFetched, dimensionId]);
 
   // Fetch location data only once
-  const fetchLocationData = useCallback(async () => {
-    if (locationFetched) return;
+  const fetchLocationData = useCallback(async (force = false) => {
+    if (locationFetched && !force) return;
     try {
-      const dimension_id = route.params?.dimensionId || '';
-      const response = await getLocationWise({ company, dimension_id }).unwrap();
+      const response = await getLocationWise({ company, dimension_id: dimensionId }).unwrap();
       if (response.status_loc_wise_valutions === 'true') {
         setLocationData(response.data_loc_wise_valutions || []);
         setLocationFetched(true);
@@ -72,14 +71,13 @@ const InventoryValuationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Location fetch error:', error);
     }
-  }, [company, getLocationWise, locationFetched]);
+  }, [company, getLocationWise, locationFetched, dimensionId]);
 
   // Fetch item data only once
-  const fetchItemData = useCallback(async () => {
-    if (itemFetched) return;
+  const fetchItemData = useCallback(async (force = false) => {
+    if (itemFetched && !force) return;
     try {
-      const dimension_id = route.params?.dimensionId || '';
-      const response = await getItemWise({ company, dimension_id }).unwrap();
+      const response = await getItemWise({ company, dimension_id: dimensionId }).unwrap();
       if (response.status_item_wise_valutions === 'true') {
         setItemData(response.data_item_wise_valutions || []);
         setItemFetched(true);
@@ -87,7 +85,7 @@ const InventoryValuationScreen = ({ navigation, route }) => {
     } catch (error) {
       console.log('Item fetch error:', error);
     }
-  }, [company, getItemWise, itemFetched]);
+  }, [company, getItemWise, itemFetched, dimensionId]);
 
   useEffect(() => {
     navigation.setOptions({ title: 'Inventory Valuation' });
@@ -101,6 +99,21 @@ const InventoryValuationScreen = ({ navigation, route }) => {
       fetchLocationData();
     } else if (tab === TAB_ITEM && !itemFetched) {
       fetchItemData();
+    }
+  };
+
+  const handleApplyFilter = () => {
+    // Reset other tabs fetching state so they refetch when clicked
+    setCategoryFetched(false);
+    setLocationFetched(false);
+    setItemFetched(false);
+
+    if (activeTab === TAB_CATEGORY) {
+      fetchCategoryData(true);
+    } else if (activeTab === TAB_LOCATION) {
+      fetchLocationData(true);
+    } else if (activeTab === TAB_ITEM) {
+      fetchItemData(true);
     }
   };
 
@@ -200,6 +213,29 @@ const InventoryValuationScreen = ({ navigation, route }) => {
           removeClippedSubviews={Platform.OS === 'android'}
           ListHeaderComponent={
             <View>
+              {/* Filter Row */}
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end', marginBottom: 20, gap: 10 }}>
+                <DimensionDropdown
+                  showLabel={true}
+                  onDimensionSelect={setDimensionId}
+                  style={{ flex: 1 }}
+                />
+                <TouchableOpacity
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    height: 48,
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 20,
+                  }}
+                  onPress={handleApplyFilter}
+                  activeOpacity={0.8}
+                >
+                  <Icon name="search" size={24} color="#FFF" />
+                </TouchableOpacity>
+              </View>
+
               {/* Tab Switcher */}
               <View style={[s.tabContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
                 <TouchableOpacity

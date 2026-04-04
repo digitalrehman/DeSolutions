@@ -7,3 +7,5 @@ export { default as DateFilter } from './DateFilter';
 export { default as DimensionDropdown } from './DimensionDropdown';
 export { default as ModuleQuickActionButton } from './ModuleQuickActionButton';
 export { default as PersonDropdown } from './PersonDropdown';
+export { default as GLAccountDropdown } from './GLAccountDropdown';
+export { default as CounterPartyDropdown } from './CounterPartyDropdown';

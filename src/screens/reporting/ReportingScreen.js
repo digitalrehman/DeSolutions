@@ -62,7 +62,7 @@ const reportingGroups = [
     color: '#8B5CF6',
     items: ['Ledger Report'],
     navParams: [
-      { screen: 'Ledger', params: {} },
+      { screen: 'Ledger', params: { type: 'account' } },
     ],
   },
 ];

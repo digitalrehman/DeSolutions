@@ -118,8 +118,53 @@ export const ledgerApi = baseApi.injectEndpoints({
         return result.data ? { data: result.data } : { error: result.error };
       },
     }),
+    getGLAccountDropdown: builder.mutation({
+      queryFn: async (body, api, extraOptions, baseQuery) => {
+        const { company } = body;
+        const state = api.getState();
+        const activeCompany = company || state.auth.company;
+
+        const formData = new FormData();
+        formData.append('company', activeCompany);
+
+        const result = await baseQuery({
+          url: 'dropdown/gl_account.php',
+          method: 'POST',
+          body: formData,
+        });
+
+        return result.data ? { data: result.data } : { error: result.error };
+      },
+    }),
+    getCounterPartyDropdown: builder.mutation({
+      queryFn: async (body, api, extraOptions, baseQuery) => {
+        const { company, account } = body;
+        const state = api.getState();
+        const activeCompany = company || state.auth.company;
+
+        const formData = new FormData();
+        formData.append('company', activeCompany);
+        formData.append('account', account);
+
+        const result = await baseQuery({
+          url: 'dropdown/counter_party.php',
+          method: 'POST',
+          body: formData,
+        });
+
+        return result.data ? { data: result.data } : { error: result.error };
+      },
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useGetGLAccountInquiryMutation, useGetCustomerAgingMutation, useGetSupplierAgingMutation, useGetCustomerBalanceDetailsMutation, useGetSupplierBalanceDetailsMutation } = ledgerApi;
+export const {
+  useGetGLAccountInquiryMutation,
+  useGetCustomerAgingMutation,
+  useGetSupplierAgingMutation,
+  useGetCustomerBalanceDetailsMutation,
+  useGetSupplierBalanceDetailsMutation,
+  useGetGLAccountDropdownMutation,
+  useGetCounterPartyDropdownMutation,
+} = ledgerApi;

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Modal,
   FlatList,
-  Dimensions,
+  useWindowDimensions,
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -44,8 +44,6 @@ const MONTHS_SHORT = [
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
-const screenWidth = Dimensions.get('window').width;
-
 // Generate year range
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_RANGE_START = CURRENT_YEAR - 50;
@@ -65,6 +63,9 @@ const CustomDatePicker = ({
   title,
 }) => {
   const { theme } = useTheme();
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height;
+  const activeWidth = isLandscape ? Math.min(width, 340) : width;
   const today = new Date();
   const initial = selectedDate || today;
 
@@ -177,8 +178,9 @@ const CustomDatePicker = ({
     onClose();
   };
 
-  const cellSize = (screenWidth - 80) / 7;
-  const styles = getPickerStyles(theme, cellSize);
+  const cellSize = (activeWidth - 80) / 7;
+  const cellHeight = isLandscape ? cellSize * 0.8 : cellSize;
+  const styles = getPickerStyles(theme, cellSize, activeWidth, isLandscape);
 
   // ============ YEAR PICKER VIEW ============
   const renderYearPicker = () => (
@@ -304,16 +306,16 @@ const CustomDatePicker = ({
               key={item.key}
               style={[
                 styles.cell,
-                { width: cellSize, height: cellSize },
+                { width: cellSize, height: cellHeight },
                 selected && {
                   backgroundColor: theme.colors.primary,
-                  borderRadius: cellSize / 2,
+                  borderRadius: cellHeight / 2,
                 },
                 todayMark &&
                   !selected && {
                     borderWidth: 1.5,
                     borderColor: theme.colors.primary,
-                    borderRadius: cellSize / 2,
+                    borderRadius: cellHeight / 2,
                   },
               ]}
               onPress={() => item.day && handleDayPress(item.day)}
@@ -386,7 +388,7 @@ const CustomDatePicker = ({
   );
 };
 
-const getPickerStyles = (theme, cellSize) =>
+const getPickerStyles = (theme, cellSize, activeWidth, isLandscape) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
@@ -395,10 +397,11 @@ const getPickerStyles = (theme, cellSize) =>
       alignItems: 'center',
     },
     container: {
-      width: screenWidth - 40,
+      width: activeWidth - 40,
       backgroundColor: theme.colors.surface,
       borderRadius: 16,
-      padding: 20,
+      paddingVertical: isLandscape ? 10 : 20,
+      paddingHorizontal: 20,
       elevation: 10,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 4 },
@@ -410,14 +413,14 @@ const getPickerStyles = (theme, cellSize) =>
       fontWeight: '700',
       color: theme.colors.text,
       textAlign: 'center',
-      marginBottom: 12,
+      marginBottom: isLandscape ? 6 : 12,
     },
     // Header
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 12,
+      marginBottom: isLandscape ? 4 : 12,
     },
     headerCenter: {
       flexDirection: 'row',
@@ -445,7 +448,7 @@ const getPickerStyles = (theme, cellSize) =>
     weekRow: {
       flexDirection: 'row',
       justifyContent: 'center',
-      marginBottom: 4,
+      marginBottom: isLandscape ? 0 : 4,
     },
     cell: {
       justifyContent: 'center',
@@ -470,7 +473,7 @@ const getPickerStyles = (theme, cellSize) =>
       flexDirection: 'row',
       justifyContent: 'flex-end',
       alignItems: 'center',
-      marginTop: 16,
+      marginTop: isLandscape ? 8 : 16,
       gap: 16,
     },
     backBtn: {
