@@ -47,7 +47,7 @@ const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 // Generate year range
 const CURRENT_YEAR = new Date().getFullYear();
 const YEAR_RANGE_START = CURRENT_YEAR - 50;
-const YEAR_RANGE_END = CURRENT_YEAR + 10;
+const YEAR_RANGE_END = CURRENT_YEAR + 1; // Limited to max 1 future year
 const YEARS = [];
 for (let y = YEAR_RANGE_END; y >= YEAR_RANGE_START; y--) {
   YEARS.push(y);

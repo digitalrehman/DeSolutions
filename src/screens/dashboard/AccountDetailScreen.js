@@ -99,6 +99,7 @@ const AccountDetailScreen = ({ route, navigation }) => {
   const renderItem = ({ item, index }) => {
     const isFirst = index === 0;
     const isLast = index === details.length - 1;
+    const formattedName = item.account_name ? item.account_name.replace(/&amp;/g, '&') : '';
 
     return (
       <View
@@ -126,7 +127,7 @@ const AccountDetailScreen = ({ route, navigation }) => {
           onPress={() =>
             navigation.navigate('Ledger', {
               account: item.account_code,
-              title: item.account_name,
+              title: formattedName,
               fromDate: fromDate?.toISOString(),
               toDate: toDate?.toISOString(),
             })
@@ -150,13 +151,9 @@ const AccountDetailScreen = ({ route, navigation }) => {
                 style={[s.listItemTitle, { color: theme.colors.text }]}
                 numberOfLines={2}
               >
-                {item.account_name}
+                {formattedName}
               </Text>
-              <Text
-                style={[s.listItemDate, { color: theme.colors.textSecondary }]}
-              >
-                Code: {item.account_code || 'N/A'}
-              </Text>
+
             </View>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>

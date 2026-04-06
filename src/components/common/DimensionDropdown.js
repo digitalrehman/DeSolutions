@@ -154,7 +154,9 @@ const DimensionDropdown = ({ onDimensionSelect, style, showLabel = false }) => {
             <TouchableOpacity
               style={[
                 styles.itemRow,
-                !selectedDimension && { backgroundColor: theme.colors.primary + '15' }
+                !selectedDimension 
+                  ? { backgroundColor: theme.colors.primary + '15', borderColor: theme.colors.primary + '30' }
+                  : { borderColor: theme.colors.border + '60' }
               ]}
               onPress={handleSelectAll}
               activeOpacity={0.7}
@@ -176,7 +178,9 @@ const DimensionDropdown = ({ onDimensionSelect, style, showLabel = false }) => {
                 <TouchableOpacity
                   style={[
                     styles.itemRow,
-                    selectedDimension?.id === item.id && { backgroundColor: theme.colors.primary + '15' }
+                    selectedDimension?.id === item.id 
+                      ? { backgroundColor: theme.colors.primary + '15', borderColor: theme.colors.primary + '30' }
+                      : { borderColor: theme.colors.border + '60' }
                   ]}
                   onPress={() => handleSelectDimension(item)}
                   activeOpacity={0.7}
@@ -229,42 +233,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dropdownContainer: {
-    width: '85%',
-    maxHeight: '70%',
-    borderRadius: 12,
+    width: '90%',
+    maxHeight: '75%',
+    borderRadius: 20,
     borderWidth: 1,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
   },
   dropdownHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
+    padding: 20,
+    paddingBottom: 14,
   },
   dropdownTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    gap: 8,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
+    borderRadius: 14,
+    gap: 10,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
-    paddingVertical: 4,
+    fontSize: 15,
+    paddingVertical: 0,
   },
   itemRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 14,
-    borderBottomWidth: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 14,
+    borderWidth: 1,
   },
   itemContent: {
     flex: 1,
