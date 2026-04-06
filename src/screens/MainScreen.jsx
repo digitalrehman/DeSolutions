@@ -14,6 +14,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { ThemeDropdown } from '@components/common';
 import { logout, selectCurrentUser } from '@store/slices/authSlice';
 import { useTheme } from '@config/useTheme';
+import { useToggleErpStatusMutation } from '@api/baseApi';
+import Toast from 'react-native-toast-message';
 import DailyActivitiesSlider from '@components/dashboard/DailyActivitiesSlider';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -27,9 +29,46 @@ const MainScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
+  const company = useSelector(state => state.auth.company);
+
+  const [toggleErpStatus] = useToggleErpStatusMutation();
 
   const [showMore, setShowMore] = useState(false);
   const [systemEnabled, setSystemEnabled] = useState(true);
+
+  const handleToggleSystem = async () => {
+    const newState = !systemEnabled;
+    const activateValue = newState ? 0 : 1; // 0 for ON, 1 for OFF
+
+    try {
+      const response = await toggleErpStatus({
+        company: company,
+        activate: activateValue,
+      }).unwrap();
+
+      if (response && (response.status === true)) {
+        setSystemEnabled(newState);
+        Toast.show({
+          type: 'success',
+          text1: 'System Updated',
+          text2: `Application is now turned ${newState ? 'ON' : 'OFF'}.`,
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Action Failed',
+          text2: 'Could not change system status.',
+        });
+      }
+    } catch (error) {
+      console.log('Toggle ERP Error:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Network error occurred.',
+      });
+    }
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -41,11 +80,12 @@ const MainScreen = ({ navigation }) => {
     { id: 'Sales',         name: 'Sales',         icon: 'cart-outline',             screen: 'Sales' },
     { id: 'Purchase',      name: 'Purchase',      icon: 'bag-handle-outline',       screen: 'Purchase' },
     { id: 'Inventory',     name: 'Inventory',     icon: 'cube-outline',             screen: 'Inventory' },
-    { id: 'HCM',          name: 'HCM',           icon: 'people-outline',           screen: 'HCM' },
+    { id: 'HCM',           name: 'HCM',           icon: 'people-outline',           screen: 'HCM' },
     { id: 'Manufacturing', name: 'Manufacturing', icon: 'settings-outline',         screen: 'Manufacturing' },
-    { id: 'CRM',          name: 'CRM',           icon: 'business-outline',         screen: 'CRM' },
+    { id: 'CRM',           name: 'CRM',           icon: 'business-outline',         screen: 'CRM' },
     { id: 'Finance',       name: 'Finance',       icon: 'cash-outline',             screen: 'Finance' },
     { id: 'Reporting',     name: 'Reporting',     icon: 'bar-chart-outline',        screen: 'Reporting' },
+    { id: 'VoidTransactions', name: 'Reversal Transactions', icon: 'close-circle-outline', screen: 'VoidTransactions' },
   ];
 
   // Split items: first 9 always visible, rest shown when expanded
@@ -85,7 +125,7 @@ const MainScreen = ({ navigation }) => {
               {/* On/Off Power Toggle Icon */}
               <TouchableOpacity
                 style={dynamicStyles.iconBtn}
-                onPress={() => setSystemEnabled(prev => !prev)}
+                onPress={handleToggleSystem}
               >
                 <Icon
                   name={systemEnabled ? 'power' : 'power-outline'}

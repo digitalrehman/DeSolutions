@@ -39,9 +39,25 @@ export const baseApi = createApi({
         };
       },
     }),
+    toggleErpStatus: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        formData.append('activate', body.activate);
+        
+        return {
+          url: 'access/erp_on_off.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
   }),
 });
 
-export const { useGetFunctionalityCheckMutation, useGetDimensionDropdownMutation } = baseApi;
+export const { useGetFunctionalityCheckMutation, useGetDimensionDropdownMutation, useToggleErpStatusMutation } = baseApi;
 
 export default baseApi;
