@@ -486,8 +486,6 @@ const styles = StyleSheet.create({
   tableWrapper: {
     marginTop: 15,
     borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
     overflow: 'hidden',
   },
   tableHeader: {

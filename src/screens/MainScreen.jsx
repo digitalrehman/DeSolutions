@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -20,7 +20,7 @@ import DailyActivitiesSlider from '@components/dashboard/DailyActivitiesSlider';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = SCREEN_HEIGHT * 0.25;
-const MAX_VISIBLE = 8; // Show first 8 tiles; 9th slot is the More button
+const MAX_VISIBLE = 8;
 
 /**
  * MainScreen - Professional ERP Dashboard with Grid Navigation
@@ -38,7 +38,7 @@ const MainScreen = ({ navigation }) => {
 
   const handleToggleSystem = async () => {
     const newState = !systemEnabled;
-    const activateValue = newState ? 0 : 1; // 0 for ON, 1 for OFF
+    const activateValue = newState ? 0 : 1;
 
     try {
       const response = await toggleErpStatus({
@@ -46,7 +46,7 @@ const MainScreen = ({ navigation }) => {
         activate: activateValue,
       }).unwrap();
 
-      if (response && (response.status === true)) {
+      if (response && response.status === true) {
         setSystemEnabled(newState);
         Toast.show({
           type: 'success',
@@ -75,27 +75,61 @@ const MainScreen = ({ navigation }) => {
   };
 
   const menuItems = [
-    { id: 'Dashboard',     name: 'Dashboard',     icon: 'grid-outline',             screen: 'Dashboard' },
-    { id: 'Approvals',     name: 'Approvals',     icon: 'checkmark-circle-outline', screen: 'Approvals' },
-    { id: 'Sales',         name: 'Sales',         icon: 'cart-outline',             screen: 'Sales' },
-    { id: 'Purchase',      name: 'Purchase',      icon: 'bag-handle-outline',       screen: 'Purchase' },
-    { id: 'Inventory',     name: 'Inventory',     icon: 'cube-outline',             screen: 'Inventory' },
-    { id: 'HCM',           name: 'HCM',           icon: 'people-outline',           screen: 'HCM' },
-    { id: 'Manufacturing', name: 'Manufacturing', icon: 'settings-outline',         screen: 'Manufacturing' },
-    { id: 'CRM',           name: 'CRM',           icon: 'business-outline',         screen: 'CRM' },
-    { id: 'Finance',       name: 'Finance',       icon: 'cash-outline',             screen: 'Finance' },
-    { id: 'Reporting',     name: 'Reporting',     icon: 'bar-chart-outline',        screen: 'Reporting' },
-    { id: 'VoidTransactions', name: 'Reversal Transactions', icon: 'refresh-circle-outline', screen: 'VoidTransactions' },
+    {
+      id: 'Dashboard',
+      name: 'Dashboard',
+      icon: 'grid-outline',
+      screen: 'Dashboard',
+    },
+    {
+      id: 'Approvals',
+      name: 'Approvals',
+      icon: 'checkmark-circle-outline',
+      screen: 'Approvals',
+    },
+    { id: 'Sales', name: 'Sales', icon: 'cart-outline', screen: 'Sales' },
+    {
+      id: 'Purchase',
+      name: 'Purchase',
+      icon: 'bag-handle-outline',
+      screen: 'Purchase',
+    },
+    {
+      id: 'Inventory',
+      name: 'Inventory',
+      icon: 'cube-outline',
+      screen: 'Inventory',
+    },
+    { id: 'HCM', name: 'HCM', icon: 'people-outline', screen: 'HCM' },
+    {
+      id: 'Manufacturing',
+      name: 'Manufacturing',
+      icon: 'settings-outline',
+      screen: 'Manufacturing',
+    },
+    { id: 'CRM', name: 'CRM', icon: 'business-outline', screen: 'CRM' },
+    { id: 'Finance', name: 'Finance', icon: 'cash-outline', screen: 'Finance' },
+    {
+      id: 'Reporting',
+      name: 'Reporting',
+      icon: 'bar-chart-outline',
+      screen: 'Reporting',
+    },
+    {
+      id: 'VoidTransactions',
+      name: 'Reversal Transactions',
+      icon: 'refresh-circle-outline',
+      screen: 'VoidTransactions',
+    },
   ];
 
-  // Split items: first 9 always visible, rest shown when expanded
   const visibleItems = menuItems.slice(0, MAX_VISIBLE);
   const extraItems = menuItems.slice(MAX_VISIBLE);
   const hasMore = extraItems.length > 0;
 
   const dynamicStyles = getStyles(theme);
 
-  const renderTile = (item) => (
+  const renderTile = item => (
     <TouchableOpacity
       key={item.id}
       style={dynamicStyles.gridBox}
@@ -111,7 +145,11 @@ const MainScreen = ({ navigation }) => {
 
   return (
     <View style={dynamicStyles.container}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      <StatusBar
+        barStyle="light-content"
+        translucent
+        backgroundColor="transparent"
+      />
 
       {/* Custom Header Section */}
       <View style={dynamicStyles.header}>
@@ -178,13 +216,29 @@ const MainScreen = ({ navigation }) => {
               activeOpacity={0.7}
               onPress={() => setShowMore(true)}
             >
-              <View style={[dynamicStyles.iconContainer, { backgroundColor: theme.colors.primary + '15' }]}>
-                <Icon name="ellipsis-horizontal-circle-outline" size={30} color={theme.colors.primary} />
+              <View
+                style={[
+                  dynamicStyles.iconContainer,
+                  { backgroundColor: theme.colors.primary + '15' },
+                ]}
+              >
+                <Icon
+                  name="ellipsis-horizontal-circle-outline"
+                  size={30}
+                  color={theme.colors.primary}
+                />
               </View>
               <Text style={dynamicStyles.boxName}>More</Text>
               {extraItems.length > 0 && (
-                <View style={[dynamicStyles.moreBadge, { backgroundColor: theme.colors.primary }]}>
-                  <Text style={dynamicStyles.moreBadgeText}>{extraItems.length}</Text>
+                <View
+                  style={[
+                    dynamicStyles.moreBadge,
+                    { backgroundColor: theme.colors.primary },
+                  ]}
+                >
+                  <Text style={dynamicStyles.moreBadgeText}>
+                    {extraItems.length}
+                  </Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -201,7 +255,11 @@ const MainScreen = ({ navigation }) => {
               onPress={() => setShowMore(false)}
             >
               <View style={dynamicStyles.iconContainer}>
-                <Icon name="chevron-up-circle-outline" size={30} color={theme.colors.primary} />
+                <Icon
+                  name="chevron-up-circle-outline"
+                  size={30}
+                  color={theme.colors.primary}
+                />
               </View>
               <Text style={dynamicStyles.boxName}>Less</Text>
             </TouchableOpacity>
