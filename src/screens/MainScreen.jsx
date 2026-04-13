@@ -85,7 +85,7 @@ const MainScreen = ({ navigation }) => {
     { id: 'CRM',           name: 'CRM',           icon: 'business-outline',         screen: 'CRM' },
     { id: 'Finance',       name: 'Finance',       icon: 'cash-outline',             screen: 'Finance' },
     { id: 'Reporting',     name: 'Reporting',     icon: 'bar-chart-outline',        screen: 'Reporting' },
-    { id: 'VoidTransactions', name: 'Reversal Transactions', icon: 'close-circle-outline', screen: 'VoidTransactions' },
+    { id: 'VoidTransactions', name: 'Reversal Transactions', icon: 'refresh-circle-outline', screen: 'VoidTransactions' },
   ];
 
   // Split items: first 9 always visible, rest shown when expanded

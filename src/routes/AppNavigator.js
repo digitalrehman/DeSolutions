@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { selectIsAuthenticated, restoreSession } from '@store/slices/authSlice';
-import { View } from 'react-native';
 
 import LoginScreen from '@screens/auth/LoginScreen';
 import MainScreen from '@screens/MainScreen';
@@ -82,10 +81,7 @@ const AppNavigator = () => {
               options={{ headerShown: false }}
             />
 
-            <Stack.Screen
-              name="Dashboard"
-              component={DashboardScreen}
-            />
+            <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen
               name="AccountDetail"
               component={AccountDetailScreen}
@@ -109,8 +105,14 @@ const AppNavigator = () => {
             />
             <Stack.Screen name="Approvals" component={ApprovalsScreen} />
             <Stack.Screen name="Reporting" component={ReportingScreen} />
-            <Stack.Screen name="ReportPersonSelect" component={ReportPersonSelectScreen} />
-            <Stack.Screen name="VoidTransactions" component={VoidTransactionsScreen} />
+            <Stack.Screen
+              name="ReportPersonSelect"
+              component={ReportPersonSelectScreen}
+            />
+            <Stack.Screen
+              name="VoidTransactions"
+              component={VoidTransactionsScreen}
+            />
             <Stack.Screen name="Sales" component={SalesScreen} />
             <Stack.Screen name="Purchase" component={PurchaseScreen} />
             <Stack.Screen name="Inventory" component={InventoryScreen} />
@@ -124,32 +126,68 @@ const AppNavigator = () => {
             {/* Placeholder screens for module quick actions */}
             <Stack.Screen name="SalesAddCustomer" component={FinanceScreen} />
             <Stack.Screen name="SalesDelivery" component={FinanceScreen} />
-            <Stack.Screen name="SalesTrackOrderStatus" component={FinanceScreen} />
+            <Stack.Screen
+              name="SalesTrackOrderStatus"
+              component={FinanceScreen}
+            />
             <Stack.Screen name="SalesReceivable" component={FinanceScreen} />
             <Stack.Screen name="SalesCostCenter" component={FinanceScreen} />
             <Stack.Screen name="SalesTransactions" component={FinanceScreen} />
 
-            <Stack.Screen name="PurchaseAddSupplier" component={FinanceScreen} />
+            <Stack.Screen
+              name="PurchaseAddSupplier"
+              component={FinanceScreen}
+            />
             <Stack.Screen name="PurchaseGRNAgainPO" component={FinanceScreen} />
             <Stack.Screen name="PurchasePDCDetail" component={FinanceScreen} />
-            <Stack.Screen name="PurchasePayableSummary" component={FinanceScreen} />
-            <Stack.Screen name="PurchaseTransactions" component={FinanceScreen} />
+            <Stack.Screen
+              name="PurchasePayableSummary"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="PurchaseTransactions"
+              component={FinanceScreen}
+            />
 
             <Stack.Screen name="InventoryAddItem" component={FinanceScreen} />
-            <Stack.Screen name="InventorySearchItem" component={FinanceScreen} />
-            <Stack.Screen name="InventoryItemMovement" component={FinanceScreen} />
-            <Stack.Screen name="InventoryLocationTransfer" component={FinanceScreen} />
-            <Stack.Screen name="InventoryAdjustment" component={FinanceScreen} />
-            <Stack.Screen name="InventoryDatedStockSheet" component={FinanceScreen} />
-            <Stack.Screen name="InventoryTransactions" component={FinanceScreen} />
+            <Stack.Screen
+              name="InventorySearchItem"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="InventoryItemMovement"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="InventoryLocationTransfer"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="InventoryAdjustment"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="InventoryDatedStockSheet"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="InventoryTransactions"
+              component={FinanceScreen}
+            />
 
             <Stack.Screen name="HCMAttendance" component={FinanceScreen} />
             <Stack.Screen name="HCMExpenseClaim" component={FinanceScreen} />
             <Stack.Screen name="HCMDVRInquiry" component={FinanceScreen} />
             <Stack.Screen name="HCMLocalPurchase" component={FinanceScreen} />
 
-            <Stack.Screen name="MfgElectricalJobCards" component={FinanceScreen} />
-            <Stack.Screen name="MfgMechanicalJobCards" component={FinanceScreen} />
+            <Stack.Screen
+              name="MfgElectricalJobCards"
+              component={FinanceScreen}
+            />
+            <Stack.Screen
+              name="MfgMechanicalJobCards"
+              component={FinanceScreen}
+            />
             <Stack.Screen name="MfgTransactions" component={FinanceScreen} />
 
             <Stack.Screen name="CRMAddLead" component={FinanceScreen} />
@@ -158,7 +196,10 @@ const AppNavigator = () => {
             <Stack.Screen name="CRMLeadToOrder" component={FinanceScreen} />
 
             <Stack.Screen name="FinanceViewLedger" component={FinanceScreen} />
-            <Stack.Screen name="FinanceTransactions" component={FinanceScreen} />
+            <Stack.Screen
+              name="FinanceTransactions"
+              component={FinanceScreen}
+            />
           </>
         )}
       </Stack.Navigator>
