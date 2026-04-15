@@ -11,6 +11,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import Toast from 'react-native-toast-message';
 import { useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
 import { useGetVoidTransactionDataMutation } from '@api/voidApi';
 import {
   DateFilter,
@@ -49,6 +50,7 @@ const VOUCHER_TYPES = [
 
 const VoidTransactionsScreen = () => {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const company = useSelector(state => state.auth.company);
 
   // View state
@@ -272,11 +274,17 @@ const VoidTransactionsScreen = () => {
           keyExtractor={(item, index) => index.toString()}
           scrollEnabled={false}
           renderItem={({ item }) => (
-            <View
+            <TouchableOpacity
               style={[
                 styles.tableRow,
                 { borderBottomColor: theme.colors.border },
               ]}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('VoidTransactionDetail', {
+                trans_no: item.trans_no,
+                type: selectedVoucher?.id,
+                title: selectedVoucher?.title
+              })}
             >
               <Text
                 style={[
@@ -326,7 +334,7 @@ const VoidTransactionsScreen = () => {
                   <Text style={styles.voidButtonText}>X</Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </TouchableOpacity>
           )}
           ListEmptyComponent={
             !isLoading && (
