@@ -257,16 +257,6 @@ const VoidTransactionsScreen = () => {
           >
             Total
           </Text>
-          <Text
-            style={[
-              styles.headerCell,
-              styles.cellAction,
-              { color: theme.colors.textSecondary },
-              { textAlign: 'center' },
-            ]}
-          >
-            Void
-          </Text>
         </View>
 
         <FlatList
@@ -323,17 +313,6 @@ const VoidTransactionsScreen = () => {
               >
                 {parseFloat(item.total).toLocaleString()}
               </Text>
-              <View style={styles.cellAction}>
-                <TouchableOpacity
-                  style={[
-                    styles.voidButton,
-                    { backgroundColor: theme.colors.error },
-                  ]}
-                  onPress={() => handleVoidAction(item)}
-                >
-                  <Text style={styles.voidButtonText}>X</Text>
-                </TouchableOpacity>
-              </View>
             </TouchableOpacity>
           )}
           ListEmptyComponent={
@@ -518,20 +497,9 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   cellTrans: { flex: 1.2 },
-  cellRef: { flex: 2 },
-  cellDate: { flex: 1.5, textAlign: 'center' },
-  cellTotal: { flex: 1.5, textAlign: 'right' },
-  cellAction: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  voidButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  voidButtonText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: '800',
-  },
+  cellRef: { flex: 2.5 },
+  cellDate: { flex: 1.8, textAlign: 'center' },
+  cellTotal: { flex: 1.8, textAlign: 'right' },
   emptyContainer: {
     padding: 30,
     alignItems: 'center',

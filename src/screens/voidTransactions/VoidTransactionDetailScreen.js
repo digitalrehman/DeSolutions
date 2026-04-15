@@ -5,19 +5,21 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { LoadingSpinner } from '@components/common';
 import { useSelector } from 'react-redux';
-import { useGetViewDataMutation, useGetViewGLMutation } from '@api/voidApi';
-import Toast from 'react-native-toast-message';
+import { useGetViewDataMutation, useGetViewGLMutation, useVoidTransactionMutation } from '@api/voidApi';
 
 const VoidTransactionDetailScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
-  const { trans_no, type, title } = route.params;
-  const company = useSelector((state) => state.auth.company);
+  const { trans_no, type } = route.params;
+  const company = useSelector(state => state.auth.company);
+  const userId = useSelector(state => state.auth.user?.id);
 
   const [showGL, setShowGL] = useState(false);
   const [transactionData, setTransactionData] = useState(null);
@@ -25,47 +27,70 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
 
   const [getViewData, { isLoading: isDataLoading }] = useGetViewDataMutation();
   const [getViewGL, { isLoading: isGLLoading }] = useGetViewGLMutation();
+  const [voidTransaction, { isLoading: isVoiding }] = useVoidTransactionMutation();
 
   useEffect(() => {
     fetchDetails();
   }, [trans_no, type, company]);
 
+  const handleVoid = () => {
+    Alert.alert(
+      'Confirm Void',
+      `Are you sure you want to void transaction #${trans_no}? This action cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Yes, Void It',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const res = await voidTransaction({
+                company,
+                trans_no,
+                type,
+                user_id: userId,
+              }).unwrap();
+              if (res?.status === true || res?.status === 'true') {
+                Alert.alert('Success', 'Transaction voided successfully.', [
+                  { text: 'OK', onPress: () => navigation.goBack() },
+                ]);
+              } else {
+                Alert.alert('Failed', 'Could not void this transaction.');
+              }
+            } catch (err) {
+              console.log('Void Error:', err);
+              Alert.alert('Error', 'An error occurred while voiding.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const fetchDetails = async () => {
+    const payload = { company, trans_no, type };
+
+    // Call APIs independently so one failure doesn't block the other
     try {
-      const payload = { company, trans_no, type };
-      console.log('Fetching details with payload:', payload);
-      
-      const [dataRes, glRes] = await Promise.all([
-        getViewData(payload).unwrap(),
-        getViewGL(payload).unwrap(),
-      ]);
-
-      console.log('--- API Responses ---');
-      console.log('Transaction Data Raw:', dataRes);
-      console.log('GL Data Raw:', glRes);
-      console.log('Transaction Status Header Value:', dataRes?.status_header, 'Type:', typeof dataRes?.status_header);
-      console.log('GL Status Header Value:', glRes?.status_header, 'Type:', typeof glRes?.status_header);
-
-      if (dataRes && (dataRes.status_header === 'true' || dataRes.status_header === true)) {
-        console.log('SUCCESS: Setting transaction data...');
+      const dataRes = await getViewData(payload).unwrap();
+      if (dataRes && dataRes.status_header === 'true') {
         setTransactionData(dataRes);
       } else {
-        console.log('FAILURE: Transaction status_header was not true.');
+        setTransactionData({ empty: true });
       }
+    } catch (err) {
+      setTransactionData({ empty: true });
+    }
 
-      if (glRes && (glRes.status_header === 'true' || glRes.status_header === true)) {
-        console.log('SUCCESS: Setting GL data...');
+    try {
+      const glRes = await getViewGL(payload).unwrap();
+      if (glRes && glRes.status_header === 'true') {
         setGLData(glRes);
       } else {
-        console.log('FAILURE: GL status_header was not true.');
+        setGLData({ empty: true });
       }
-    } catch (error) {
-      console.log('Detail Fetch Error:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to load transaction details.',
-      });
+    } catch (err) {
+      setGLData({ empty: true });
     }
   };
 
@@ -73,47 +98,111 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
     if (!value && value !== 0) return null;
     return (
       <View style={styles.fieldRow}>
-        <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}>{label}:</Text>
-        <Text style={[styles.fieldValue, { color: theme.colors.text }]}>{value}</Text>
+        <Text
+          style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}
+        >
+          {label}:
+        </Text>
+        <Text style={[styles.fieldValue, { color: theme.colors.text }]}>
+          {value}
+        </Text>
       </View>
     );
   };
 
+  const renderEmpty = (message = 'No data available') => (
+    <View
+      style={[
+        styles.emptyBox,
+        {
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+        },
+      ]}
+    >
+      <Icon
+        name="document-outline"
+        size={36}
+        color={theme.colors.textSecondary}
+      />
+      <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>
+        {message}
+      </Text>
+    </View>
+  );
+
   const renderTabs = () => (
-    <View style={[styles.tabContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+    <View
+      style={[
+        styles.tabContainer,
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border,
+        },
+      ]}
+    >
       <TouchableOpacity
         style={[
           styles.tab,
-          !showGL && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+          !showGL && {
+            backgroundColor: theme.colors.primary,
+            borderColor: theme.colors.primary,
+          },
         ]}
         onPress={() => setShowGL(false)}
       >
-        <Icon name="document-text-outline" size={18} color={!showGL ? '#FFF' : theme.colors.textSecondary} />
-        <Text style={[styles.tabText, { color: !showGL ? '#FFF' : theme.colors.textSecondary }]}>Transaction</Text>
+        <Icon
+          name="document-text-outline"
+          size={18}
+          color={!showGL ? '#FFF' : theme.colors.textSecondary}
+        />
+        <Text
+          style={[
+            styles.tabText,
+            { color: !showGL ? '#FFF' : theme.colors.textSecondary },
+          ]}
+        >
+          Transaction
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
         style={[
           styles.tab,
-          showGL && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary },
+          showGL && {
+            backgroundColor: theme.colors.primary,
+            borderColor: theme.colors.primary,
+          },
         ]}
         onPress={() => setShowGL(true)}
       >
-        <Icon name="swap-horizontal-outline" size={18} color={showGL ? '#FFF' : theme.colors.textSecondary} />
-        <Text style={[styles.tabText, { color: showGL ? '#FFF' : theme.colors.textSecondary }]}>GL View</Text>
+        <Icon
+          name="swap-horizontal-outline"
+          size={18}
+          color={showGL ? '#FFF' : theme.colors.textSecondary}
+        />
+        <Text
+          style={[
+            styles.tabText,
+            { color: showGL ? '#FFF' : theme.colors.textSecondary },
+          ]}
+        >
+          GL View
+        </Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderTransactionView = () => {
-    console.log('Rendering Transaction View. transactionData:', transactionData);
-    if (!transactionData || !transactionData.data_header?.[0]) {
-      console.log('No transaction data or header found.');
-      return null;
+    if (!transactionData) return null;
+
+    if (transactionData.empty || !transactionData.data_header?.[0]) {
+      return renderEmpty('No transaction data available for this record.');
     }
+
     const header = transactionData.data_header[0];
     const details = transactionData.data_detail || [];
 
-    const decodeHtml = (html) => {
+    const decodeHtml = html => {
       if (!html) return '';
       return html
         .replace(/&quot;/g, '"')
@@ -126,7 +215,15 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
 
     return (
       <View style={styles.section}>
-        <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
           {renderHeaderField('Reference', header.reference)}
           {renderHeaderField('Date', header.trans_date)}
           {renderHeaderField('Due Date', header.due_date)}
@@ -139,45 +236,148 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
           {renderHeaderField('Total', header.total)}
           {renderHeaderField('Discount', header.discount)}
           {header.comments && (
-             <View style={styles.commentBox}>
-               <Text style={[styles.fieldLabel, { color: theme.colors.textSecondary }]}>Comments:</Text>
-               <Text style={[styles.commentText, { color: theme.colors.text }]}>{header.comments}</Text>
-             </View>
+            <View style={styles.commentBox}>
+              <Text
+                style={[
+                  styles.fieldLabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                Comments:
+              </Text>
+              <Text style={[styles.commentText, { color: theme.colors.text }]}>
+                {header.comments}
+              </Text>
+            </View>
           )}
         </View>
 
         {details.length > 0 && (
           <View style={styles.itemTable}>
-            <Text style={[styles.subHeading, { color: theme.colors.text }]}>Item Details</Text>
-            <View style={[styles.tableRow, styles.tableHeader, { backgroundColor: theme.colors.primary + '10' }]}>
-              <Text style={[styles.tableHeaderCell, { flex: 2, color: theme.colors.textSecondary }]}>Description</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 0.8, textAlign: 'center', color: theme.colors.textSecondary }]}>Qty</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1.2, textAlign: 'right', color: theme.colors.textSecondary }]}>Price</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1.2, textAlign: 'right', color: theme.colors.textSecondary }]}>Total</Text>
+            <Text style={[styles.subHeading, { color: theme.colors.text }]}>
+              Item Details
+            </Text>
+            <View
+              style={[
+                styles.tableRow,
+                styles.tableHeader,
+                { backgroundColor: theme.colors.primary + '10' },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  { flex: 2, color: theme.colors.textSecondary },
+                ]}
+              >
+                Description
+              </Text>
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  {
+                    flex: 0.8,
+                    textAlign: 'center',
+                    color: theme.colors.textSecondary,
+                  },
+                ]}
+              >
+                Qty
+              </Text>
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  {
+                    flex: 1.2,
+                    textAlign: 'right',
+                    color: theme.colors.textSecondary,
+                  },
+                ]}
+              >
+                Price
+              </Text>
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  {
+                    flex: 1.2,
+                    textAlign: 'right',
+                    color: theme.colors.textSecondary,
+                  },
+                ]}
+              >
+                Total
+              </Text>
             </View>
             {details.map((item, index) => {
               const qty = parseFloat(item.quantity) || 0;
               const price = parseFloat(item.unit_price) || 0;
               const total = qty * price;
-              
               return (
-                <View key={index} style={[styles.tableRow, { borderBottomColor: theme.colors.border, flexDirection: 'column', alignItems: 'stretch' }]}>
+                <View
+                  key={index}
+                  style={[
+                    styles.tableRow,
+                    {
+                      borderBottomColor: theme.colors.border,
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                    },
+                  ]}
+                >
                   <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <View style={{ flex: 2 }}>
-                      <Text style={[styles.tableName, { color: theme.colors.text }]}>{decodeHtml(item.description)}</Text>
+                      <Text
+                        style={[styles.tableName, { color: theme.colors.text }]}
+                      >
+                        {decodeHtml(item.description)}
+                      </Text>
                     </View>
-                    <Text style={[styles.tableCell, { flex: 0.8, textAlign: 'center', color: theme.colors.text }]}>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          flex: 0.8,
+                          textAlign: 'center',
+                          color: theme.colors.text,
+                        },
+                      ]}
+                    >
                       {qty}
                     </Text>
-                    <Text style={[styles.tableCell, { flex: 1.2, textAlign: 'right', color: theme.colors.text }]}>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          flex: 1.2,
+                          textAlign: 'right',
+                          color: theme.colors.text,
+                        },
+                      ]}
+                    >
                       {price.toLocaleString()}
                     </Text>
-                    <Text style={[styles.tableCell, { flex: 1.2, textAlign: 'right', color: theme.colors.text, fontWeight: '700' }]}>
+                    <Text
+                      style={[
+                        styles.tableCell,
+                        {
+                          flex: 1.2,
+                          textAlign: 'right',
+                          color: theme.colors.text,
+                          fontWeight: '700',
+                        },
+                      ]}
+                    >
                       {total.toLocaleString()}
                     </Text>
                   </View>
                   {item.long_description && (
-                    <Text style={[styles.tableSub, { color: theme.colors.textSecondary, marginTop: 4 }]}>
+                    <Text
+                      style={[
+                        styles.tableSub,
+                        { color: theme.colors.textSecondary, marginTop: 4 },
+                      ]}
+                    >
                       {decodeHtml(item.long_description)}
                     </Text>
                   )}
@@ -191,13 +391,26 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
   };
 
   const renderGLView = () => {
-    if (!glData || !glData.data_header?.[0]) return null;
+    if (!glData) return null;
+
+    if (glData.empty || !glData.data_header?.[0]) {
+      return renderEmpty('No GL data available for this record.');
+    }
+
     const header = glData.data_header[0];
     const details = glData.data_detail || [];
 
     return (
       <View style={styles.section}>
-        <View style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.border,
+            },
+          ]}
+        >
           {renderHeaderField('Reference', header.reference)}
           {renderHeaderField('Date', header.trans_date)}
           {renderHeaderField('Name', header.name)}
@@ -207,45 +420,142 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
           {renderHeaderField('Supp Ref', header.supp_reference)}
         </View>
 
-        {details.length > 0 && (
+        {details.length > 0 ? (
           <View style={styles.glTable}>
-            <View style={[styles.tableRow, styles.tableHeader, { backgroundColor: theme.colors.primary + '10' }]}>
-              <Text style={[styles.tableHeaderCell, { flex: 2, color: theme.colors.textSecondary }]}>Account</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'right', color: theme.colors.textSecondary }]}>Debit</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 1, textAlign: 'right', color: theme.colors.textSecondary }]}>Credit</Text>
+            <View
+              style={[
+                styles.tableRow,
+                styles.tableHeader,
+                { backgroundColor: theme.colors.primary + '10' },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  { flex: 2, color: theme.colors.textSecondary },
+                ]}
+              >
+                Account
+              </Text>
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  {
+                    flex: 1,
+                    textAlign: 'right',
+                    color: theme.colors.textSecondary,
+                  },
+                ]}
+              >
+                Debit
+              </Text>
+              <Text
+                style={[
+                  styles.tableHeaderCell,
+                  {
+                    flex: 1,
+                    textAlign: 'right',
+                    color: theme.colors.textSecondary,
+                  },
+                ]}
+              >
+                Credit
+              </Text>
             </View>
             {details.map((item, index) => (
-              <View key={index} style={[styles.tableRow, { borderBottomColor: theme.colors.border }]}>
+              <View
+                key={index}
+                style={[
+                  styles.tableRow,
+                  { borderBottomColor: theme.colors.border },
+                ]}
+              >
                 <View style={{ flex: 2 }}>
-                  <Text style={[styles.tableName, { color: theme.colors.text }]}>{item.account_name}</Text>
-                  <Text style={[styles.tableSub, { color: theme.colors.textSecondary }]}>{item.account}</Text>
+                  <Text
+                    style={[styles.tableName, { color: theme.colors.text }]}
+                  >
+                    {item.account_name}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableSub,
+                      { color: theme.colors.textSecondary },
+                    ]}
+                  >
+                    {item.account}
+                  </Text>
                 </View>
-                <Text style={[styles.tableCell, { flex: 1, textAlign: 'right', color: theme.colors.success }]}>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    {
+                      flex: 1,
+                      textAlign: 'right',
+                      color: theme.colors.success,
+                    },
+                  ]}
+                >
                   {item.debit && item.debit !== 0 ? item.debit : '-'}
                 </Text>
-                <Text style={[styles.tableCell, { flex: 1, textAlign: 'right', color: theme.colors.error }]}>
-                  {item.credit && item.credit !== 0 ? Math.abs(item.credit) : '-'}
+                <Text
+                  style={[
+                    styles.tableCell,
+                    { flex: 1, textAlign: 'right', color: theme.colors.error },
+                  ]}
+                >
+                  {item.credit && item.credit !== 0
+                    ? Math.abs(item.credit)
+                    : '-'}
                 </Text>
               </View>
             ))}
+          </View>
+        ) : (
+          <View style={styles.section}>
+            {renderEmpty('No GL entries for this transaction.')}
           </View>
         )}
       </View>
     );
   };
 
-  if (isDataLoading || isGLLoading) {
-    return <LoadingSpinner />;
-  }
+  const isLoading = isDataLoading || isGLLoading;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.tabWrapperOuter}>
-         {renderTabs()}
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
+      <View style={styles.tabWrapperOuter}>{renderTabs()}</View>
+      <View style={[styles.voidBtnWrapper, { borderBottomColor: theme.colors.border }]}>
+        <TouchableOpacity
+          style={[
+            styles.voidActionBtn,
+            { backgroundColor: theme.colors.error },
+            isVoiding && { opacity: 0.6 },
+          ]}
+          onPress={handleVoid}
+          disabled={isVoiding}
+        >
+          {isVoiding ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <>
+              <Icon name="close-circle-outline" size={16} color="#FFF" />
+              <Text style={styles.voidActionBtnText}>Void Transaction</Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {!showGL ? renderTransactionView() : renderGLView()}
-      </ScrollView>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : (
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {!showGL ? renderTransactionView() : renderGLView()}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };
@@ -258,6 +568,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 5,
+  },
+  voidBtnWrapper: {
+    paddingHorizontal: 16,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    alignItems: 'flex-end',
+  },
+  voidActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 6,
+  },
+  voidActionBtnText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '800',
   },
   tabContainer: {
     flexDirection: 'row',
@@ -386,7 +715,22 @@ const styles = StyleSheet.create({
   },
   tableWrapper: {
     marginTop: 10,
-  }
+  },
+  emptyBox: {
+    marginTop: 20,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
 });
 
 export default VoidTransactionDetailScreen;
