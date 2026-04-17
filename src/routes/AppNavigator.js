@@ -26,6 +26,7 @@ import ReportingScreen from '@screens/reporting/ReportingScreen';
 import ReportPersonSelectScreen from '@screens/reporting/ReportPersonSelectScreen';
 import VoidTransactionsScreen from '@screens/voidTransactions/VoidTransactionsScreen';
 import VoidTransactionDetailScreen from '@screens/voidTransactions/VoidTransactionDetailScreen';
+import TrailBalanceReportScreen from '@screens/reporting/TrailBalanceReportScreen';
 import { LoadingSpinner, CustomHeader } from '@components/common';
 
 const Stack = createNativeStackNavigator();
@@ -117,6 +118,10 @@ const AppNavigator = () => {
             <Stack.Screen
               name="VoidTransactionDetail"
               component={VoidTransactionDetailScreen}
+            />
+            <Stack.Screen
+              name="TrailBalanceReport"
+              component={TrailBalanceReportScreen}
             />
             <Stack.Screen name="Sales" component={SalesScreen} />
             <Stack.Screen name="Purchase" component={PurchaseScreen} />

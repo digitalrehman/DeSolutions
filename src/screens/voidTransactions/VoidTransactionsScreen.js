@@ -252,10 +252,19 @@ const VoidTransactionsScreen = () => {
             style={[
               styles.headerCell,
               styles.cellTotal,
-              { color: theme.colors.textSecondary },
+              { color: theme.colors.textSecondary, textAlign: 'right' },
             ]}
           >
             Total
+          </Text>
+          <Text
+            style={[
+              styles.headerCell,
+              styles.cellAction,
+              { color: theme.colors.textSecondary, textAlign: 'center' },
+            ]}
+          >
+            Void
           </Text>
         </View>
 
@@ -270,11 +279,13 @@ const VoidTransactionsScreen = () => {
                 { borderBottomColor: theme.colors.border },
               ]}
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('VoidTransactionDetail', {
-                trans_no: item.trans_no,
-                type: selectedVoucher?.id,
-                title: selectedVoucher?.title
-              })}
+              onPress={() =>
+                navigation.navigate('VoidTransactionDetail', {
+                  trans_no: item.trans_no,
+                  type: selectedVoucher?.id,
+                  title: selectedVoucher?.title,
+                })
+              }
             >
               <Text
                 style={[
@@ -308,11 +319,24 @@ const VoidTransactionsScreen = () => {
                 style={[
                   styles.cell,
                   styles.cellTotal,
-                  { color: theme.colors.text },
+                  { color: theme.colors.text, textAlign: 'right' },
                 ]}
               >
                 {parseFloat(item.total).toLocaleString()}
               </Text>
+              <View
+                style={[
+                  styles.cell,
+                  styles.cellAction,
+                  { alignItems: 'center' },
+                ]}
+              >
+                <Icon
+                  name="trash-outline"
+                  size={18}
+                  color={theme.colors.error}
+                />
+              </View>
             </TouchableOpacity>
           )}
           ListEmptyComponent={
@@ -496,10 +520,11 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '500',
   },
-  cellTrans: { flex: 1.2 },
-  cellRef: { flex: 2.5 },
-  cellDate: { flex: 1.8, textAlign: 'center' },
-  cellTotal: { flex: 1.8, textAlign: 'right' },
+  cellTrans: { flex: 1 },
+  cellRef: { flex: 2 },
+  cellDate: { flex: 1.5, textAlign: 'center' },
+  cellTotal: { flex: 1.5, textAlign: 'right' },
+  cellAction: { flex: 0.8, textAlign: 'center' },
   emptyContainer: {
     padding: 30,
     alignItems: 'center',

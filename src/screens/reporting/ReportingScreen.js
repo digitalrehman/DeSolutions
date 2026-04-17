@@ -60,9 +60,19 @@ const reportingGroups = [
     title: 'Account Report',
     icon: 'bar-chart-outline',
     color: '#8B5CF6',
-    items: ['Ledger Report'],
+    items: [
+      'Ledger Report',
+      'Trail Balance',
+      'Balance Sheet',
+      'Profit & Loss',
+      'Cash Flow',
+    ],
     navParams: [
       { screen: 'Ledger', params: { type: 'account' } },
+      { screen: 'TrailBalanceReport', params: {} },
+      { screen: 'TrailBalanceReport', params: { type: 'balance_sheet' } },
+      { screen: 'TrailBalanceReport', params: { type: 'profit_loss' } },
+      { screen: 'TrailBalanceReport', params: { type: 'cash_flow' } },
     ],
   },
 ];

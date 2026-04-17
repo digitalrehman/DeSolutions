@@ -162,7 +162,7 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
             { color: !showGL ? '#FFF' : theme.colors.textSecondary },
           ]}
         >
-          Transaction
+          Transaction View
         </Text>
       </TouchableOpacity>
       <TouchableOpacity
@@ -524,37 +524,44 @@ const VoidTransactionDetailScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
+      edges={['bottom', 'left', 'right']}
     >
-      <View style={styles.tabWrapperOuter}>{renderTabs()}</View>
-      <View style={[styles.voidBtnWrapper, { borderBottomColor: theme.colors.border }]}>
-        <TouchableOpacity
-          style={[
-            styles.voidActionBtn,
-            { backgroundColor: theme.colors.error },
-            isVoiding && { opacity: 0.6 },
-          ]}
-          onPress={handleVoid}
-          disabled={isVoiding}
-        >
-          {isVoiding ? (
-            <ActivityIndicator size="small" color="#FFF" />
-          ) : (
-            <>
-              <Icon name="close-circle-outline" size={16} color="#FFF" />
-              <Text style={styles.voidActionBtnText}>Void Transaction</Text>
-            </>
-          )}
-        </TouchableOpacity>
+      <View style={styles.headerWrapper}>
+        {renderTabs()}
       </View>
+
       {isLoading ? (
         <LoadingSpinner />
       ) : (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {!showGL ? renderTransactionView() : renderGLView()}
-        </ScrollView>
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {!showGL ? renderTransactionView() : renderGLView()}
+          </ScrollView>
+
+          <View style={[styles.bottomActionContainer, { backgroundColor: theme.colors.background, borderTopColor: theme.colors.border }]}>
+            <TouchableOpacity
+              style={[
+                styles.voidActionBtn,
+                { backgroundColor: theme.colors.error },
+                isVoiding && { opacity: 0.6 },
+              ]}
+              onPress={handleVoid}
+              disabled={isVoiding}
+            >
+              {isVoiding ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <>
+                  <Icon name="trash-outline" size={20} color="#FFF" />
+                  <Text style={styles.voidActionBtnText}>Void Transaction</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
@@ -564,29 +571,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  tabWrapperOuter: {
+  headerWrapper: {
     paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 5,
-  },
-  voidBtnWrapper: {
-    paddingHorizontal: 16,
+    paddingTop: 5,
     paddingBottom: 10,
-    borderBottomWidth: 1,
-    alignItems: 'flex-end',
+  },
+  bottomActionContainer: {
+    padding: 16,
+    borderTopWidth: 1,
   },
   voidActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 6,
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
   },
   voidActionBtnText: {
     color: '#FFF',
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 16,
+    fontWeight: '700',
   },
   tabContainer: {
     flexDirection: 'row',
