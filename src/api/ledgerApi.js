@@ -167,6 +167,7 @@ export const ledgerApi = baseApi.injectEndpoints({
         formData.append('from_date', from_date);
         formData.append('to_date', to_date);
         formData.append('show_zero', show_zero || 0);
+        formData.append('dimension_id', body.dimension_id || 0);
 
         const result = await baseQuery({
           url: 'ledger/trail_balance.php',

@@ -13,8 +13,17 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 import { useSelector } from 'react-redux';
 import { useGetTrailBalanceMutation } from '@api/ledgerApi';
-import { DateFilter, LoadingSpinner } from '@components/common';
+import {
+  DateFilter,
+  LoadingSpinner,
+  DimensionDropdown,
+} from '@components/common';
 import Toast from 'react-native-toast-message';
+import { exportReportToPDF, exportReportToExcel } from '@config/reportHelper';
+import {
+  generateTrailBalanceHTML,
+  mapTrailBalanceToExcel,
+} from '../../reports/TrailBalanceReportTemplate';
 
 if (
   Platform.OS === 'android' &&
@@ -23,21 +32,29 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const TrailBalanceReportScreen = ({ route }) => {
+const TrailBalanceReportScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
   const company = useSelector(state => state.auth.company);
-  const reportType = route.params?.type || 'trail_balance'; // Could handle others if needed
+  const reportType = route.params?.type || 'trail_balance';
 
   const [fromDate, setFromDate] = useState(null);
   const [toDate, setToDate] = useState(new Date());
   const [reportData, setReportData] = useState([]);
   const [expandedClasses, setExpandedClasses] = useState({});
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [selectedDimensionId, setSelectedDimensionId] = useState(null);
+  const [showZero, setShowZero] = useState(false);
+  const [isSummary, setIsSummary] = useState(false);
 
   const [getTrailBalance, { isLoading }] = useGetTrailBalanceMutation();
 
   useEffect(() => {
-    // Default from_date to start of current fiscal year or 30 days ago
+    if (route.params?.dimensionId !== undefined) {
+      setSelectedDimensionId(route.params.dimensionId);
+    }
+  }, [route.params?.dimensionId]);
+
+  useEffect(() => {
     const start = new Date();
     start.setDate(start.getDate() - 30);
     setFromDate(start);
@@ -58,7 +75,8 @@ const TrailBalanceReportScreen = ({ route }) => {
         company,
         from_date: formatDateForAPI(fromDate),
         to_date: formatDateForAPI(toDate),
-        show_zero: 0,
+        show_zero: showZero ? 1 : 0,
+        dimension_id: selectedDimensionId || 0,
       }).unwrap();
 
       if (response.status) {
@@ -94,57 +112,79 @@ const TrailBalanceReportScreen = ({ route }) => {
     <View
       key={account.code}
       style={[
-        styles.accountRow,
-        { borderBottomColor: theme.colors.border + '50' },
+        styles.accountContainer,
+        {
+          backgroundColor: theme.colors.surface,
+          borderColor: theme.colors.border + '30',
+        },
       ]}
     >
-      <View style={styles.accountInfo}>
-        <Text
-          style={[styles.accountCode, { color: theme.colors.textSecondary }]}
-        >
-          {account.code}
+      <View style={styles.kvRow}>
+        <Text style={[styles.kvLabel, { color: theme.colors.textSecondary }]}>
+          Name
         </Text>
-        <Text style={[styles.accountName, { color: theme.colors.text }]}>
+        <Text style={[styles.kvValue, { color: theme.colors.text }]}>
           {account.name}
         </Text>
       </View>
-      <View style={styles.accountValues}>
-        <View style={styles.valueRow}>
-          <Text style={styles.valueLabel}>Op:</Text>
-          <Text style={[styles.valueText, { color: theme.colors.text }]}>
-            {account.opening.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </Text>
-        </View>
-        <View style={styles.valueGrid}>
-          <View style={styles.gridItem}>
-            <Text style={styles.gridLabel}>Dr</Text>
-            <Text style={[styles.gridValue, { color: theme.colors.success }]}>
+
+      <View style={styles.kvRow}>
+        <Text style={[styles.kvLabel, { color: theme.colors.textSecondary }]}>
+          Opening
+        </Text>
+        <Text style={[styles.kvValue, { color: theme.colors.text }]}>
+          {account.opening.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+          })}
+        </Text>
+      </View>
+
+      {!isSummary && (
+        <>
+          <View style={styles.kvRow}>
+            <Text
+              style={[styles.kvLabel, { color: theme.colors.textSecondary }]}
+            >
+              Debit
+            </Text>
+            <Text style={[styles.kvValue, { color: theme.colors.success }]}>
               {account.debit.toLocaleString()}
             </Text>
           </View>
-          <View style={styles.gridItem}>
-            <Text style={styles.gridLabel}>Cr</Text>
-            <Text style={[styles.gridValue, { color: theme.colors.error }]}>
+
+          <View style={styles.kvRow}>
+            <Text
+              style={[styles.kvLabel, { color: theme.colors.textSecondary }]}
+            >
+              Credit
+            </Text>
+            <Text style={[styles.kvValue, { color: theme.colors.error }]}>
               {account.credit.toLocaleString()}
             </Text>
           </View>
-        </View>
-        <View style={styles.valueRow}>
-          <Text style={styles.valueLabel}>Cl:</Text>
-          <Text
-            style={[
-              styles.valueText,
-              { color: theme.colors.primary, fontWeight: '700' },
-            ]}
-          >
-            {account.closing.toLocaleString(undefined, {
-              minimumFractionDigits: 2,
-            })}
-          </Text>
-        </View>
-      </View>
+
+          <View style={[styles.kvRow, { borderBottomWidth: 0 }]}>
+            <Text
+              style={[
+                styles.kvLabel,
+                { color: theme.colors.textSecondary, fontWeight: '700' },
+              ]}
+            >
+              Closing
+            </Text>
+            <Text
+              style={[
+                styles.kvValue,
+                { color: theme.colors.primary, fontWeight: '800' },
+              ]}
+            >
+              {account.closing.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+              })}
+            </Text>
+          </View>
+        </>
+      )}
     </View>
   );
 
@@ -203,9 +243,6 @@ const TrailBalanceReportScreen = ({ route }) => {
           activeOpacity={0.8}
         >
           <View style={styles.row}>
-            {/* <View style={[styles.classIcon, { backgroundColor: theme.colors.primary + '20' }]}>
-              <Icon name="business" size={18} color={theme.colors.primary} />
-            </View> */}
             <View>
               <Text style={[styles.className, { color: theme.colors.text }]}>
                 {item.class_name}
@@ -233,11 +270,78 @@ const TrailBalanceReportScreen = ({ route }) => {
     );
   };
 
+  const exportToPDF = async () => {
+    if (reportData.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'No Data',
+        text2: 'Generate the report first.',
+      });
+      return;
+    }
+
+    try {
+      const html = generateTrailBalanceHTML(
+        reportData,
+        reportType,
+        fromDate,
+        toDate,
+        isSummary,
+      );
+      await exportReportToPDF(html, 'TrailBalance');
+    } catch (error) {
+      console.log('PDF Export Error:', error);
+    }
+  };
+
+  const exportToExcel = async () => {
+    if (reportData.length === 0) {
+      Toast.show({
+        type: 'info',
+        text1: 'No Data',
+        text2: 'Generate the report first.',
+      });
+      return;
+    }
+
+    try {
+      const data = mapTrailBalanceToExcel(reportData, isSummary);
+      await exportReportToExcel(data, 'TrailBalance');
+    } catch (error) {
+      console.log('Excel Export Error:', error);
+    }
+  };
+
+  const Checkbox = ({ label, value, onValueChange }) => (
+    <TouchableOpacity
+      style={styles.checkboxWrapper}
+      onPress={() => onValueChange(!value)}
+      activeOpacity={0.7}
+    >
+      <Icon
+        name={value ? 'checkbox' : 'square-outline'}
+        size={22}
+        color={value ? theme.colors.primary : theme.colors.textSecondary}
+      />
+      <Text style={[styles.checkboxLabel, { color: theme.colors.text }]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
       <View style={styles.filterWrapper}>
+        <View style={styles.dimRow}>
+          <DimensionDropdown
+            onDimensionSelect={dimensionId => {
+              navigation.setParams({ dimensionId });
+            }}
+          />
+        </View>
+
         <DateFilter
           fromDate={fromDate}
           toDate={toDate}
@@ -248,8 +352,39 @@ const TrailBalanceReportScreen = ({ route }) => {
             setFromDate(null);
             setToDate(new Date());
             setReportData([]);
+            setSelectedDimensionId(null);
           }}
         />
+
+        <View style={styles.checkboxRow}>
+          <Checkbox
+            label="Show Zero"
+            value={showZero}
+            onValueChange={setShowZero}
+          />
+          <Checkbox
+            label="Summary"
+            value={isSummary}
+            onValueChange={setIsSummary}
+          />
+        </View>
+
+        <View style={styles.exportRow}>
+          <TouchableOpacity
+            style={[styles.exportBtn, { backgroundColor: '#FF5722' }]}
+            onPress={exportToPDF}
+          >
+            <Icon name="document-text-outline" size={18} color="#FFF" />
+            <Text style={styles.exportText}>PDF</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.exportBtn, { backgroundColor: '#4CAF50' }]}
+            onPress={exportToExcel}
+          >
+            <Icon name="grid-outline" size={18} color="#FFF" />
+            <Text style={styles.exportText}>EXCEL</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {isLoading ? (
@@ -292,6 +427,50 @@ const styles = StyleSheet.create({
   filterWrapper: {
     padding: 16,
     paddingBottom: 8,
+  },
+  dimRow: {
+    marginBottom: 8,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 12,
+    gap: 24,
+    paddingHorizontal: 4,
+  },
+  checkboxWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  exportRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+    marginBottom: 10,
+  },
+  exportBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  exportText: {
+    color: '#FFF',
+    fontWeight: '800',
+    fontSize: 13,
   },
   content: {
     flex: 1,
@@ -367,64 +546,50 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   accountList: {
-    paddingLeft: 24,
-    paddingRight: 12,
+    paddingHorizontal: 8,
+    paddingTop: 4,
   },
-  accountRow: {
-    paddingVertical: 12,
+  accountContainer: {
+    marginBottom: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  accountHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    marginBottom: 8,
     borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingBottom: 4,
   },
-  accountInfo: {
-    marginBottom: 6,
-  },
-  accountCode: {
+  accountCodeLabel: {
     fontSize: 10,
-    fontWeight: '500',
-    marginBottom: 2,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  accountName: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  accountValues: {
-    gap: 4,
-  },
-  valueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  valueLabel: {
-    fontSize: 10,
-    color: '#999',
-    width: 24,
-  },
-  valueText: {
-    fontSize: 12,
-    fontWeight: '500',
-    flex: 1,
-    textAlign: 'right',
-  },
-  valueGrid: {
-    flexDirection: 'row',
-    backgroundColor: 'rgba(0,0,0,0.02)',
-    borderRadius: 4,
-    padding: 6,
-    gap: 12,
-  },
-  gridItem: {
-    flex: 1,
+  kvRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingVertical: 6,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(0,0,0,0.03)',
   },
-  gridLabel: {
-    fontSize: 9,
-    color: '#888',
-    fontWeight: '700',
-  },
-  gridValue: {
-    fontSize: 11,
+  kvLabel: {
+    fontSize: 12,
     fontWeight: '600',
+  },
+  kvValue: {
+    fontSize: 13,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+    paddingLeft: 20,
   },
   classTotal: {
     marginVertical: 12,
