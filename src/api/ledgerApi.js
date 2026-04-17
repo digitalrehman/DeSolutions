@@ -178,6 +178,27 @@ export const ledgerApi = baseApi.injectEndpoints({
         return result.data ? { data: result.data } : { error: result.error };
       },
     }),
+    getBalanceSheet: builder.mutation({
+      queryFn: async (body, api, extraOptions, baseQuery) => {
+        const { company, to_date, dimension_id } = body;
+
+        const state = api.getState();
+        const activeCompany = company || state.auth.company;
+
+        const formData = new FormData();
+        formData.append('company', activeCompany);
+        formData.append('to_date', to_date);
+        formData.append('dimension_id', dimension_id || 0);
+
+        const result = await baseQuery({
+          url: 'ledger/balance_sheet.php',
+          method: 'POST',
+          body: formData,
+        });
+
+        return result.data ? { data: result.data } : { error: result.error };
+      },
+    }),
   }),
   overrideExisting: true,
 });
@@ -191,4 +212,5 @@ export const {
   useGetGLAccountDropdownMutation,
   useGetCounterPartyDropdownMutation,
   useGetTrailBalanceMutation,
+  useGetBalanceSheetMutation,
 } = ledgerApi;

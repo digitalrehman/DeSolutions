@@ -11,6 +11,7 @@ const DateFilter = ({
   onToDate,
   onClear,
   onFilter,
+  hideFromDate = false,
 }) => {
   const { theme } = useTheme();
   const [pickerVisible, setPickerVisible] = useState(null);
@@ -40,40 +41,49 @@ const DateFilter = ({
   return (
     <View style={s.container}>
       <View style={s.row}>
-        <TouchableOpacity
-          style={[s.dateBox, fromDate && { borderColor: theme.colors.primary }]}
-          onPress={() => setPickerVisible('from')}
-          activeOpacity={0.75}
-        >
-          <Icon
-            name="calendar-outline"
-            size={16}
-            color={fromDate ? theme.colors.primary : theme.colors.textSecondary}
-            style={s.calIcon}
-          />
-          <View style={s.dateTextWrapper}>
-            <Text
+        {!hideFromDate && (
+          <>
+            <TouchableOpacity
               style={[
-                s.dateText,
-                {
-                  color: fromDate
-                    ? theme.colors.text
-                    : theme.colors.textSecondary,
-                },
+                s.dateBox,
+                fromDate && { borderColor: theme.colors.primary },
               ]}
-              numberOfLines={1}
+              onPress={() => setPickerVisible('from')}
+              activeOpacity={0.75}
             >
-              {formatDate(fromDate, 'From Date')}
-            </Text>
-          </View>
-        </TouchableOpacity>
+              <Icon
+                name="calendar-outline"
+                size={16}
+                color={
+                  fromDate ? theme.colors.primary : theme.colors.textSecondary
+                }
+                style={s.calIcon}
+              />
+              <View style={s.dateTextWrapper}>
+                <Text
+                  style={[
+                    s.dateText,
+                    {
+                      color: fromDate
+                        ? theme.colors.text
+                        : theme.colors.textSecondary,
+                    },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {formatDate(fromDate, 'From Date')}
+                </Text>
+              </View>
+            </TouchableOpacity>
 
-        <Icon
-          name="arrow-forward"
-          size={14}
-          color={theme.colors.border}
-          style={s.arrow}
-        />
+            <Icon
+              name="arrow-forward"
+              size={14}
+              color={theme.colors.border}
+              style={s.arrow}
+            />
+          </>
+        )}
 
         <TouchableOpacity
           style={[s.dateBox, toDate && { borderColor: theme.colors.primary }]}

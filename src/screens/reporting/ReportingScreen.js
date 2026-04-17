@@ -70,7 +70,7 @@ const reportingGroups = [
     navParams: [
       { screen: 'Ledger', params: { type: 'account' } },
       { screen: 'TrailBalanceReport', params: {} },
-      { screen: 'TrailBalanceReport', params: { type: 'balance_sheet' } },
+      { screen: 'BalanceSheetReport', params: {} },
       { screen: 'TrailBalanceReport', params: { type: 'profit_loss' } },
       { screen: 'TrailBalanceReport', params: { type: 'cash_flow' } },
     ],
