@@ -109,8 +109,20 @@ const TrailBalanceReportScreen = ({ route, navigation }) => {
   };
 
   const renderAccount = account => (
-    <View
+    <TouchableOpacity
       key={account.code}
+      activeOpacity={0.7}
+      onPress={() =>
+        navigation.navigate('Ledger', {
+          account: account.code,
+          title: account.name,
+          fromDate: fromDate,
+          toDate: toDate,
+          personId: '',
+          dimensionId: selectedDimensionId || 0,
+          type: 'account',
+        })
+      }
       style={[
         styles.accountContainer,
         {
@@ -185,7 +197,7 @@ const TrailBalanceReportScreen = ({ route, navigation }) => {
           </View>
         </>
       )}
-    </View>
+    </TouchableOpacity>
   );
 
   const renderGroup = group => {

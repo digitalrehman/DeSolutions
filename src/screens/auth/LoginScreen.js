@@ -156,17 +156,6 @@ const LoginScreen = ({ navigation }) => {
               {/* Form Section */}
               <View style={dynamicStyles.formContainer}>
                 <CustomInput
-                  label="Company"
-                  placeholder="Enter your company name"
-                  value={formData.company}
-                  onChangeText={value => handleInputChange('company', value)}
-                  error={errors.company}
-                  leftIcon="business-outline"
-                  autoCapitalize="none"
-                  returnKeyType="next"
-                />
-
-                <CustomInput
                   label="Username"
                   placeholder="Enter your username"
                   value={formData.username}
@@ -188,6 +177,17 @@ const LoginScreen = ({ navigation }) => {
                   secureTextEntry
                   returnKeyType="done"
                   onSubmitEditing={handleLogin}
+                />
+
+                <CustomInput
+                  label="Company"
+                  placeholder="Enter your company name"
+                  value={formData.company}
+                  onChangeText={value => handleInputChange('company', value)}
+                  error={errors.company}
+                  leftIcon="business-outline"
+                  autoCapitalize="none"
+                  returnKeyType="next"
                 />
 
                 <CustomButton

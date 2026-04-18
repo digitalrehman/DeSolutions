@@ -97,8 +97,19 @@ const BalanceSheetReportScreen = ({ route, navigation }) => {
   };
 
   const renderAccount = account => (
-    <View
+    <TouchableOpacity
       key={account.account_code}
+      activeOpacity={0.7}
+      onPress={() =>
+        navigation.navigate('Ledger', {
+          account: account.account_code,
+          title: account.account_name,
+          toDate: toDate,
+          personId: '',
+          dimensionId: selectedDimensionId || 0,
+          type: 'account',
+        })
+      }
       style={[
         styles.accountContainer,
         {
@@ -136,7 +147,7 @@ const BalanceSheetReportScreen = ({ route, navigation }) => {
           })}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderGroup = group => {

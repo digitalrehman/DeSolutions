@@ -28,6 +28,9 @@ import VoidTransactionsScreen from '@screens/voidTransactions/VoidTransactionsSc
 import VoidTransactionDetailScreen from '@screens/voidTransactions/VoidTransactionDetailScreen';
 import TrailBalanceReportScreen from '@screens/reporting/TrailBalanceReportScreen';
 import BalanceSheetReportScreen from '@screens/reporting/BalanceSheetReportScreen';
+import AttendanceScreen from '@screens/hcm/AttendanceScreen';
+import ExpenseClaimInquiryScreen from '@screens/hcm/ExpenseClaimInquiryScreen';
+import ExpenseClaimScreen from '@screens/hcm/ExpenseClaimScreen';
 import { LoadingSpinner, CustomHeader } from '@components/common';
 
 const Stack = createNativeStackNavigator();
@@ -191,8 +194,9 @@ const AppNavigator = () => {
               component={FinanceScreen}
             />
 
-            <Stack.Screen name="HCMAttendance" component={FinanceScreen} />
-            <Stack.Screen name="HCMExpenseClaim" component={FinanceScreen} />
+            <Stack.Screen name="HCMAttendance" component={AttendanceScreen} />
+            <Stack.Screen name="HCMExpenseClaim" component={ExpenseClaimInquiryScreen} />
+            <Stack.Screen name="ExpenseClaim" component={ExpenseClaimScreen} />
             <Stack.Screen name="HCMDVRInquiry" component={FinanceScreen} />
             <Stack.Screen name="HCMLocalPurchase" component={FinanceScreen} />
 

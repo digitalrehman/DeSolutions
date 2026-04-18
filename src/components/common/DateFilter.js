@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import CustomDatePicker from './CustomDatePicker';
 import { useTheme } from '@config/useTheme';
@@ -51,14 +51,16 @@ const DateFilter = ({
               onPress={() => setPickerVisible('from')}
               activeOpacity={0.75}
             >
-              <Icon
-                name="calendar-outline"
-                size={16}
-                color={
-                  fromDate ? theme.colors.primary : theme.colors.textSecondary
-                }
-                style={s.calIcon}
-              />
+              {Platform.OS === 'ios' && (
+                <Icon
+                  name="calendar-outline"
+                  size={16}
+                  color={
+                    fromDate ? theme.colors.primary : theme.colors.textSecondary
+                  }
+                  style={s.calIcon}
+                />
+              )}
               <View style={s.dateTextWrapper}>
                 <Text
                   style={[
@@ -90,12 +92,14 @@ const DateFilter = ({
           onPress={() => setPickerVisible('to')}
           activeOpacity={0.75}
         >
-          <Icon
-            name="calendar-outline"
-            size={16}
-            color={toDate ? theme.colors.primary : theme.colors.textSecondary}
-            style={s.calIcon}
-          />
+          {Platform.OS === 'ios' && (
+            <Icon
+              name="calendar-outline"
+              size={16}
+              color={toDate ? theme.colors.primary : theme.colors.textSecondary}
+              style={s.calIcon}
+            />
+          )}
           <View style={s.dateTextWrapper}>
             <Text
               style={[
