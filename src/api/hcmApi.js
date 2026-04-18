@@ -9,7 +9,7 @@ export const hcmApi = baseApi.injectEndpoints({
         formData.append('date', body.date);
 
         const result = await baseQuery({
-          url: 'get_attendence_detail.php',
+          url: 'hcm/get_attendence_detail.php',
           method: 'POST',
           body: formData,
         });
@@ -25,7 +25,7 @@ export const hcmApi = baseApi.injectEndpoints({
         });
 
         const result = await baseQuery({
-          url: 'user_attendance_post.php',
+          url: 'hcm/user_attendance_post.php',
           method: 'POST',
           body: formData,
         });
@@ -41,7 +41,7 @@ export const hcmApi = baseApi.injectEndpoints({
         });
 
         const result = await baseQuery({
-          url: 'expense_claim_inquiry.php',
+          url: 'hcm/expense_claim_inquiry.php',
           method: 'POST',
           body: formData,
         });
@@ -50,12 +50,12 @@ export const hcmApi = baseApi.injectEndpoints({
       },
     }),
     getClaimExpenseAccount: builder.query({
-      query: () => 'claim_expense_account.php',
+      query: () => 'hcm/claim_expense_account.php',
     }),
     postServiceExpenseClaim: builder.mutation({
       queryFn: async (body, api, extraOptions, baseQuery) => {
         const result = await baseQuery({
-          url: 'post_service_expense_claim.php',
+          url: 'hcm/post_service_expense_claim.php',
           method: 'POST',
           body: body,
         });
@@ -71,7 +71,7 @@ export const hcmApi = baseApi.injectEndpoints({
         });
 
         const result = await baseQuery({
-          url: 'view_gl.php',
+          url: 'view/view_gl.php',
           method: 'POST',
           body: formData,
         });
@@ -87,7 +87,7 @@ export const hcmApi = baseApi.injectEndpoints({
         });
 
         const result = await baseQuery({
-          url: 'view_data.php',
+          url: 'view/view_data.php',
           method: 'POST',
           body: formData,
         });

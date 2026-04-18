@@ -53,7 +53,8 @@ export default function ExpenseClaimScreen({ navigation, route }) {
   const [selectedDimensionId, setSelectedDimensionId] = useState(0);
 
   // Date Picker States
-  const [showSubmissionDatePicker, setShowSubmissionDatePicker] = useState(false);
+  const [showSubmissionDatePicker, setShowSubmissionDatePicker] =
+    useState(false);
   const [showItemDatePicker, setShowItemDatePicker] = useState(false);
 
   // Expense Item Form State
@@ -71,8 +72,10 @@ export default function ExpenseClaimScreen({ navigation, route }) {
   const [imageLoading, setImageLoading] = useState(false);
 
   // RTK Queries & Mutations
-  const { data: accountsData, isLoading: accountsLoading } = useGetClaimExpenseAccountQuery();
-  const [postServiceExpenseClaim, { isLoading: submitting }] = usePostServiceExpenseClaimMutation();
+  const { data: accountsData, isLoading: accountsLoading } =
+    useGetClaimExpenseAccountQuery();
+  const [postServiceExpenseClaim, { isLoading: submitting }] =
+    usePostServiceExpenseClaimMutation();
 
   const accountTitles = (accountsData?.data || [])
     .filter(account => account.inactive === '0' || account.inactive === 0)
@@ -83,13 +86,15 @@ export default function ExpenseClaimScreen({ navigation, route }) {
       account_name: account.account_name,
     }));
 
-  const formatNumber = (num) => {
+  const formatNumber = num => {
     if (!num) return '0';
     const parsed = parseFloat(num);
-    return isNaN(parsed) ? '0' : parsed.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return isNaN(parsed)
+      ? '0'
+      : parsed.toLocaleString(undefined, { maximumFractionDigits: 2 });
   };
 
-  const formatDate = (date) => {
+  const formatDate = date => {
     const d = new Date(date);
     const day = d.getDate().toString().padStart(2, '0');
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -97,7 +102,7 @@ export default function ExpenseClaimScreen({ navigation, route }) {
     return `${day} / ${month} / ${year}`;
   };
 
-  const formatDateForApi = (date) => {
+  const formatDateForApi = date => {
     const d = new Date(date);
     return d.toISOString().split('T')[0];
   };
@@ -178,7 +183,9 @@ export default function ExpenseClaimScreen({ navigation, route }) {
       return;
     }
 
-    const selectedAccount = accountTitles.find(acc => acc.value === expenseCategory);
+    const selectedAccount = accountTitles.find(
+      acc => acc.value === expenseCategory,
+    );
 
     setItems(prev => [
       ...prev,
@@ -201,7 +208,7 @@ export default function ExpenseClaimScreen({ navigation, route }) {
     setItemDate(new Date());
   };
 
-  const handleRemoveItem = (id) => {
+  const handleRemoveItem = id => {
     setItems(prev => {
       const filtered = prev.filter(item => item.id !== id);
       return filtered.map((item, index) => ({ ...item, srNo: index + 1 }));
@@ -210,7 +217,10 @@ export default function ExpenseClaimScreen({ navigation, route }) {
 
   const handleSubmit = async () => {
     if (items.length === 0) {
-      Toast.show({ type: 'error', text1: 'Please add at least one expense item' });
+      Toast.show({
+        type: 'error',
+        text1: 'Please add at least one expense item',
+      });
       return;
     }
 
@@ -254,7 +264,10 @@ export default function ExpenseClaimScreen({ navigation, route }) {
       const response = await postServiceExpenseClaim(formData).unwrap();
 
       if (response.status === true || response.status === 'true') {
-        Toast.show({ type: 'success', text1: 'Expense claim submitted successfully' });
+        Toast.show({
+          type: 'success',
+          text1: 'Expense claim submitted successfully',
+        });
 
         // Reset all fields
         setItems([]);
@@ -292,67 +305,113 @@ export default function ExpenseClaimScreen({ navigation, route }) {
   const paddingTop = Platform.OS === 'ios' ? insets.top + 10 : insets.top + 15;
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.primary, paddingTop }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" color="#FFF" size={28} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Expense Claim</Text>
-        <View style={{ width: 28 }} />
-      </View>
-
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}>
-
+        showsVerticalScrollIndicator={false}
+      >
         <View style={{ marginBottom: 16 }}>
-          <DimensionDropdown 
-            onDimensionSelect={(dimensionId) => {
+          <DimensionDropdown
+            onDimensionSelect={dimensionId => {
               setSelectedDimensionId(dimensionId);
-            }} 
+            }}
           />
         </View>
 
         {/* Claim Details Card */}
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.cardTitle, { color: theme.colors.text, borderBottomColor: theme.colors.border }]}>Claim Details</Text>
+          <Text
+            style={[
+              styles.cardTitle,
+              {
+                color: theme.colors.text,
+                borderBottomColor: theme.colors.border,
+              },
+            ]}
+          >
+            Claim Details
+          </Text>
 
           {/* Claim Submission Date */}
           <View style={styles.fieldRow}>
-            <Text style={[styles.fieldLabel, { color: theme.colors.text }]}>Claim Submission Date:</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.text }]}>
+              Claim Submission Date:
+            </Text>
             <TouchableOpacity
-              style={[styles.dateInputField, { backgroundColor: theme.colors.background, borderColor: theme.colors.border }]}
-              onPress={() => setShowSubmissionDatePicker(true)}>
-              <Text style={[styles.dateInputText, { color: theme.colors.text }]}>{formatDate(submissionDate)}</Text>
-              <Ionicons name="calendar-outline" size={20} color={theme.colors.textSecondary} />
+              style={[
+                styles.dateInputField,
+                {
+                  backgroundColor: theme.colors.background,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+              onPress={() => setShowSubmissionDatePicker(true)}
+            >
+              <Text
+                style={[styles.dateInputText, { color: theme.colors.text }]}
+              >
+                {formatDate(submissionDate)}
+              </Text>
+              <Ionicons
+                name="calendar-outline"
+                size={20}
+                color={theme.colors.textSecondary}
+              />
             </TouchableOpacity>
           </View>
 
           {/* Purpose of Expense */}
           <View style={styles.purposeSection}>
-            <Text style={[styles.fieldLabel, { color: theme.colors.text }]}>Purpose of Expense:</Text>
-            <Text style={[styles.purposeHint, { color: theme.colors.textSecondary }]}>(Select one option)</Text>
+            <Text style={[styles.fieldLabel, { color: theme.colors.text }]}>
+              Purpose of Expense:
+            </Text>
+            <Text
+              style={[
+                styles.purposeHint,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
+              (Select one option)
+            </Text>
             <View style={styles.checkboxGrid}>
-              {PURPOSE_OPTIONS.map((purpose) => {
+              {PURPOSE_OPTIONS.map(purpose => {
                 const isSelected = selectedPurpose === purpose.id;
 
                 return (
                   <TouchableOpacity
                     key={purpose.id}
-                    style={[styles.checkboxRow, { backgroundColor: theme.colors.background, borderColor: theme.colors.border }]}
-                    onPress={() => setSelectedPurpose(purpose.id)}>
-                    <View style={[
-                      styles.checkbox,
-                      { borderColor: theme.colors.textSecondary },
-                      isSelected && { backgroundColor: theme.colors.success, borderColor: theme.colors.success },
-                    ]}>
+                    style={[
+                      styles.checkboxRow,
+                      {
+                        backgroundColor: theme.colors.background,
+                        borderColor: theme.colors.border,
+                      },
+                    ]}
+                    onPress={() => setSelectedPurpose(purpose.id)}
+                  >
+                    <View
+                      style={[
+                        styles.checkbox,
+                        { borderColor: theme.colors.textSecondary },
+                        isSelected && {
+                          backgroundColor: theme.colors.success,
+                          borderColor: theme.colors.success,
+                        },
+                      ]}
+                    >
                       {isSelected && (
                         <Ionicons name="checkmark" size={14} color="#FFF" />
                       )}
                     </View>
-                    <Text style={[styles.checkboxLabel, { color: theme.colors.text }]}>
+                    <Text
+                      style={[
+                        styles.checkboxLabel,
+                        { color: theme.colors.text },
+                      ]}
+                    >
                       {purpose.label}
                     </Text>
                   </TouchableOpacity>
@@ -363,7 +422,14 @@ export default function ExpenseClaimScreen({ navigation, route }) {
             {/* Other Specify Field */}
             {selectedPurpose === 7 && (
               <TextInput
-                style={[styles.otherSpecifyInput, { backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text }]}
+                style={[
+                  styles.otherSpecifyInput,
+                  {
+                    backgroundColor: theme.colors.background,
+                    borderColor: theme.colors.border,
+                    color: theme.colors.text,
+                  },
+                ]}
                 placeholder="Please specify..."
                 placeholderTextColor={theme.colors.textSecondary}
                 value={otherPurposeText}
@@ -371,31 +437,70 @@ export default function ExpenseClaimScreen({ navigation, route }) {
               />
             )}
           </View>
-
         </View>
 
         {/* Expense Items Card */}
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.cardTitle, { color: theme.colors.text, borderBottomColor: theme.colors.border }]}>Expense Items</Text>
+          <Text
+            style={[
+              styles.cardTitle,
+              {
+                color: theme.colors.text,
+                borderBottomColor: theme.colors.border,
+              },
+            ]}
+          >
+            Expense Items
+          </Text>
 
           {/* Add Item Form */}
-          <View style={[styles.addItemForm, { backgroundColor: theme.colors.background }]}>
+          <View
+            style={[
+              styles.addItemForm,
+              { backgroundColor: theme.colors.background },
+            ]}
+          >
             {/* Date Field */}
             <View style={styles.formRow}>
-              <Text style={[styles.formLabel, { color: theme.colors.text }]}>Date:</Text>
+              <Text style={[styles.formLabel, { color: theme.colors.text }]}>
+                Date:
+              </Text>
               <TouchableOpacity
-                style={[styles.formDateField, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-                onPress={() => setShowItemDatePicker(true)}>
-                <Text style={[styles.formDateText, { color: theme.colors.text }]}>{formatDate(itemDate)}</Text>
-                <Ionicons name="calendar-outline" size={18} color={theme.colors.textSecondary} />
+                style={[
+                  styles.formDateField,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+                onPress={() => setShowItemDatePicker(true)}
+              >
+                <Text
+                  style={[styles.formDateText, { color: theme.colors.text }]}
+                >
+                  {formatDate(itemDate)}
+                </Text>
+                <Ionicons
+                  name="calendar-outline"
+                  size={18}
+                  color={theme.colors.textSecondary}
+                />
               </TouchableOpacity>
             </View>
 
             {/* Expense Category Dropdown */}
             <View style={styles.formRow}>
-              <Text style={[styles.formLabel, { color: theme.colors.text }]}>Expense Category:</Text>
+              <Text style={[styles.formLabel, { color: theme.colors.text }]}>
+                Expense Category:
+              </Text>
               <Dropdown
-                style={[styles.formDropdown, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+                style={[
+                  styles.formDropdown,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
                 data={accountTitles}
                 search
                 searchPlaceholder="Search account..."
@@ -404,13 +509,32 @@ export default function ExpenseClaimScreen({ navigation, route }) {
                 value={expenseCategory}
                 onChange={item => setExpenseCategory(item.account_code)}
                 placeholder={accountsLoading ? 'Loading...' : 'Select Category'}
-                placeholderStyle={[styles.dropdownPlaceholder, { color: theme.colors.textSecondary }]}
-                selectedTextStyle={[styles.dropdownSelectedText, { color: theme.colors.text }]}
-                itemTextStyle={[styles.dropdownItemText, { color: theme.colors.text }]}
-                containerStyle={[styles.dropdownContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
+                placeholderStyle={[
+                  styles.dropdownPlaceholder,
+                  { color: theme.colors.textSecondary },
+                ]}
+                selectedTextStyle={[
+                  styles.dropdownSelectedText,
+                  { color: theme.colors.text },
+                ]}
+                itemTextStyle={[
+                  styles.dropdownItemText,
+                  { color: theme.colors.text },
+                ]}
+                containerStyle={[
+                  styles.dropdownContainer,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
                 renderLeftIcon={() =>
                   accountsLoading && (
-                    <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginRight: 8 }} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                      style={{ marginRight: 8 }}
+                    />
                   )
                 }
               />
@@ -418,9 +542,18 @@ export default function ExpenseClaimScreen({ navigation, route }) {
 
             {/* Description Field */}
             <View style={styles.formRow}>
-              <Text style={[styles.formLabel, { color: theme.colors.text }]}>Description:</Text>
+              <Text style={[styles.formLabel, { color: theme.colors.text }]}>
+                Description:
+              </Text>
               <TextInput
-                style={[styles.formInput, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.text }]}
+                style={[
+                  styles.formInput,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                    color: theme.colors.text,
+                  },
+                ]}
                 placeholder="Enter description..."
                 placeholderTextColor={theme.colors.textSecondary}
                 value={description}
@@ -430,9 +563,18 @@ export default function ExpenseClaimScreen({ navigation, route }) {
 
             {/* Amount Field */}
             <View style={styles.formRow}>
-              <Text style={[styles.formLabel, { color: theme.colors.text }]}>Amount:</Text>
+              <Text style={[styles.formLabel, { color: theme.colors.text }]}>
+                Amount:
+              </Text>
               <TextInput
-                style={[styles.formInput, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.text }]}
+                style={[
+                  styles.formInput,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                    color: theme.colors.text,
+                  },
+                ]}
                 placeholder="0.00"
                 placeholderTextColor={theme.colors.textSecondary}
                 keyboardType="numeric"
@@ -442,56 +584,165 @@ export default function ExpenseClaimScreen({ navigation, route }) {
             </View>
 
             {/* Add Item Button */}
-            <TouchableOpacity style={[styles.addItemBtn, { backgroundColor: theme.colors.surface, borderColor: theme.colors.text }]} onPress={handleAddItem}>
+            <TouchableOpacity
+              style={[
+                styles.addItemBtn,
+                {
+                  backgroundColor: theme.colors.surface,
+                  borderColor: theme.colors.text,
+                },
+              ]}
+              onPress={handleAddItem}
+            >
               <Ionicons name="add-circle" size={22} color={theme.colors.text} />
-              <Text style={[styles.addItemBtnText, { color: theme.colors.text }]}>Add Item</Text>
+              <Text
+                style={[styles.addItemBtnText, { color: theme.colors.text }]}
+              >
+                Add Item
+              </Text>
             </TouchableOpacity>
           </View>
 
           {/* Items Table */}
           {items.length > 0 && (
-            <View style={[styles.tableContainer, { borderColor: theme.colors.border }]}>
+            <View
+              style={[
+                styles.tableContainer,
+                { borderColor: theme.colors.border },
+              ]}
+            >
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 <View>
                   {/* Table Header */}
-                  <View style={[styles.tableHeader, { backgroundColor: theme.colors.primary }]}>
-                    <Text style={[styles.tableHeaderCell, styles.colSr]}>Sr.</Text>
-                    <Text style={[styles.tableHeaderCell, styles.colDate]}>Date</Text>
-                    <Text style={[styles.tableHeaderCell, styles.colCategory]}>Expense Category</Text>
-                    <Text style={[styles.tableHeaderCell, styles.colDesc]}>Description</Text>
-                    <Text style={[styles.tableHeaderCell, styles.colAmount]}>Amount</Text>
-                    <Text style={[styles.tableHeaderCell, styles.colAction]}></Text>
+                  <View
+                    style={[
+                      styles.tableHeader,
+                      { backgroundColor: theme.colors.primary },
+                    ]}
+                  >
+                    <Text style={[styles.tableHeaderCell, styles.colSr]}>
+                      Sr.
+                    </Text>
+                    <Text style={[styles.tableHeaderCell, styles.colDate]}>
+                      Date
+                    </Text>
+                    <Text style={[styles.tableHeaderCell, styles.colCategory]}>
+                      Expense Category
+                    </Text>
+                    <Text style={[styles.tableHeaderCell, styles.colDesc]}>
+                      Description
+                    </Text>
+                    <Text style={[styles.tableHeaderCell, styles.colAmount]}>
+                      Amount
+                    </Text>
+                    <Text
+                      style={[styles.tableHeaderCell, styles.colAction]}
+                    ></Text>
                   </View>
 
                   {/* Table Rows */}
                   {items.map((item, index) => (
                     <View
                       key={item.id}
-                      style={[styles.tableRow, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }, index % 2 === 0 && { backgroundColor: theme.colors.background }]}>
-                      <Text style={[styles.tableCell, styles.colSr, { color: theme.colors.text }]}>{item.srNo}</Text>
-                      <Text style={[styles.tableCell, styles.colDate, { color: theme.colors.text }]}>{formatDate(item.date)}</Text>
-                      <Text style={[styles.tableCell, styles.colCategory, { color: theme.colors.text }]} numberOfLines={2}>
+                      style={[
+                        styles.tableRow,
+                        {
+                          backgroundColor: theme.colors.surface,
+                          borderBottomColor: theme.colors.border,
+                        },
+                        index % 2 === 0 && {
+                          backgroundColor: theme.colors.background,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.tableCell,
+                          styles.colSr,
+                          { color: theme.colors.text },
+                        ]}
+                      >
+                        {item.srNo}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.tableCell,
+                          styles.colDate,
+                          { color: theme.colors.text },
+                        ]}
+                      >
+                        {formatDate(item.date)}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.tableCell,
+                          styles.colCategory,
+                          { color: theme.colors.text },
+                        ]}
+                        numberOfLines={2}
+                      >
                         {item.expenseCategoryLabel}
                       </Text>
-                      <Text style={[styles.tableCell, styles.colDesc, { color: theme.colors.text }]} numberOfLines={2}>
+                      <Text
+                        style={[
+                          styles.tableCell,
+                          styles.colDesc,
+                          { color: theme.colors.text },
+                        ]}
+                        numberOfLines={2}
+                      >
                         {item.description || '-'}
                       </Text>
-                      <Text style={[styles.tableCell, styles.colAmount, { color: theme.colors.text }]}>{formatNumber(item.amount)}</Text>
+                      <Text
+                        style={[
+                          styles.tableCell,
+                          styles.colAmount,
+                          { color: theme.colors.text },
+                        ]}
+                      >
+                        {formatNumber(item.amount)}
+                      </Text>
                       <TouchableOpacity
                         style={[styles.tableCell, styles.colAction]}
-                        onPress={() => handleRemoveItem(item.id)}>
-                        <Ionicons name="trash-outline" size={18} color={theme.colors.error} />
+                        onPress={() => handleRemoveItem(item.id)}
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color={theme.colors.error}
+                        />
                       </TouchableOpacity>
                     </View>
                   ))}
 
                   {/* Total Row */}
-                  <View style={[styles.totalRow, { backgroundColor: theme.colors.border }]}>
+                  <View
+                    style={[
+                      styles.totalRow,
+                      { backgroundColor: theme.colors.border },
+                    ]}
+                  >
                     <Text style={[styles.totalCell, styles.colSr]}></Text>
                     <Text style={[styles.totalCell, styles.colDate]}></Text>
                     <Text style={[styles.totalCell, styles.colCategory]}></Text>
-                    <Text style={[styles.totalLabel, styles.colDesc, { color: theme.colors.text }]}>Total:</Text>
-                    <Text style={[styles.totalAmount, styles.colAmount, { color: theme.colors.primary }]}>{calculateTotal()}</Text>
+                    <Text
+                      style={[
+                        styles.totalLabel,
+                        styles.colDesc,
+                        { color: theme.colors.text },
+                      ]}
+                    >
+                      Total:
+                    </Text>
+                    <Text
+                      style={[
+                        styles.totalAmount,
+                        styles.colAmount,
+                        { color: theme.colors.primary },
+                      ]}
+                    >
+                      {calculateTotal()}
+                    </Text>
                     <Text style={[styles.totalCell, styles.colAction]}></Text>
                   </View>
                 </View>
@@ -502,9 +753,26 @@ export default function ExpenseClaimScreen({ navigation, route }) {
 
         {/* Additional Notes Card */}
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Additional Notes <Text style={[styles.cardTitleHint, { color: theme.colors.textSecondary }]}>(Names of Accompanying Person(s) if any)</Text></Text>
+          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+            Additional Notes{' '}
+            <Text
+              style={[
+                styles.cardTitleHint,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
+              (Names of Accompanying Person(s) if any)
+            </Text>
+          </Text>
           <TextInput
-            style={[styles.notesInput, { backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.text }]}
+            style={[
+              styles.notesInput,
+              {
+                backgroundColor: theme.colors.background,
+                borderColor: theme.colors.border,
+                color: theme.colors.text,
+              },
+            ]}
             placeholder=""
             placeholderTextColor={theme.colors.textSecondary}
             multiline
@@ -516,7 +784,17 @@ export default function ExpenseClaimScreen({ navigation, route }) {
 
         {/* Attach Receipt Card */}
         <View style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>Attach Receipt / Document <Text style={[styles.cardTitleHint, { color: theme.colors.textSecondary }]}>(Take photos of your bills before submitting the form.)</Text></Text>
+          <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+            Attach Receipt / Document{' '}
+            <Text
+              style={[
+                styles.cardTitleHint,
+                { color: theme.colors.textSecondary },
+              ]}
+            >
+              (Take photos of your bills before submitting the form.)
+            </Text>
+          </Text>
 
           {imageLoading ? (
             <View style={styles.attachButtonsRow}>
@@ -526,34 +804,94 @@ export default function ExpenseClaimScreen({ navigation, route }) {
             <View style={styles.attachButtonsRow}>
               <TouchableOpacity
                 onPress={handleCameraCapture}
-                style={[styles.attachOptionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <View style={[styles.attachIconWrap, { backgroundColor: theme.colors.primary }]}>
+                style={[
+                  styles.attachOptionButton,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.attachIconWrap,
+                    { backgroundColor: theme.colors.primary },
+                  ]}
+                >
                   <Ionicons name="camera" size={24} color="#FFF" />
                 </View>
-                <Text style={[styles.attachOptionText, { color: theme.colors.text }]}>Camera</Text>
+                <Text
+                  style={[
+                    styles.attachOptionText,
+                    { color: theme.colors.text },
+                  ]}
+                >
+                  Camera
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handleImagePicker}
-                style={[styles.attachOptionButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}>
-                <View style={[styles.attachIconWrap, { backgroundColor: theme.colors.secondary }]}>
+                style={[
+                  styles.attachOptionButton,
+                  {
+                    backgroundColor: theme.colors.surface,
+                    borderColor: theme.colors.border,
+                  },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.attachIconWrap,
+                    { backgroundColor: theme.colors.secondary },
+                  ]}
+                >
                   <Ionicons name="images" size={24} color="#FFF" />
                 </View>
-                <Text style={[styles.attachOptionText, { color: theme.colors.text }]}>Gallery</Text>
+                <Text
+                  style={[
+                    styles.attachOptionText,
+                    { color: theme.colors.text },
+                  ]}
+                >
+                  Gallery
+                </Text>
               </TouchableOpacity>
             </View>
           )}
 
           {selectedImage && (
             <TouchableOpacity
-              style={[styles.imagePreviewContainer, { backgroundColor: theme.colors.background, borderColor: theme.colors.border }]}
-              onPress={() => setShowImageModal(true)}>
-              <Image source={{ uri: selectedImage }} style={styles.imagePreview} />
-              <Text style={[styles.imagePreviewText, { color: theme.colors.textSecondary }]}>Tap to view full image</Text>
+              style={[
+                styles.imagePreviewContainer,
+                {
+                  backgroundColor: theme.colors.background,
+                  borderColor: theme.colors.border,
+                },
+              ]}
+              onPress={() => setShowImageModal(true)}
+            >
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.imagePreview}
+              />
+              <Text
+                style={[
+                  styles.imagePreviewText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                Tap to view full image
+              </Text>
               <TouchableOpacity
                 style={styles.removeImageBtn}
-                onPress={() => setSelectedImage(null)}>
-                <Ionicons name="close-circle" size={24} color={theme.colors.error} />
+                onPress={() => setSelectedImage(null)}
+              >
+                <Ionicons
+                  name="close-circle"
+                  size={24}
+                  color={theme.colors.error}
+                />
               </TouchableOpacity>
             </TouchableOpacity>
           )}
@@ -561,15 +899,34 @@ export default function ExpenseClaimScreen({ navigation, route }) {
 
         {/* Submit Button */}
         <TouchableOpacity
-          style={[styles.submitBtn, { backgroundColor: theme.colors.surface, borderColor: theme.colors.text }, (submitting || items.length === 0) && { backgroundColor: theme.colors.border, borderColor: theme.colors.textSecondary }]}
+          style={[
+            styles.submitBtn,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.text,
+            },
+            (submitting || items.length === 0) && {
+              backgroundColor: theme.colors.border,
+              borderColor: theme.colors.textSecondary,
+            },
+          ]}
           onPress={handleSubmit}
-          disabled={submitting || items.length === 0}>
+          disabled={submitting || items.length === 0}
+        >
           {submitting ? (
             <ActivityIndicator color={theme.colors.text} />
           ) : (
             <>
-              <Ionicons name="paper-plane" size={22} color={theme.colors.text} />
-              <Text style={[styles.submitBtnText, { color: theme.colors.text }]}>Submit Expense Claim</Text>
+              <Ionicons
+                name="paper-plane"
+                size={22}
+                color={theme.colors.text}
+              />
+              <Text
+                style={[styles.submitBtnText, { color: theme.colors.text }]}
+              >
+                Submit Expense Claim
+              </Text>
             </>
           )}
         </TouchableOpacity>
@@ -581,7 +938,7 @@ export default function ExpenseClaimScreen({ navigation, route }) {
       <CustomDatePicker
         visible={showSubmissionDatePicker}
         onClose={() => setShowSubmissionDatePicker(false)}
-        onSelect={(date) => {
+        onSelect={date => {
           setSubmissionDate(date);
           setShowSubmissionDatePicker(false);
         }}
@@ -592,7 +949,7 @@ export default function ExpenseClaimScreen({ navigation, route }) {
       <CustomDatePicker
         visible={showItemDatePicker}
         onClose={() => setShowItemDatePicker(false)}
-        onSelect={(date) => {
+        onSelect={date => {
           setItemDate(date);
           setShowItemDatePicker(false);
         }}
@@ -605,21 +962,36 @@ export default function ExpenseClaimScreen({ navigation, route }) {
         visible={showImageModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowImageModal(false)}>
+        onRequestClose={() => setShowImageModal(false)}
+      >
         <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.colors.surface },
+            ]}
+          >
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Image Preview</Text>
+              <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+                Image Preview
+              </Text>
               <TouchableOpacity onPress={() => setShowImageModal(false)}>
                 <Ionicons name="close" size={24} color={theme.colors.text} />
               </TouchableOpacity>
             </View>
             {selectedImage && (
-              <Image source={{ uri: selectedImage }} style={styles.modalImage} />
+              <Image
+                source={{ uri: selectedImage }}
+                style={styles.modalImage}
+              />
             )}
             <TouchableOpacity
-              style={[styles.modalCloseButton, { backgroundColor: theme.colors.primary }]}
-              onPress={() => setShowImageModal(false)}>
+              style={[
+                styles.modalCloseButton,
+                { backgroundColor: theme.colors.primary },
+              ]}
+              onPress={() => setShowImageModal(false)}
+            >
               <Text style={styles.modalCloseText}>Close</Text>
             </TouchableOpacity>
           </View>

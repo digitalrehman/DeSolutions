@@ -294,35 +294,27 @@ export default function ExpenseClaimInquiryScreen({ navigation }) {
     );
   };
 
-  const paddingTop = Platform.OS === 'ios' ? insets.top + 10 : insets.top + 15;
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: 'Expense Claims',
+      hideHomeIcon: true,
+      headerRight: () => (
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('ExpenseClaim', { onRefresh: fetchInquiryData })
+          }
+          style={{ paddingRight: 10 }}
+        >
+          <Ionicons name="add" color="#FFF" size={28} />
+        </TouchableOpacity>
+      ),
+    });
+  });
 
   return (
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
     >
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          { backgroundColor: theme.colors.primary, paddingTop },
-        ]}
-      >
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backBtn}
-        >
-          <Ionicons name="chevron-back" color="#FFF" size={28} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Expense Claims</Text>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('ExpenseClaim', { onRefresh: fetchInquiryData })
-          }
-          style={styles.newBtn}
-        >
-          <Ionicons name="add" color="#FFF" size={24} />
-        </TouchableOpacity>
-      </View>
 
       <View style={styles.inquiryContainer}>
         <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
@@ -461,7 +453,7 @@ export default function ExpenseClaimInquiryScreen({ navigation }) {
         <CustomDatePicker
           visible={showFilterFromDatePicker}
           onClose={() => setShowFilterFromDatePicker(false)}
-          onSelect={(date) => {
+          onSelect={date => {
             setFilterFromDate(date);
             setShowFilterFromDatePicker(false);
           }}
@@ -471,7 +463,7 @@ export default function ExpenseClaimInquiryScreen({ navigation }) {
         <CustomDatePicker
           visible={showFilterToDatePicker}
           onClose={() => setShowFilterToDatePicker(false)}
-          onSelect={(date) => {
+          onSelect={date => {
             setFilterToDate(date);
             setShowFilterToDatePicker(false);
           }}

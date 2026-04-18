@@ -51,7 +51,7 @@ const CustomHeader = ({ navigation, route, options, back }) => {
         {/* Right Buttons */}
         <View style={styles.rightContainer}>
           {options?.headerRight ? options.headerRight() : null}
-          {!isMainScreen ? (
+          {!isMainScreen && !options?.hideHomeIcon ? (
             <TouchableOpacity
               onPress={() => navigation.navigate('MainScreen')}
               style={styles.iconBtn}
@@ -59,7 +59,7 @@ const CustomHeader = ({ navigation, route, options, back }) => {
               <Icon name="home-outline" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           ) : (
-            <View style={{ width: 40 }} />
+            !options?.headerRight && <View style={{ width: 40 }} />
           )}
         </View>
       </View>
