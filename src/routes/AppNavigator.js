@@ -23,6 +23,11 @@ import CRMMonthlyExpenseScreen from '@screens/crm/CRMMonthlyExpenseScreen';
 import CRMSampleRequestScreen from '@screens/crm/CRMSampleRequestScreen';
 import CRMGiveawayRequestScreen from '@screens/crm/CRMGiveawayRequestScreen';
 import CRMWorkshopRequestScreen from '@screens/crm/CRMWorkshopRequestScreen';
+import CRMApprovalDashboard from '@screens/crm/CRMApprovalDashboard';
+import CRMMonthlyExpenseApprovalScreen from '@screens/crm/CRMMonthlyExpenseApprovalScreen';
+import CRMSampleApprovalScreen from '@screens/crm/CRMSampleApprovalScreen';
+import CRMWorkshopApprovalScreen from '@screens/crm/CRMWorkshopApprovalScreen';
+import CRMGiveawayApprovalScreen from '@screens/crm/CRMGiveawayApprovalScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
 import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
 import LedgerScreen from '@components/ledger/LedgerScreen';
@@ -226,6 +231,11 @@ const AppNavigator = () => {
             <Stack.Screen name="CRMSampleRequest" component={CRMSampleRequestScreen} />
             <Stack.Screen name="CRMGiveawayRequest" component={CRMGiveawayRequestScreen} />
             <Stack.Screen name="CRMWorkshopRequest" component={CRMWorkshopRequestScreen} />
+            <Stack.Screen name="CRMApprovalDashboard" component={CRMApprovalDashboard} options={{ title: 'Approval Dashboard' }} />
+            <Stack.Screen name="CRMMonthlyExpenseApproval" component={CRMMonthlyExpenseApprovalScreen} options={{ title: 'Expense Approval' }} />
+            <Stack.Screen name="CRMSampleApproval" component={CRMSampleApprovalScreen} options={{ title: 'Samples Approval' }} />
+            <Stack.Screen name="CRMWorkshopApproval" component={CRMWorkshopApprovalScreen} options={{ title: 'Workshops Approval' }} />
+            <Stack.Screen name="CRMGiveawayApproval" component={CRMGiveawayApprovalScreen} options={{ title: 'Give away Approval' }} />
             <Stack.Screen name="CRMViewLead" component={FinanceScreen} />
             <Stack.Screen name="CRMScheduleMeeting" component={FinanceScreen} />
             <Stack.Screen name="CRMLeadToOrder" component={FinanceScreen} />

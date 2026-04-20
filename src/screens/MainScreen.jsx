@@ -35,6 +35,28 @@ const MainScreen = ({ navigation }) => {
 
   const [showMore, setShowMore] = useState(false);
   const [systemEnabled, setSystemEnabled] = useState(true);
+  const [selectedMenuCompany, setSelectedMenuCompany] = useState(null);
+
+  const companyCards = [
+    { id: 'Anwar & Sons', name: 'Anwar & Sons', icon: 'location-outline' },
+    {
+      id: 'Kunhar Distribution',
+      name: 'Kunhar Distribution',
+      icon: 'location-outline',
+    },
+    {
+      id: 'KMED Rawalpindi',
+      name: 'KMED Rawalpindi',
+      icon: 'location-outline',
+    },
+    { id: 'KMED Lahore', name: 'KMED Lahore', icon: 'location-outline' },
+    {
+      id: 'KMED Faisalabad',
+      name: 'KMED Faisalabad',
+      icon: 'location-outline',
+    },
+    { id: 'KMED Karachi', name: 'KMED Karachi', icon: 'location-outline' },
+  ];
 
   const handleToggleSystem = async () => {
     const newState = !systemEnabled;
@@ -129,6 +151,20 @@ const MainScreen = ({ navigation }) => {
 
   const dynamicStyles = getStyles(theme);
 
+  const renderCompanyCard = item => (
+    <TouchableOpacity
+      key={item.id}
+      style={dynamicStyles.companyCard}
+      activeOpacity={0.7}
+      onPress={() => setSelectedMenuCompany(item.id)}
+    >
+      <View style={dynamicStyles.companyIconContainer}>
+        <Icon name={item.icon} size={40} color={theme.colors.primary} />
+      </View>
+      <Text style={dynamicStyles.companyCardName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   const renderTile = item => (
     <TouchableOpacity
       key={item.id}
@@ -155,12 +191,25 @@ const MainScreen = ({ navigation }) => {
       <View style={dynamicStyles.header}>
         <SafeAreaView style={dynamicStyles.headerContent} edges={['top']}>
           <View style={dynamicStyles.topBar}>
-            <View style={dynamicStyles.companyInfo}>
-              <Text style={dynamicStyles.companyName}>Desolutions</Text>
+            <View
+              style={[
+                dynamicStyles.companyInfo,
+                { flexDirection: 'row', alignItems: 'center' },
+              ]}
+            >
+              {selectedMenuCompany && (
+                <TouchableOpacity
+                  onPress={() => setSelectedMenuCompany(null)}
+                  style={{ marginRight: 10 }}
+                >
+                  <Icon name="arrow-back" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
+              <Text style={dynamicStyles.companyName}>
+                {selectedMenuCompany ? selectedMenuCompany : 'Anwar & Sons'}
+              </Text>
             </View>
             <View style={dynamicStyles.headerActions}>
-              {/* On/Off Toggle Button */}
-              {/* On/Off Power Toggle Icon */}
               <TouchableOpacity
                 style={dynamicStyles.iconBtn}
                 onPress={handleToggleSystem}
@@ -205,69 +254,77 @@ const MainScreen = ({ navigation }) => {
         contentContainerStyle={dynamicStyles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={dynamicStyles.gridContainer}>
-          {/* First 9 visible tiles */}
-          {visibleItems.map(renderTile)}
+        {!selectedMenuCompany ? (
+          <View style={dynamicStyles.gridContainer}>
+            {companyCards.map(renderCompanyCard)}
+          </View>
+        ) : (
+          <>
+            <View style={dynamicStyles.gridContainer}>
+              {/* First 9 visible tiles */}
+              {visibleItems.map(renderTile)}
 
-          {/* MORE button — only shown if there are extra items */}
-          {hasMore && !showMore && (
-            <TouchableOpacity
-              style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
-              activeOpacity={0.7}
-              onPress={() => setShowMore(true)}
-            >
-              <View
-                style={[
-                  dynamicStyles.iconContainer,
-                  { backgroundColor: theme.colors.primary + '15' },
-                ]}
-              >
-                <Icon
-                  name="ellipsis-horizontal-circle-outline"
-                  size={30}
-                  color={theme.colors.primary}
-                />
-              </View>
-              <Text style={dynamicStyles.boxName}>More</Text>
-              {extraItems.length > 0 && (
-                <View
-                  style={[
-                    dynamicStyles.moreBadge,
-                    { backgroundColor: theme.colors.primary },
-                  ]}
+              {/* MORE button — only shown if there are extra items */}
+              {hasMore && !showMore && (
+                <TouchableOpacity
+                  style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
+                  activeOpacity={0.7}
+                  onPress={() => setShowMore(true)}
                 >
-                  <Text style={dynamicStyles.moreBadgeText}>
-                    {extraItems.length}
-                  </Text>
-                </View>
+                  <View
+                    style={[
+                      dynamicStyles.iconContainer,
+                      { backgroundColor: theme.colors.primary + '15' },
+                    ]}
+                  >
+                    <Icon
+                      name="ellipsis-horizontal-circle-outline"
+                      size={30}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <Text style={dynamicStyles.boxName}>More</Text>
+                  {extraItems.length > 0 && (
+                    <View
+                      style={[
+                        dynamicStyles.moreBadge,
+                        { backgroundColor: theme.colors.primary },
+                      ]}
+                    >
+                      <Text style={dynamicStyles.moreBadgeText}>
+                        {extraItems.length}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
-          )}
 
-          {/* Extra items shown after pressing More */}
-          {showMore && extraItems.map(renderTile)}
+              {/* Extra items shown after pressing More */}
+              {showMore && extraItems.map(renderTile)}
 
-          {/* Less button — shown when expanded */}
-          {showMore && (
-            <TouchableOpacity
-              style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
-              activeOpacity={0.7}
-              onPress={() => setShowMore(false)}
-            >
-              <View style={dynamicStyles.iconContainer}>
-                <Icon
-                  name="chevron-up-circle-outline"
-                  size={30}
-                  color={theme.colors.primary}
-                />
-              </View>
-              <Text style={dynamicStyles.boxName}>Less</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+              {/* Less button — shown when expanded */}
+              {showMore && (
+                <TouchableOpacity
+                  style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
+                  activeOpacity={0.7}
+                  onPress={() => setShowMore(false)}
+                >
+                  <View style={dynamicStyles.iconContainer}>
+                    <Icon
+                      name="chevron-up-circle-outline"
+                      size={30}
+                      color={theme.colors.primary}
+                    />
+                  </View>
+                  <Text style={dynamicStyles.boxName}>Less</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-        {/* Daily Activities Slider */}
-        <DailyActivitiesSlider />
+            {/* Daily Activities Slider */}
+            <DailyActivitiesSlider />
+          </>
+        )}
       </ScrollView>
     </View>
   );
@@ -388,6 +445,34 @@ const getStyles = theme =>
     },
     boxName: {
       fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.text,
+      textAlign: 'center',
+    },
+    companyCard: {
+      width: '48%',
+      aspectRatio: 1,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 20,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 15,
+      ...theme.shadows.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      padding: 10,
+    },
+    companyIconContainer: {
+      width: 60,
+      height: 60,
+      borderRadius: 20,
+      backgroundColor: theme.colors.primary + '15',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 15,
+    },
+    companyCardName: {
+      fontSize: 16,
       fontWeight: '700',
       color: theme.colors.text,
       textAlign: 'center',

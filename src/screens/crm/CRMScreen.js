@@ -57,7 +57,6 @@ const CRMScreen = ({ navigation }) => {
         'Samples Approval',
         'Workshops Approval',
         'Give away Approval',
-        'Conference Approval',
       ],
     },
     {
@@ -187,6 +186,16 @@ const CRMScreen = ({ navigation }) => {
                             navigation.navigate('CRMGiveawayRequest');
                           } else if (option === 'Workshops') {
                             navigation.navigate('CRMWorkshopRequest');
+                          } else if (option === 'Approval Dashboard') {
+                            navigation.navigate('CRMApprovalDashboard');
+                          } else if (option === 'Monthly Expense Approval') {
+                            navigation.navigate('CRMMonthlyExpenseApproval');
+                          } else if (option === 'Samples Approval') {
+                            navigation.navigate('CRMSampleApproval');
+                          } else if (option === 'Workshops Approval') {
+                            navigation.navigate('CRMWorkshopApproval');
+                          } else if (option === 'Give away Approval') {
+                            navigation.navigate('CRMGiveawayApproval');
                           }
                         }}
                       >
