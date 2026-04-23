@@ -20,7 +20,6 @@ import DailyActivitiesSlider from '@components/dashboard/DailyActivitiesSlider';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const HEADER_HEIGHT = SCREEN_HEIGHT * 0.25;
-const MAX_VISIBLE = 8;
 
 /**
  * MainScreen - Professional ERP Dashboard with Grid Navigation
@@ -33,7 +32,6 @@ const MainScreen = ({ navigation }) => {
 
   const [toggleErpStatus] = useToggleErpStatusMutation();
 
-  const [showMore, setShowMore] = useState(false);
   const [systemEnabled, setSystemEnabled] = useState(true);
   const [selectedMenuCompany, setSelectedMenuCompany] = useState(null);
 
@@ -123,13 +121,9 @@ const MainScreen = ({ navigation }) => {
       screen: 'Inventory',
     },
     { id: 'HCM', name: 'HCM', icon: 'people-outline', screen: 'HCM' },
-    {
-      id: 'Manufacturing',
-      name: 'Manufacturing',
-      icon: 'settings-outline',
-      screen: 'Manufacturing',
-    },
+    { id: 'Manufacturing', name: 'Manufacturing', icon: 'settings-outline', screen: 'Manufacturing' },
     { id: 'CRM', name: 'CRM', icon: 'business-outline', screen: 'CRM' },
+    { id: 'SalesCRM', name: 'Sales CRM', icon: 'trending-up-outline', screen: 'SalesCRM' },
     { id: 'Finance', name: 'Finance', icon: 'cash-outline', screen: 'Finance' },
     {
       id: 'Reporting',
@@ -144,10 +138,6 @@ const MainScreen = ({ navigation }) => {
       screen: 'VoidTransactions',
     },
   ];
-
-  const visibleItems = menuItems.slice(0, MAX_VISIBLE);
-  const extraItems = menuItems.slice(MAX_VISIBLE);
-  const hasMore = extraItems.length > 0;
 
   const dynamicStyles = getStyles(theme);
 
@@ -261,64 +251,7 @@ const MainScreen = ({ navigation }) => {
         ) : (
           <>
             <View style={dynamicStyles.gridContainer}>
-              {/* First 9 visible tiles */}
-              {visibleItems.map(renderTile)}
-
-              {/* MORE button — only shown if there are extra items */}
-              {hasMore && !showMore && (
-                <TouchableOpacity
-                  style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
-                  activeOpacity={0.7}
-                  onPress={() => setShowMore(true)}
-                >
-                  <View
-                    style={[
-                      dynamicStyles.iconContainer,
-                      { backgroundColor: theme.colors.primary + '15' },
-                    ]}
-                  >
-                    <Icon
-                      name="ellipsis-horizontal-circle-outline"
-                      size={30}
-                      color={theme.colors.primary}
-                    />
-                  </View>
-                  <Text style={dynamicStyles.boxName}>More</Text>
-                  {extraItems.length > 0 && (
-                    <View
-                      style={[
-                        dynamicStyles.moreBadge,
-                        { backgroundColor: theme.colors.primary },
-                      ]}
-                    >
-                      <Text style={dynamicStyles.moreBadgeText}>
-                        {extraItems.length}
-                      </Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              )}
-
-              {/* Extra items shown after pressing More */}
-              {showMore && extraItems.map(renderTile)}
-
-              {/* Less button — shown when expanded */}
-              {showMore && (
-                <TouchableOpacity
-                  style={[dynamicStyles.gridBox, dynamicStyles.moreBox]}
-                  activeOpacity={0.7}
-                  onPress={() => setShowMore(false)}
-                >
-                  <View style={dynamicStyles.iconContainer}>
-                    <Icon
-                      name="chevron-up-circle-outline"
-                      size={30}
-                      color={theme.colors.primary}
-                    />
-                  </View>
-                  <Text style={dynamicStyles.boxName}>Less</Text>
-                </TouchableOpacity>
-              )}
+              {menuItems.map(renderTile)}
             </View>
 
             {/* Daily Activities Slider */}

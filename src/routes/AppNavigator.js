@@ -28,6 +28,8 @@ import CRMMonthlyExpenseApprovalScreen from '@screens/crm/CRMMonthlyExpenseAppro
 import CRMSampleApprovalScreen from '@screens/crm/CRMSampleApprovalScreen';
 import CRMWorkshopApprovalScreen from '@screens/crm/CRMWorkshopApprovalScreen';
 import CRMGiveawayApprovalScreen from '@screens/crm/CRMGiveawayApprovalScreen';
+import SalesCRMScreen from '@screens/crm/SalesCRMScreen';
+import SalesOrderStatusScreen from '@screens/crm/SalesOrderStatusScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
 import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
 import LedgerScreen from '@components/ledger/LedgerScreen';
@@ -154,13 +156,15 @@ const AppNavigator = () => {
               component={ManufacturingScreen}
             />
             <Stack.Screen name="CRM" component={CRMScreen} />
+            <Stack.Screen name="SalesCRM" component={SalesCRMScreen} />
             <Stack.Screen name="Finance" component={FinanceScreen} />
             {/* Placeholder screens for module quick actions */}
             <Stack.Screen name="SalesAddCustomer" component={FinanceScreen} />
             <Stack.Screen name="SalesDelivery" component={FinanceScreen} />
             <Stack.Screen
               name="SalesTrackOrderStatus"
-              component={FinanceScreen}
+              component={SalesOrderStatusScreen}
+              options={{ title: 'Order Status Dashboard' }}
             />
             <Stack.Screen name="SalesReceivable" component={FinanceScreen} />
             <Stack.Screen name="SalesCostCenter" component={FinanceScreen} />
