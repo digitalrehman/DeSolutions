@@ -1,24 +1,28 @@
 import { baseApi } from './baseApi';
 import Toast from 'react-native-toast-message';
+import { portalApi } from './portalApi';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: builder => ({
     login: builder.mutation({
       query: credentials => {
         const formData = new FormData();
-        formData.append('username', credentials.username);
-        formData.append('password', credentials.password);
-        formData.append('company', credentials.company);
+        formData.append('user_id', credentials.username.trim());
+        formData.append('password', credentials.password.trim());
+        formData.append('company', credentials.company.trim().toUpperCase());
         return {
           url: 'auth/users.php',
           method: 'POST',
           body: formData,
+          // headers: {
+          //   'Content-Type': 'multipart/form-data',
+          // },
         };
       },
 
       transformResponse: (response, meta, arg) => {
         if (response.status === true) {
-          const user = response.data.find(u => u.user_id === arg.username);
+          const user = response.data.find(u => u.user_id.toLowerCase() === arg.username.trim().toLowerCase());
           if (user) {
             return { success: true, user, message: response.message };
           } else {
@@ -43,6 +47,15 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
+          if (data?.user?.company_user_id) {
+            dispatch(
+              portalApi.endpoints.getDebtorsMaster.initiate({
+                company: arg.company.trim().toUpperCase(),
+                user_id: data.user.company_user_id,
+              })
+            );
+          }
+
           Toast.show({
             type: 'success',
             text1: 'Login Successful',

@@ -148,7 +148,7 @@ const SalesCRMScreen = ({ navigation }) => {
           </View>
           
           <View style={styles.pillContainer}>
-            {renderPillButton('Generate Order', 'document-text-outline', false)}
+            {renderPillButton('Generate Order', 'document-text-outline', false, () => navigation.navigate('SalesGenerateOrder'))}
             {renderPillButton('View Order Status', 'document-text-outline', false, () => navigation.navigate('SalesTrackOrderStatus'))}
             {renderPillButton('View Shipping Info', 'document-text-outline', false)}
             {renderPillButton('View Customer Balances', 'document-text-outline', false)}

@@ -159,6 +159,7 @@ const AppNavigator = () => {
             <Stack.Screen name="SalesCRM" component={SalesCRMScreen} />
             <Stack.Screen name="Finance" component={FinanceScreen} />
             {/* Placeholder screens for module quick actions */}
+            <Stack.Screen name="SalesGenerateOrder" component={require('@screens/crm/SalesGenerateOrderScreen').default} options={{ title: 'Generate Order' }} />
             <Stack.Screen name="SalesAddCustomer" component={FinanceScreen} />
             <Stack.Screen name="SalesDelivery" component={FinanceScreen} />
             <Stack.Screen
