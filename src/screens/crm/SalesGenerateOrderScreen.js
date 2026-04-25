@@ -4,59 +4,16 @@ import {
   StyleSheet,
   FlatList,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
-
-const MOCK_CUSTOMERS = [
-  {
-    id: '1',
-    name: 'FGPH_ISB',
-    address: 'Islamabad',
-    outstanding: '0',
-    due: '0',
-    payment_terms: '1 Year',
-    credit_limit: '0',
-  },
-  {
-    id: '2',
-    name: 'DGHS_Punjab',
-    address: 'Lahore',
-    outstanding: '0',
-    due: '0',
-    payment_terms: '1 Year',
-    credit_limit: '0',
-  },
-  {
-    id: '3',
-    name: 'Aziz Bhatti Hospital_Gujrat',
-    address: 'Gujrat',
-    outstanding: '0',
-    due: '0',
-    payment_terms: '1 Year',
-    credit_limit: '0',
-  },
-  {
-    id: '4',
-    name: 'Mayo Hospital',
-    address: 'Lahore',
-    outstanding: '500',
-    due: '100',
-    payment_terms: '6 Months',
-    credit_limit: '1000',
-  },
-  {
-    id: '5',
-    name: 'Jinnah Hospital',
-    address: 'Karachi',
-    outstanding: '200',
-    due: '0',
-    payment_terms: '30 Days',
-    credit_limit: '500',
-  },
-];
+import { useGetDebtorsMasterQuery } from '@api/portalApi';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '@store/slices/authSlice';
 
 // A utility to get a random subset of an array
 const getRandomSubarray = (arr, size) => {
@@ -68,8 +25,8 @@ const CustomerCard = ({ item, theme }) => {
   const styles = getCardStyles(theme);
 
   // Address and Name combination
-  const displayName = item.address
-    ? `${item.name} , ${item.address}`
+  const displayName = item.city
+    ? `${item.name} , ${item.city}`
     : item.name;
 
   return (
@@ -93,14 +50,14 @@ const CustomerCard = ({ item, theme }) => {
             <Icon name="pie-chart" size={14} color="#3b82f6" />
             <Text style={styles.detailLabel}>OUTSTANDING</Text>
           </View>
-          <Text style={styles.detailValueRed}>{item.outstanding || '0'}</Text>
+          <Text style={styles.detailValueRed}>{item.outstanding ?? '0'}</Text>
 
           {/* Due */}
           <View style={[styles.detailRow, { marginTop: 12 }]}>
             <Icon name="warning" size={14} color="#ef4444" />
             <Text style={styles.detailLabel}>DUE</Text>
           </View>
-          <Text style={styles.detailValueRed}>{item.due || '0'}</Text>
+          <Text style={styles.detailValueRed}>{item.due ?? '0'}</Text>
 
           {/* Payment Terms */}
           <View style={[styles.detailRow, { marginTop: 12 }]}>
@@ -108,7 +65,7 @@ const CustomerCard = ({ item, theme }) => {
             <Text style={styles.detailLabel}>PAYMENT TERMS</Text>
           </View>
           <Text style={styles.detailValueBlack}>
-            {item.payment_terms || '0 Days'}
+            {item.payment_terms ? `${item.payment_terms} Days` : '0 Days'}
           </Text>
 
           {/* Credit Limit */}
@@ -117,7 +74,7 @@ const CustomerCard = ({ item, theme }) => {
             <Text style={styles.detailLabel}>CREDIT LIMIT</Text>
           </View>
           <Text style={styles.detailValueBlack}>
-            {item.credit_limit || '0'}
+            {item.credit_limit ?? '0'}
           </Text>
         </View>
 
@@ -150,15 +107,15 @@ const CustomerCard = ({ item, theme }) => {
       <View style={styles.footer}>
         <View style={styles.footerCol}>
           <Text style={styles.footerLabel}>LAST ORDER</Text>
-          <Text style={styles.footerValueBlack}>—</Text>
+          <Text style={styles.footerValueBlack}>{item.last_order ?? '—'}</Text>
         </View>
         <View style={styles.footerCol}>
           <Text style={styles.footerLabel}>DATE</Text>
-          <Text style={styles.footerValueBlack}>N/A</Text>
+          <Text style={styles.footerValueBlack}>{item.last_order_date || 'N/A'}</Text>
         </View>
         <View style={styles.footerCol}>
           <Text style={styles.footerLabel}>DAYS</Text>
-          <Text style={styles.footerValueRed}>N/A</Text>
+          <Text style={styles.footerValueRed}>{item.days ?? 'N/A'}</Text>
         </View>
       </View>
     </View>
@@ -167,26 +124,96 @@ const CustomerCard = ({ item, theme }) => {
 
 const SalesGenerateOrderScreen = () => {
   const { theme } = useTheme();
+  const user = useSelector(selectCurrentUser);
+  const company = useSelector(state => state.auth.company);
 
-  // Pick some random cards from the hardcoded list
+  const { data, isLoading, isFetching, refetch, error } =
+    useGetDebtorsMasterQuery(
+      { 
+        company: user?.company_user_code, 
+        user_id: user?.company_user_id
+      },
+      { skip: !user?.company_user_code || !user?.company_user_id }
+    );
+
+  // Pick some random cards from the API list
   const randomCards = useMemo(() => {
-    return getRandomSubarray(MOCK_CUSTOMERS, 3);
-  }, []);
+    try {
+      let dataArray = [];
+      
+      // Handle string response
+      let parsedData = data;
+      if (typeof data === 'string') {
+        try {
+          // Extract from first { or [ to the last } or ]
+          const match = data.match(/(\{|\[)[\s\S]*(\}|\])/);
+          if (match) {
+            parsedData = JSON.parse(match[0]);
+          } else {
+            parsedData = JSON.parse(data);
+          }
+        } catch (e) {
+          console.log('JSON Parse Error:', e, 'Raw Data:', data);
+        }
+      }
+
+      // Handle { status, data: [] } vs [...] 
+      if (parsedData && Array.isArray(parsedData.data)) {
+        dataArray = parsedData.data;
+      } else if (Array.isArray(parsedData)) {
+        dataArray = parsedData;
+      }
+
+      if (dataArray.length > 0) {
+        return getRandomSubarray(dataArray, 10);
+      }
+    } catch (e) {
+      console.log('Error parsing data:', e);
+    }
+    return [];
+  }, [data]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['bottom', 'left', 'right']}>
-      <FlatList
-        data={randomCards}
-        keyExtractor={(item, index) => item.id + index}
-        renderItem={({ item }) => <CustomerCard item={item} theme={theme} />}
-        contentContainerStyle={{ padding: 16, gap: 16 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={{ textAlign: 'center', color: theme.colors.textSecondary, marginTop: 40 }}>
-            No customers found.
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      ) : error ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: theme.colors.error, textAlign: 'center' }}>
+            Failed to load customers.
           </Text>
-        }
-      />
+          <TouchableOpacity
+            style={{ marginTop: 16, padding: 10, backgroundColor: theme.colors.primary, borderRadius: 8 }}
+            onPress={refetch}
+          >
+            <Text style={{ color: '#fff' }}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <FlatList
+          data={randomCards}
+          keyExtractor={(item, index) => item.debtor_no + '-' + index}
+          renderItem={({ item }) => <CustomerCard item={item} theme={theme} />}
+          contentContainerStyle={{ padding: 16, gap: 16 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isFetching} onRefresh={refetch} />
+          }
+          ListEmptyComponent={
+            <View style={{ padding: 20 }}>
+              <Text style={{ textAlign: 'center', color: theme.colors.textSecondary }}>
+                {!user?.company_user_code || !user?.company_user_id
+                  ? 'Missing company_user_code or company_user_id for API.'
+                  : data 
+                    ? 'No customers found. Data received: ' + JSON.stringify(data).substring(0, 50)
+                    : 'No customers found.'}
+              </Text>
+            </View>
+          }
+        />
+      )}
     </SafeAreaView>
   );
 };
