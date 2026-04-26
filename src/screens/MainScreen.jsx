@@ -36,6 +36,7 @@ const MainScreen = ({ navigation }) => {
   const [selectedMenuCompany, setSelectedMenuCompany] = useState(null);
 
   const companyCards = [
+    {id: 'SaleManagement', name: 'Sale Management', icon: 'briefcase-outline'},
     { id: 'Anwar & Sons', name: 'Anwar & Sons', icon: 'location-outline' },
     {
       id: 'Kunhar Distribution',
@@ -146,7 +147,13 @@ const MainScreen = ({ navigation }) => {
       key={item.id}
       style={dynamicStyles.companyCard}
       activeOpacity={0.7}
-      onPress={() => setSelectedMenuCompany(item.id)}
+      onPress={() => {
+        if (item.id === 'SaleManagement') {
+          navigation.navigate('SaleManagement');
+        } else {
+          setSelectedMenuCompany(item.id);
+        }
+      }}
     >
       <View style={dynamicStyles.companyIconContainer}>
         <Icon name={item.icon} size={40} color={theme.colors.primary} />

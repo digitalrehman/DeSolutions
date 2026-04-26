@@ -15,19 +15,17 @@ import { useGetDebtorsMasterQuery } from '@api/portalApi';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@store/slices/authSlice';
 
-// A utility to get a random subset of an array
-const getRandomSubarray = (arr, size) => {
-  const shuffled = [...arr].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, size);
-};
 
 const CustomerCard = ({ item, theme }) => {
   const styles = getCardStyles(theme);
 
+  // Decode HTML entities in name
+  const cleanName = item.name ? item.name.replace(/&amp;/g, '&') : '';
+
   // Address and Name combination
   const displayName = item.city
-    ? `${item.name} , ${item.city}`
-    : item.name;
+    ? `${cleanName} , ${item.city}`
+    : cleanName;
 
   return (
     <View style={styles.cardContainer}>
@@ -136,8 +134,7 @@ const SalesGenerateOrderScreen = () => {
       { skip: !user?.company_user_code || !user?.company_user_id }
     );
 
-  // Pick some random cards from the API list
-  const randomCards = useMemo(() => {
+  const customerCards = useMemo(() => {
     try {
       let dataArray = [];
       
@@ -165,7 +162,7 @@ const SalesGenerateOrderScreen = () => {
       }
 
       if (dataArray.length > 0) {
-        return getRandomSubarray(dataArray, 10);
+        return dataArray;
       }
     } catch (e) {
       console.log('Error parsing data:', e);
@@ -193,7 +190,7 @@ const SalesGenerateOrderScreen = () => {
         </View>
       ) : (
         <FlatList
-          data={randomCards}
+          data={customerCards}
           keyExtractor={(item, index) => item.debtor_no + '-' + index}
           renderItem={({ item }) => <CustomerCard item={item} theme={theme} />}
           contentContainerStyle={{ padding: 16, gap: 16 }}
