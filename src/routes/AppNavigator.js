@@ -31,8 +31,8 @@ import CRMGiveawayApprovalScreen from '@screens/crm/CRMGiveawayApprovalScreen';
 import SalesCRMScreen from '@screens/crm/SalesCRMScreen';
 import SalesGenerateOrderScreen from '@screens/crm/SalesGenerateOrderScreen';
 import SaleManagementScreen from '@screens/crm/SaleManagementScreen';
-import SalesNewOrdersScreen from '@screens/crm/SalesNewOrdersScreen';
 import SalesOrderStatusScreen from '@screens/crm/SalesOrderStatusScreen';
+import SalesAddCustomerScreen from '@screens/crm/SalesAddCustomerScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
 import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
 import LedgerScreen from '@components/ledger/LedgerScreen';
@@ -162,11 +162,10 @@ const AppNavigator = () => {
             <Stack.Screen name="SalesCRM" component={SalesCRMScreen} />
             <Stack.Screen name="SalesGenerateOrderScreen" component={SalesGenerateOrderScreen} />
             <Stack.Screen name="SaleManagement" component={SaleManagementScreen} />
-            <Stack.Screen name="SalesNewOrders" component={SalesNewOrdersScreen} />
             <Stack.Screen name="Finance" component={FinanceScreen} />
             {/* Placeholder screens for module quick actions */}
             <Stack.Screen name="SalesGenerateOrder" component={require('@screens/crm/SalesGenerateOrderScreen').default} options={{ title: 'Generate Order' }} />
-            <Stack.Screen name="SalesAddCustomer" component={FinanceScreen} />
+            <Stack.Screen name="SalesAddCustomer" component={SalesAddCustomerScreen} options={{ title: 'Add Customer' }} />
             <Stack.Screen name="SalesDelivery" component={FinanceScreen} />
             <Stack.Screen
               name="SalesTrackOrderStatus"

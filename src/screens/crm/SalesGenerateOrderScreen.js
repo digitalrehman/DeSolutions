@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {
   View,
   StyleSheet,
@@ -18,6 +19,7 @@ import { selectCurrentUser } from '@store/slices/authSlice';
 
 const CustomerCard = ({ item, theme }) => {
   const styles = getCardStyles(theme);
+  const navigation = useNavigation();
 
   // Decode HTML entities in name
   const cleanName = item.name ? item.name.replace(/&amp;/g, '&') : '';
@@ -78,7 +80,10 @@ const CustomerCard = ({ item, theme }) => {
 
         {/* Right Column: Buttons */}
         <View style={styles.actionsColumn}>
-          <TouchableOpacity style={[styles.actionButton, styles.btnNewOrder]}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.btnNewOrder]}
+            onPress={() => navigation.navigate('SalesAddCustomer')}
+          >
             <Icon name="cart" size={16} color="#1f3d58" />
             <Text style={[styles.actionBtnText, { color: '#1f3d58' }]}>
               New Order
@@ -95,7 +100,7 @@ const CustomerCard = ({ item, theme }) => {
           <TouchableOpacity style={[styles.actionButton, styles.btnReturn]}>
             <Icon name="swap-horizontal" size={16} color="#ef4444" />
             <Text style={[styles.actionBtnText, { color: '#ef4444' }]}>
-              Return
+              Outstanding
             </Text>
           </TouchableOpacity>
         </View>
