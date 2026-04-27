@@ -33,6 +33,8 @@ import SalesGenerateOrderScreen from '@screens/crm/SalesGenerateOrderScreen';
 import SaleManagementScreen from '@screens/crm/SaleManagementScreen';
 import SalesOrderStatusScreen from '@screens/crm/SalesOrderStatusScreen';
 import SalesAddCustomerScreen from '@screens/crm/SalesAddCustomerScreen';
+import SalesOrderFormScreen from '@screens/crm/SalesOrderFormScreen';
+import SalesPaymentScreen from '@screens/crm/SalesPaymentScreen';
 import FinanceScreen from '@screens/finance/FinanceScreen';
 import AccountDetailScreen from '@screens/dashboard/AccountDetailScreen';
 import LedgerScreen from '@components/ledger/LedgerScreen';
@@ -166,6 +168,8 @@ const AppNavigator = () => {
             {/* Placeholder screens for module quick actions */}
             <Stack.Screen name="SalesGenerateOrder" component={require('@screens/crm/SalesGenerateOrderScreen').default} options={{ title: 'Generate Order' }} />
             <Stack.Screen name="SalesAddCustomer" component={SalesAddCustomerScreen} options={{ title: 'Add Customer' }} />
+            <Stack.Screen name="SalesOrderForm" component={SalesOrderFormScreen} options={{ title: 'Take Order' }} />
+            <Stack.Screen name="SalesPayment" component={SalesPaymentScreen} options={{ title: 'Payment' }} />
             <Stack.Screen name="SalesDelivery" component={FinanceScreen} />
             <Stack.Screen
               name="SalesTrackOrderStatus"

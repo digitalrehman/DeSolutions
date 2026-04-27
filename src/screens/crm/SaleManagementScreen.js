@@ -11,44 +11,104 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 
 const quickActions = [
-  { id: 'contact', title: 'CRM\nCONTACT', icon: 'people-outline', color: '#3b82f6' },
-  { id: 'hospital', title: 'HOSPITAL', icon: 'business-outline', color: '#ef4444' },
-  { id: 'new_order', title: 'NEW ORDER', icon: 'clipboard-outline', color: '#16a34a' },
-  { id: 'order_status', title: 'ORDER STATUS', icon: 'document-text-outline', color: '#f59e0b' },
-  { id: 'add_customer', title: 'ADD CUSTOMER', icon: 'person-add-outline', color: '#9333ea' },
-  { id: 'supply_info', title: 'SUPPLY INFO', icon: 'bus-outline', color: '#2563eb' },
-  { id: 'payment', title: 'PAYMENT ENTRY', icon: 'cash-outline', color: '#16a34a' },
-  { id: 'sample', title: 'SAMPLE REQUEST', icon: 'flask-outline', color: '#a855f7' },
+  {
+    id: 'contact',
+    title: 'CRM\nCONTACT',
+    icon: 'people-outline',
+    color: '#3b82f6',
+  },
+  {
+    id: 'hospital',
+    title: 'HOSPITAL',
+    icon: 'business-outline',
+    color: '#ef4444',
+  },
+  {
+    id: 'new_order',
+    title: 'NEW ORDER',
+    icon: 'clipboard-outline',
+    color: '#16a34a',
+  },
+  {
+    id: 'order_status',
+    title: 'ORDER STATUS',
+    icon: 'document-text-outline',
+    color: '#f59e0b',
+  },
+  {
+    id: 'add_customer',
+    title: 'ADD CUSTOMER',
+    icon: 'person-add-outline',
+    color: '#9333ea',
+  },
+  {
+    id: 'supply_info',
+    title: 'SUPPLY INFO',
+    icon: 'bus-outline',
+    color: '#2563eb',
+  },
+  {
+    id: 'payment',
+    title: 'PAYMENT ENTRY',
+    icon: 'cash-outline',
+    color: '#16a34a',
+  },
+  {
+    id: 'sample',
+    title: 'SAMPLE REQUEST',
+    icon: 'flask-outline',
+    color: '#a855f7',
+  },
 ];
 
 const reports = [
-  { id: 'sales_target', title: 'SALES VS\nTARGET', icon: 'bar-chart-outline', color: '#3b82f6' },
-  { id: 'cust_balance', title: 'CUSTOMER\nBALANCE', icon: 'pie-chart-outline', color: '#16a34a' },
-  { id: 'collection', title: 'COLLECTION\nREPORT', icon: 'wallet-outline', color: '#f59e0b' },
-  { id: 'daily_summary', title: 'DAILY\nSUMMARY', icon: 'calendar-outline', color: '#8b5cf6' },
+  {
+    id: 'sales_target',
+    title: 'SALES VS\nTARGET',
+    icon: 'bar-chart-outline',
+    color: '#3b82f6',
+  },
+  {
+    id: 'cust_balance',
+    title: 'CUSTOMER\nBALANCE',
+    icon: 'pie-chart-outline',
+    color: '#16a34a',
+  },
+  {
+    id: 'collection',
+    title: 'COLLECTION\nREPORT',
+    icon: 'wallet-outline',
+    color: '#f59e0b',
+  },
+  {
+    id: 'daily_summary',
+    title: 'DAILY\nSUMMARY',
+    icon: 'calendar-outline',
+    color: '#8b5cf6',
+  },
 ];
-
 
 const SaleManagementScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const styles = getStyles(theme);
 
-  const handleActionPress = (item) => {
+  const handleActionPress = item => {
     if (item.id === 'new_order') {
-      navigation.navigate('SalesAddCustomer');
+      navigation.navigate('SalesGenerateOrderScreen');
     } else if (item.id === 'add_customer') {
       navigation.navigate('SalesAddCustomer');
+    } else if (item.id === 'contact') {
+      navigation.navigate('CRMContactList');
+    } else if (item.id === 'hospital') {
+      navigation.navigate('CRMHospitalList');
+    } else if (item.id === 'payment') {
+      navigation.navigate('SalesPayment');
     }
     // Handle other actions here
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar
-        barStyle="dark-content"
-        backgroundColor={theme.colors.background}
-      />
-
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -67,11 +127,13 @@ const SaleManagementScreen = ({ navigation }) => {
               <Icon name="calendar-outline" size={24} color="#3b82f6" />
             </View>
             <View style={styles.planTextCol}>
-              <Text style={styles.planCount}>5 <Text style={styles.planSub}>Tasks</Text></Text>
+              <Text style={styles.planCount}>
+                5 <Text style={styles.planSub}>Tasks</Text>
+              </Text>
               <Text style={styles.planSub}>Today</Text>
             </View>
           </View>
-          
+
           <View style={styles.planHalf}>
             <View style={[styles.iconCircle, { backgroundColor: '#f0fdf4' }]}>
               <Icon name="calendar-outline" size={24} color="#16a34a" />
@@ -84,36 +146,71 @@ const SaleManagementScreen = ({ navigation }) => {
         </View>
 
         {/* QUICK ACTIONS SECTION */}
-        <Text style={[styles.sectionTitle, { marginTop: 20, marginBottom: 12 }]}>QUICK ACTIONS</Text>
+        <Text
+          style={[styles.sectionTitle, { marginTop: 20, marginBottom: 12 }]}
+        >
+          QUICK ACTIONS
+        </Text>
         <View style={styles.quickActionsGrid}>
-          {quickActions.map((action) => (
+          {quickActions.map(action => (
             <TouchableOpacity
               key={action.id}
               style={styles.actionButton}
               activeOpacity={0.7}
               onPress={() => handleActionPress(action)}
             >
-              <Icon name={action.icon} size={28} color={action.color} style={styles.actionIcon} />
+              <Icon
+                name={action.icon}
+                size={28}
+                color={action.color}
+                style={styles.actionIcon}
+              />
               <Text style={styles.actionText}>{action.title}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* REPORTS SECTION */}
-        <Text style={[styles.sectionTitle, { marginTop: 20, marginBottom: 12 }]}>REPORTS</Text>
+        <Text
+          style={[styles.sectionTitle, { marginTop: 20, marginBottom: 12 }]}
+        >
+          REPORTS
+        </Text>
         <View style={styles.reportsGrid}>
-          {reports.map((report) => (
-            <TouchableOpacity key={report.id} style={styles.reportTile} activeOpacity={0.7}>
-              <Icon name={report.icon} size={28} color={report.color} style={styles.reportIcon} />
+          {reports.map(report => (
+            <TouchableOpacity
+              key={report.id}
+              style={styles.reportTile}
+              activeOpacity={0.7}
+            >
+              <Icon
+                name={report.icon}
+                size={28}
+                color={report.color}
+                style={styles.reportIcon}
+              />
               <Text style={styles.reportText}>{report.title}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* FIELD EXPENSE SECTION */}
-        <Text style={[styles.sectionTitle, { marginTop: 20, marginBottom: 12 }]}>FIELD EXPENSE</Text>
-        <TouchableOpacity style={styles.expenseCard} activeOpacity={0.7}>
-          <View style={[styles.iconCircle, { backgroundColor: '#eff6ff', marginRight: 16 }]}>
+        <Text
+          style={[styles.sectionTitle, { marginTop: 20, marginBottom: 12 }]}
+        >
+          FIELD EXPENSE
+        </Text>
+        <TouchableOpacity
+          style={styles.expenseCard}
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate('CRMMonthlyExpense')}
+        >
+          <View
+            style={[
+              styles.iconCircle,
+              { backgroundColor: '#eff6ff', marginRight: 16 },
+            ]}
+          >
             <Icon name="wallet-outline" size={24} color="#3b82f6" />
           </View>
           <View style={styles.expenseTextCol}>
@@ -122,7 +219,6 @@ const SaleManagementScreen = ({ navigation }) => {
           </View>
           <Icon name="chevron-forward" size={20} color="#9ca3af" />
         </TouchableOpacity>
-
       </ScrollView>
     </SafeAreaView>
   );

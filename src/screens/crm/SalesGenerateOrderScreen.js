@@ -82,7 +82,7 @@ const CustomerCard = ({ item, theme }) => {
         <View style={styles.actionsColumn}>
           <TouchableOpacity 
             style={[styles.actionButton, styles.btnNewOrder]}
-            onPress={() => navigation.navigate('SalesAddCustomer')}
+            onPress={() => navigation.navigate('SalesOrderForm', { customer: item })}
           >
             <Icon name="cart" size={16} color="#1f3d58" />
             <Text style={[styles.actionBtnText, { color: '#1f3d58' }]}>
@@ -90,7 +90,10 @@ const CustomerCard = ({ item, theme }) => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.btnPayment]}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.btnPayment]}
+            onPress={() => navigation.navigate('SalesPayment', { customer: item })}
+          >
             <Icon name="cash" size={16} color="#10b981" />
             <Text style={[styles.actionBtnText, { color: '#10b981' }]}>
               Payment
