@@ -17,7 +17,6 @@ const AppContent = () => {
 
   React.useEffect(() => {
     const init = async () => {
-      // Preload dashboard data in background
       const state = store.getState();
       const company = state.auth.company;
 

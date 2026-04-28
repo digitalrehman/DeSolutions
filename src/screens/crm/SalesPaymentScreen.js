@@ -9,7 +9,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
 } from 'react-native';
-import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { CustomDatePicker } from '@components/common';
 import { useTheme } from '@config/useTheme';
 
 const SalesPaymentScreen = ({ navigation, route }) => {
@@ -97,14 +97,13 @@ const SalesPaymentScreen = ({ navigation, route }) => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={(d) => {
+      <CustomDatePicker
+        visible={isDatePickerVisible}
+        onClose={() => setDatePickerVisibility(false)}
+        onSelect={(d) => {
           setDate(d);
           setDatePickerVisibility(false);
         }}
-        onCancel={() => setDatePickerVisibility(false)}
       />
     </View>
   );

@@ -1,10 +1,10 @@
 {
   "name": "De2solutionsERP",
-  "displayName": "Desolutions",
+  "displayName": "Kmivo",
   "android": {
-    "package": "com.de2solutions.erp"
+    "package": "com.kmivo.kmivo"
   },
   "ios": {
-    "bundleIdentifier": "com.de2solutions.erp"
+    "bundleIdentifier": "com.kmivo.kmivo"
   }
 }

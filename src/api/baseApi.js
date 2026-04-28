@@ -39,6 +39,21 @@ export const baseApi = createApi({
         };
       },
     }),
+    getStockMasterDropdown: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        
+        return {
+          url: 'dropdown/stock_master.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
     toggleErpStatus: builder.mutation({
       query: (body) => {
         const formData = new FormData();
@@ -58,6 +73,6 @@ export const baseApi = createApi({
   }),
 });
 
-export const { useGetFunctionalityCheckMutation, useGetDimensionDropdownMutation, useToggleErpStatusMutation } = baseApi;
+export const { useGetFunctionalityCheckMutation, useGetDimensionDropdownMutation, useGetStockMasterDropdownMutation, useToggleErpStatusMutation } = baseApi;
 
 export default baseApi;

@@ -8,24 +8,19 @@ import {
   ScrollView,
   ActivityIndicator,
   StyleSheet,
-  StatusBar,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 import { useTheme } from '@config/useTheme';
+import { useSelector } from 'react-redux';
+import { useGetStockMasterDropdownMutation } from '@api/baseApi';
+import { CustomDatePicker } from '@components/common';
+import { launchImageLibrary } from 'react-native-image-picker';
 
-// Dummy products
-const dummyProducts = [
-  { item_code: 'P001', description: 'Paracetamol 500mg', price: '50' },
-  { item_code: 'P002', description: 'Aspirin 100mg', price: '30' },
-  { item_code: 'P003', description: 'Cough Syrup 100ml', price: '120' },
-  { item_code: 'P004', description: 'Vitamin C Tablets', price: '200' },
-  { item_code: 'P005', description: 'Band-Aid Pack', price: '40' },
-];
+// Removed dummyProducts
 
 const SalesOrderFormScreen = ({ navigation, route }) => {
-  const { customer, mode } = route.params || {};
   const { theme } = useTheme();
   
   const [cart, setCart] = useState([]);
@@ -35,8 +30,31 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
   const [selectProduct, setSelectProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [price, setPrice] = useState('0');
+  const [poNo, setPoNo] = useState('');
+  const [poDate, setPoDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [shippingAddress, setShippingAddress] = useState('');
+  const [picture, setPicture] = useState(null);
   const [orderLoader, setOrderLoader] = useState(false);
+  
+  const { company } = useSelector(state => state.auth);
+  const [getStockMaster] = useGetStockMasterDropdownMutation();
+  const [products, setProducts] = useState([]);
+
+  React.useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const response = await getStockMaster({ company }).unwrap();
+      if (response && response.data) {
+        setProducts(response.data);
+      }
+    } catch (error) {
+      console.log('Error fetching products:', error);
+    }
+  };
 
   // Derived Values
   const grandTotal = cart.reduce((sum, item) => sum + parseFloat(item.GrandTotal || 0), 0);
@@ -59,7 +77,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
       return;
     }
 
-    const itemCode = selectProduct.item_code;
+    const itemCode = selectProduct.stock_id || selectProduct.item_code;
     const isExist = cart.some(item => item.item_code === itemCode);
 
     if (isExist) {
@@ -108,14 +126,23 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
     }, 1500);
   };
 
-  const filteredProducts = dummyProducts.filter(val =>
-    val.description.toLowerCase().includes(Search.toLowerCase())
-  );
+  const filteredProducts = products.filter(val => {
+    const desc = val.description ? String(val.description).toLowerCase() : '';
+    const sid = val.stock_id ? String(val.stock_id).toLowerCase() : '';
+    const q = Search.toLowerCase();
+    return desc.includes(q) || sid.includes(q);
+  });
+
+  const handlePickImage = async () => {
+    const options = { mediaType: 'photo', quality: 0.5 };
+    const result = await launchImageLibrary(options);
+    if (result.assets && result.assets.length > 0) {
+      setPicture(result.assets[0]);
+    }
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <StatusBar barStyle="dark-content" backgroundColor={theme.colors.background} />
-      
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={[styles.formContainer, { backgroundColor: theme.colors.surface, shadowColor: '#000' }]}>
           {/* Select Product */}
@@ -191,7 +218,29 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
             </View>
           )}
 
-          {/* Shipping Address (Added as requested) */}
+          {/* PO No */}
+          <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>PO No :</Text>
+            <TextInput
+              value={poNo}
+              onChangeText={setPoNo}
+              placeholder="Enter PO No"
+              placeholderTextColor={theme.colors.textSecondary}
+              style={[styles.textInput, { color: theme.colors.text, borderBottomColor: theme.colors.border }]}
+            />
+          </View>
+
+          {/* PO Date */}
+          <TouchableOpacity 
+            onPress={() => setShowDatePicker(true)}
+            style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>PO Date :</Text>
+            <Text style={[styles.inputValue, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+              {poDate ? poDate.toLocaleDateString() : 'Select Date'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Shipping Address */}
           <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1, flexDirection: 'column', alignItems: 'flex-start' }]}>
             <Text style={[styles.label, { color: theme.colors.text, marginBottom: 10 }]}>Shipping Address :</Text>
             <TextInput
@@ -203,6 +252,16 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
               multiline
             />
           </View>
+
+          {/* Picture */}
+          <TouchableOpacity 
+            onPress={handlePickImage}
+            style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Picture :</Text>
+            <Text style={[styles.inputValue, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+              {picture ? picture.fileName || 'Image Selected' : 'Choose from Gallery...'}
+            </Text>
+          </TouchableOpacity>
 
           {/* Confirm order Button */}
           <TouchableOpacity 
@@ -220,6 +279,17 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
         </View>
       </ScrollView>
 
+      <CustomDatePicker
+        visible={showDatePicker}
+        onClose={() => setShowDatePicker(false)}
+        onSelect={(date) => {
+          setPoDate(date);
+          setShowDatePicker(false);
+        }}
+        selectedDate={poDate}
+        title="Select PO Date"
+      />
+
       {/* Product Selection Modal */}
       <Modal 
         isVisible={ProductModal}
@@ -229,7 +299,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
           <View style={[styles.searchBar, { backgroundColor: theme.colors.background }]}>
             <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
             <TextInput
-              placeholder="Search Product"
+              placeholder="Search by Description or Stock ID"
               placeholderTextColor={theme.colors.textSecondary}
               value={Search}
               onChangeText={setSearch}
@@ -249,7 +319,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
                 }}
                 style={[styles.productItem, { borderBottomColor: theme.colors.border }]}>
                 <Text style={[styles.productName, { color: theme.colors.text }]}>{item.description}</Text>
-                <Text style={[styles.productCode, { color: theme.colors.textSecondary }]}>{item.item_code}</Text>
+                <Text style={[styles.productCode, { color: theme.colors.textSecondary }]}>{item.stock_id}</Text>
               </TouchableOpacity>
             )}
           />

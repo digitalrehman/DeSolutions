@@ -48,13 +48,12 @@ const LoginScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
-    company: '',
+    company: 'CRM',
   });
 
   const [errors, setErrors] = useState({
     username: '',
     password: '',
-    company: '',
   });
 
   const dynamicStyles = getStyles(theme);
@@ -76,11 +75,6 @@ const LoginScreen = ({ navigation }) => {
         ...prev,
         password: 'Password must be at least 3 characters',
       }));
-      isValid = false;
-    }
-
-    if (!formData.company.trim()) {
-      setErrors(prev => ({ ...prev, company: 'Company is required' }));
       isValid = false;
     }
 
@@ -135,7 +129,7 @@ const LoginScreen = ({ navigation }) => {
               {/* Header Section */}
               <View style={dynamicStyles.header}>
                 <View style={dynamicStyles.logoContainer}>
-                  <Text style={dynamicStyles.logoText}>Desolutions</Text>
+                  <Text style={dynamicStyles.logoText}>Kmivo</Text>
                   <View
                     style={[
                       dynamicStyles.logoBar,
@@ -179,16 +173,7 @@ const LoginScreen = ({ navigation }) => {
                   onSubmitEditing={handleLogin}
                 />
 
-                <CustomInput
-                  label="Company"
-                  placeholder="Enter your company name"
-                  value={formData.company}
-                  onChangeText={value => handleInputChange('company', value)}
-                  error={errors.company}
-                  leftIcon="business-outline"
-                  autoCapitalize="none"
-                  returnKeyType="next"
-                />
+
 
                 <CustomButton
                   title="Sign In"
@@ -204,7 +189,7 @@ const LoginScreen = ({ navigation }) => {
             {/* Footer Links - Outside innerContainer to push to bottom if space allows */}
             <View style={dynamicStyles.footer}>
               <AnimatedTypingText
-                text="Powered by Desolutions"
+                text="Powered by Kmivo"
                 style={[
                   dynamicStyles.footerText,
                   { color: theme.colors.textSecondary },

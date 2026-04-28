@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
-  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -36,7 +35,11 @@ const MainScreen = ({ navigation }) => {
   const [selectedMenuCompany, setSelectedMenuCompany] = useState(null);
 
   const companyCards = [
-    {id: 'SaleManagement', name: 'Sale Management', icon: 'briefcase-outline'},
+    {
+      id: 'SaleManagement',
+      name: 'Sale Management',
+      icon: 'briefcase-outline',
+    },
     { id: 'Anwar & Sons', name: 'Anwar & Sons', icon: 'location-outline' },
     {
       id: 'Kunhar Distribution',
@@ -122,9 +125,19 @@ const MainScreen = ({ navigation }) => {
       screen: 'Inventory',
     },
     { id: 'HCM', name: 'HCM', icon: 'people-outline', screen: 'HCM' },
-    { id: 'Manufacturing', name: 'Manufacturing', icon: 'settings-outline', screen: 'Manufacturing' },
+    {
+      id: 'Manufacturing',
+      name: 'Manufacturing',
+      icon: 'settings-outline',
+      screen: 'Manufacturing',
+    },
     { id: 'CRM', name: 'CRM', icon: 'business-outline', screen: 'CRM' },
-    { id: 'SalesCRM', name: 'Sales CRM', icon: 'trending-up-outline', screen: 'SalesCRM' },
+    {
+      id: 'SalesCRM',
+      name: 'Sales CRM',
+      icon: 'trending-up-outline',
+      screen: 'SalesCRM',
+    },
     { id: 'Finance', name: 'Finance', icon: 'cash-outline', screen: 'Finance' },
     {
       id: 'Reporting',
@@ -178,12 +191,6 @@ const MainScreen = ({ navigation }) => {
 
   return (
     <View style={dynamicStyles.container}>
-      <StatusBar
-        barStyle="light-content"
-        translucent
-        backgroundColor="transparent"
-      />
-
       {/* Custom Header Section */}
       <View style={dynamicStyles.header}>
         <SafeAreaView style={dynamicStyles.headerContent} edges={['top']}>
@@ -203,7 +210,11 @@ const MainScreen = ({ navigation }) => {
                 </TouchableOpacity>
               )}
               <Text style={dynamicStyles.companyName}>
-                {selectedMenuCompany ? selectedMenuCompany : 'Anwar & Sons'}
+                {selectedMenuCompany
+                  ? selectedMenuCompany.length > 12
+                    ? selectedMenuCompany.slice(0, 12) + '...'
+                    : selectedMenuCompany
+                  : 'Anwar & Sons'}
               </Text>
             </View>
             <View style={dynamicStyles.headerActions}>
