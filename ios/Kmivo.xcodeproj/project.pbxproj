@@ -17,8 +17,8 @@
 
 /* Begin PBXFileReference section */
 		13B07F961A680F5B00A75B9A /* De2solutionsERP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = De2solutionsERP.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "Kmivo/Images.xcassets"; sourceTree = "<group>"; };
-		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = "Kmivo/Info.plist"; sourceTree = "<group>"; };
+		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Kmivo/Images.xcassets; sourceTree = "<group>"; };
+		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Kmivo/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = Kmivo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		15B6AE4C28C5DF5129B049F1 /* libPods-De2solutionsERP.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-De2solutionsERP.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3B4392A12AC88292D35C810B /* Pods-Kmivo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Kmivo.debug.xcconfig"; path = "Target Support Files/Pods-Kmivo/Pods-Kmivo.debug.xcconfig"; sourceTree = "<group>"; };
@@ -26,7 +26,7 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Kmivo/AppDelegate.swift; sourceTree = "<group>"; };
 		766EF475DAC64D02BAA8D6FF /* DancingScript.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = DancingScript.ttf; path = ../src/assets/fonts/DancingScript.ttf; sourceTree = "<group>"; };
 		77220E011E5A09EDA13E0DCF /* Pods-De2solutionsERP.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-De2solutionsERP.release.xcconfig"; path = "Target Support Files/Pods-De2solutionsERP/Pods-De2solutionsERP.release.xcconfig"; sourceTree = "<group>"; };
-		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = "Kmivo/LaunchScreen.storyboard"; sourceTree = "<group>"; };
+		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Kmivo/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97A4429158616D1A4BE07D1B /* Pods-De2solutionsERP.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-De2solutionsERP.debug.xcconfig"; path = "Target Support Files/Pods-De2solutionsERP/Pods-De2solutionsERP.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -279,8 +279,8 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = Y2S8G62B78;
 				ENABLE_BITCODE = NO;
-				INFOPLIST_FILE = "Kmivo/Info.plist";
-             INFOPLIST_KEY_CFBundleDisplayName = "Kmivo";
+				INFOPLIST_FILE = Kmivo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kmivo;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -292,7 +292,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.kmivo.erp";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmivo.erp;
 				PRODUCT_NAME = De2solutionsERP;
 				SWIFT_OBJC_BRIDGING_HEADER = "Kmivo/Kmivo-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -310,8 +310,8 @@
 				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = Y2S8G62B78;
-				INFOPLIST_FILE = "Kmivo/Info.plist";
-             INFOPLIST_KEY_CFBundleDisplayName = "Kmivo";
+				INFOPLIST_FILE = Kmivo/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Kmivo;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -323,7 +323,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.kmivo.erp";
+				PRODUCT_BUNDLE_IDENTIFIER = com.kmivo.erp;
 				PRODUCT_NAME = De2solutionsERP;
 				SWIFT_OBJC_BRIDGING_HEADER = "Kmivo/Kmivo-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
