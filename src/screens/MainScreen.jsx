@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
@@ -18,7 +19,8 @@ import Toast from 'react-native-toast-message';
 import DailyActivitiesSlider from '@components/dashboard/DailyActivitiesSlider';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const HEADER_HEIGHT = SCREEN_HEIGHT * 0.25;
+const HEADER_HEIGHT =
+  Platform.OS === 'ios' ? SCREEN_HEIGHT * 0.24 : SCREEN_HEIGHT * 0.21;
 
 /**
  * MainScreen - Professional ERP Dashboard with Grid Navigation

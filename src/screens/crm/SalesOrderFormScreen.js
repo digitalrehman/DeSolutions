@@ -17,8 +17,8 @@ import { useSelector } from 'react-redux';
 import { useGetStockMasterDropdownMutation } from '@api/baseApi';
 import { CustomDatePicker } from '@components/common';
 import { launchImageLibrary } from 'react-native-image-picker';
-
-// Removed dummyProducts
+import { usePostServicePurchSaleMutation } from '@api/portalApi';
+import { selectCurrentUser } from '@store/slices/authSlice';
 
 const SalesOrderFormScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
@@ -38,7 +38,9 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
   const [orderLoader, setOrderLoader] = useState(false);
   
   const { company } = useSelector(state => state.auth);
+  const user = useSelector(selectCurrentUser);
   const [getStockMaster] = useGetStockMasterDropdownMutation();
+  const [postOrder] = usePostServicePurchSaleMutation();
   const [products, setProducts] = useState([]);
 
   React.useEffect(() => {
@@ -105,7 +107,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
     Toast.show({ type: 'success', text1: 'Item added to cart' });
   };
 
-  const confirmOrder = () => {
+  const confirmOrder = async () => {
     if (cart.length === 0) {
       Toast.show({ type: 'error', text1: 'Cart is empty' });
       return;
@@ -117,13 +119,58 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
 
     setOrderLoader(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      setCart([]);
+    try {
+      const customer = route.params?.customer || {};
+      
+      const purch_order_details = cart.map(item => ({
+        item_code: item.item_code,
+        description: '', // as requested
+        del_qty: String(item.quantity_ordered),
+        unit_price: String(item.unit_price)
+      }));
+
+      const formatDate = (dateObj) => {
+        const d = new Date(dateObj);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      };
+
+      const payload = {
+        order_no: '0',
+        person_id: customer.debtor_no || customer.person_id || '',
+        trans_type: '30',
+        ord_date: formatDate(new Date()),
+        po_no: poNo,
+        po_date: formatDate(poDate),
+        loc_code: customer.loc_code || customer.default_location || '',
+        total: String(grandTotal),
+        price_list: customer.price_list || customer.sales_type || '',
+        ship_via: customer.ship_via || customer.default_ship_via || '',
+        memo: '',
+        purch_order_details: JSON.stringify(purch_order_details),
+        user_id: user?.id || user?.company_user_id || '',
+        shiping_address: shippingAddress,
+        company: company || '',
+        image: picture,
+      };
+
+      const response = await postOrder(payload).unwrap();
+      
+      if (response && response.status === true) {
+        setCart([]);
+        setPicture(null);
+        setPoNo('');
+        setShippingAddress('');
+        Toast.show({ type: 'success', text1: 'Order confirmed successfully', text2: response.message || '' });
+        navigation.goBack();
+      } else {
+        Toast.show({ type: 'error', text1: 'Failed to place order', text2: response?.message || 'Unknown error' });
+      }
+    } catch (error) {
+      console.log('Order Error:', error);
+      Toast.show({ type: 'error', text1: 'Network Error', text2: 'Could not place order' });
+    } finally {
       setOrderLoader(false);
-      Toast.show({ type: 'success', text1: 'Order confirmed successfully' });
-      navigation.goBack();
-    }, 1500);
+    }
   };
 
   const filteredProducts = products.filter(val => {

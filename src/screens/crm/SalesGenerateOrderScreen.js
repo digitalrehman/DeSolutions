@@ -34,7 +34,7 @@ const CustomerCard = ({ item, theme }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.iconContainer}>
-          <Icon name="person" size={16} color="#1f3d58" />
+          <Icon name="person" size={16} color={theme.colors.primary} />
         </View>
         <Text style={styles.headerTitle} numberOfLines={2}>
           {displayName}
@@ -47,21 +47,21 @@ const CustomerCard = ({ item, theme }) => {
         <View style={styles.detailsColumn}>
           {/* Outstanding */}
           <View style={styles.detailRow}>
-            <Icon name="pie-chart" size={14} color="#3b82f6" />
+            <Icon name="pie-chart" size={14} color={theme.colors.primary} />
             <Text style={styles.detailLabel}>OUTSTANDING</Text>
           </View>
           <Text style={styles.detailValueRed}>{item.outstanding ?? '0'}</Text>
 
           {/* Due */}
           <View style={[styles.detailRow, { marginTop: 12 }]}>
-            <Icon name="warning" size={14} color="#ef4444" />
+            <Icon name="warning" size={14} color={theme.colors.primary} />
             <Text style={styles.detailLabel}>DUE</Text>
           </View>
           <Text style={styles.detailValueRed}>{item.due ?? '0'}</Text>
 
           {/* Payment Terms */}
           <View style={[styles.detailRow, { marginTop: 12 }]}>
-            <Icon name="document-text" size={14} color="#10b981" />
+            <Icon name="document-text" size={14} color={theme.colors.primary} />
             <Text style={styles.detailLabel}>PAYMENT TERMS</Text>
           </View>
           <Text style={styles.detailValueBlack}>
@@ -70,7 +70,7 @@ const CustomerCard = ({ item, theme }) => {
 
           {/* Credit Limit */}
           <View style={[styles.detailRow, { marginTop: 12 }]}>
-            <Icon name="card" size={14} color="#0ea5e9" />
+            <Icon name="card" size={14} color={theme.colors.primary} />
             <Text style={styles.detailLabel}>CREDIT LIMIT</Text>
           </View>
           <Text style={styles.detailValueBlack}>
@@ -81,28 +81,28 @@ const CustomerCard = ({ item, theme }) => {
         {/* Right Column: Buttons */}
         <View style={styles.actionsColumn}>
           <TouchableOpacity 
-            style={[styles.actionButton, styles.btnNewOrder]}
+            style={[styles.actionButton, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '0D' }]}
             onPress={() => navigation.navigate('SalesOrderForm', { customer: item })}
           >
-            <Icon name="cart" size={16} color="#1f3d58" />
-            <Text style={[styles.actionBtnText, { color: '#1f3d58' }]}>
+            <Icon name="cart" size={16} color={theme.colors.primary} />
+            <Text style={[styles.actionBtnText, { color: theme.colors.primary }]}>
               New Order
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.actionButton, styles.btnPayment]}
+            style={[styles.actionButton, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '0D' }]}
             onPress={() => navigation.navigate('SalesPayment', { customer: item })}
           >
-            <Icon name="cash" size={16} color="#10b981" />
-            <Text style={[styles.actionBtnText, { color: '#10b981' }]}>
+            <Icon name="cash" size={16} color={theme.colors.primary} />
+            <Text style={[styles.actionBtnText, { color: theme.colors.primary }]}>
               Payment
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, styles.btnReturn]}>
-            <Icon name="swap-horizontal" size={16} color="#ef4444" />
-            <Text style={[styles.actionBtnText, { color: '#ef4444' }]}>
+          <TouchableOpacity style={[styles.actionButton, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '0D' }]}>
+            <Icon name="swap-horizontal" size={16} color={theme.colors.primary} />
+            <Text style={[styles.actionBtnText, { color: theme.colors.primary }]}>
               Outstanding
             </Text>
           </TouchableOpacity>
@@ -238,7 +238,7 @@ const getCardStyles = theme =>
       shadowRadius: 4,
     },
     header: {
-      backgroundColor: '#1f3d58', // Dark blue from the image
+      backgroundColor: theme.colors.primary,
       flexDirection: 'row',
       alignItems: 'center',
       padding: 16,

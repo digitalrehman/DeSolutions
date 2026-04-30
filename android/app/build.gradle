@@ -79,9 +79,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.de2solutions.erp"
+    namespace "com.kmivo.erp"
     defaultConfig {
-        applicationId "com.de2solutions.erp"
+        applicationId "com.kmivo.erp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

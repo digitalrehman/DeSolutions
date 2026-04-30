@@ -18,8 +18,35 @@ export const portalApi = baseApi.injectEndpoints({
         };
       },
     }),
+    postServicePurchSale: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        Object.keys(body).forEach(key => {
+          if (key === 'image' && body[key]) {
+            formData.append(key, {
+              uri: body[key].uri,
+              type: body[key].type,
+              name: body[key].fileName || 'image.jpg',
+            });
+          } else if (key === 'purch_order_details') {
+            formData.append(key, typeof body[key] === 'string' ? body[key] : JSON.stringify(body[key]));
+          } else {
+            formData.append(key, body[key]);
+          }
+        });
+
+        return {
+          url: 'portal/post_service_purch_sale.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
   }),
   overrideExisting: true,
 });
 
-export const { useGetDebtorsMasterQuery, useLazyGetDebtorsMasterQuery } = portalApi;
+export const { useGetDebtorsMasterQuery, useLazyGetDebtorsMasterQuery, usePostServicePurchSaleMutation } = portalApi;

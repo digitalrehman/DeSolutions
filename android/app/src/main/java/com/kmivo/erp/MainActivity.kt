@@ -1,4 +1,4 @@
-package com.de2solutions.erp
+package com.kmivo.erp
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

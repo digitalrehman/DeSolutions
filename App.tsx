@@ -60,10 +60,8 @@ const AppContent = () => {
   return (
     <SafeAreaProvider>
       <StatusBar
-        barStyle={
-          theme.name === 'Arctic White' ? 'dark-content' : 'light-content'
-        }
-        backgroundColor={theme.colors.background}
+        barStyle="light-content"
+        backgroundColor={theme.colors.primary}
       />
       <AppNavigator />
       <Toast />

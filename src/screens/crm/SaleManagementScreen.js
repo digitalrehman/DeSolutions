@@ -122,8 +122,8 @@ const SaleManagementScreen = ({ navigation }) => {
 
         <View style={styles.planCard}>
           <View style={styles.planHalf}>
-            <View style={[styles.iconCircle, { backgroundColor: '#eff6ff' }]}>
-              <Icon name="calendar-outline" size={24} color="#3b82f6" />
+            <View style={[styles.iconCircle, { backgroundColor: theme.colors.primary + '1A' }]}>
+              <Icon name="calendar-outline" size={24} color={theme.colors.primary} />
             </View>
             <View style={styles.planTextCol}>
               <Text style={styles.planCount}>
@@ -134,8 +134,8 @@ const SaleManagementScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.planHalf}>
-            <View style={[styles.iconCircle, { backgroundColor: '#f0fdf4' }]}>
-              <Icon name="calendar-outline" size={24} color="#16a34a" />
+            <View style={[styles.iconCircle, { backgroundColor: theme.colors.primary + '1A' }]}>
+              <Icon name="calendar-outline" size={24} color={theme.colors.primary} />
             </View>
             <View style={styles.planTextCol}>
               <Text style={styles.planMainText}>Mark</Text>
@@ -161,7 +161,7 @@ const SaleManagementScreen = ({ navigation }) => {
               <Icon
                 name={action.icon}
                 size={28}
-                color={action.color}
+                color={theme.colors.primary}
                 style={styles.actionIcon}
               />
               <Text style={styles.actionText}>{action.title}</Text>
@@ -185,7 +185,7 @@ const SaleManagementScreen = ({ navigation }) => {
               <Icon
                 name={report.icon}
                 size={28}
-                color={report.color}
+                color={theme.colors.primary}
                 style={styles.reportIcon}
               />
               <Text style={styles.reportText}>{report.title}</Text>
@@ -207,10 +207,10 @@ const SaleManagementScreen = ({ navigation }) => {
           <View
             style={[
               styles.iconCircle,
-              { backgroundColor: '#eff6ff', marginRight: 16 },
+              { backgroundColor: theme.colors.primary + '1A', marginRight: 16 },
             ]}
           >
-            <Icon name="wallet-outline" size={24} color="#3b82f6" />
+            <Icon name="wallet-outline" size={24} color={theme.colors.primary} />
           </View>
           <View style={styles.expenseTextCol}>
             <Text style={styles.expenseTitle}>Field Expense</Text>
