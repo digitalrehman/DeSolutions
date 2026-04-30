@@ -7,7 +7,7 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -16,18 +16,14 @@ import { useGetDebtorsMasterQuery } from '@api/portalApi';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@store/slices/authSlice';
 
-
 const CustomerCard = ({ item, theme }) => {
+  console.log(item);
+
   const styles = getCardStyles(theme);
   const navigation = useNavigation();
 
-  // Decode HTML entities in name
   const cleanName = item.name ? item.name.replace(/&amp;/g, '&') : '';
-
-  // Address and Name combination
-  const displayName = item.city
-    ? `${cleanName} , ${item.city}`
-    : cleanName;
+  const displayName = item.city ? `${cleanName} , ${item.city}` : cleanName;
 
   return (
     <View style={styles.cardContainer}>
@@ -46,18 +42,39 @@ const CustomerCard = ({ item, theme }) => {
         {/* Left Column: Details */}
         <View style={styles.detailsColumn}>
           {/* Outstanding */}
-          <View style={styles.detailRow}>
-            <Icon name="pie-chart" size={14} color={theme.colors.primary} />
-            <Text style={styles.detailLabel}>OUTSTANDING</Text>
-          </View>
-          <Text style={styles.detailValueRed}>{item.outstanding ?? '0'}</Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('CustomerBalanceDetails', {
+                customerId: item.debtor_no,
+                customerName: item.name,
+              })
+            }
+          >
+            <View style={styles.detailRow}>
+              <Icon name="pie-chart" size={14} color={theme.colors.primary} />
+              <Text style={styles.detailLabel}>OUTSTANDING</Text>
+            </View>
+            <Text style={styles.detailValueRed}>
+              {Math.floor(item.outstanding || 0)}
+            </Text>
+          </TouchableOpacity>
 
           {/* Due */}
-          <View style={[styles.detailRow, { marginTop: 12 }]}>
-            <Icon name="warning" size={14} color={theme.colors.primary} />
-            <Text style={styles.detailLabel}>DUE</Text>
-          </View>
-          <Text style={styles.detailValueRed}>{item.due ?? '0'}</Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('CustomerAging', {
+                customerId: item.debtor_no,
+                customerName: item.name,
+              })
+            }
+            style={{ marginTop: 12 }}
+          >
+            <View style={styles.detailRow}>
+              <Icon name="warning" size={14} color={theme.colors.primary} />
+              <Text style={styles.detailLabel}>DUE</Text>
+            </View>
+            <Text style={styles.detailValueRed}>{item.due ?? '0'}</Text>
+          </TouchableOpacity>
 
           {/* Payment Terms */}
           <View style={[styles.detailRow, { marginTop: 12 }]}>
@@ -80,29 +97,70 @@ const CustomerCard = ({ item, theme }) => {
 
         {/* Right Column: Buttons */}
         <View style={styles.actionsColumn}>
-          <TouchableOpacity 
-            style={[styles.actionButton, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '0D' }]}
-            onPress={() => navigation.navigate('SalesOrderForm', { customer: item })}
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                borderColor: theme.colors.primary,
+                backgroundColor: theme.colors.primary + '0D',
+              },
+            ]}
+            onPress={() =>
+              navigation.navigate('SalesOrderForm', { customer: item })
+            }
           >
             <Icon name="cart" size={16} color={theme.colors.primary} />
-            <Text style={[styles.actionBtnText, { color: theme.colors.primary }]}>
+            <Text
+              style={[styles.actionBtnText, { color: theme.colors.primary }]}
+            >
               New Order
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={[styles.actionButton, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '0D' }]}
-            onPress={() => navigation.navigate('SalesPayment', { customer: item })}
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                borderColor: theme.colors.primary,
+                backgroundColor: theme.colors.primary + '0D',
+              },
+            ]}
+            onPress={() =>
+              navigation.navigate('SalesPayment', { customer: item })
+            }
           >
             <Icon name="cash" size={16} color={theme.colors.primary} />
-            <Text style={[styles.actionBtnText, { color: theme.colors.primary }]}>
+            <Text
+              style={[styles.actionBtnText, { color: theme.colors.primary }]}
+            >
               Payment
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionButton, { borderColor: theme.colors.primary, backgroundColor: theme.colors.primary + '0D' }]}>
-            <Icon name="swap-horizontal" size={16} color={theme.colors.primary} />
-            <Text style={[styles.actionBtnText, { color: theme.colors.primary }]}>
+          <TouchableOpacity
+            style={[
+              styles.actionButton,
+              {
+                borderColor: theme.colors.primary,
+                backgroundColor: theme.colors.primary + '0D',
+              },
+            ]}
+            onPress={() =>
+              navigation.navigate('Ledger', {
+                personId: item.debtor_no,
+                title: item.name,
+                type: 'customer',
+              })
+            }
+          >
+            <Icon
+              name="swap-horizontal"
+              size={16}
+              color={theme.colors.primary}
+            />
+            <Text
+              style={[styles.actionBtnText, { color: theme.colors.primary }]}
+            >
               Outstanding
             </Text>
           </TouchableOpacity>
@@ -117,7 +175,9 @@ const CustomerCard = ({ item, theme }) => {
         </View>
         <View style={styles.footerCol}>
           <Text style={styles.footerLabel}>DATE</Text>
-          <Text style={styles.footerValueBlack}>{item.last_order_date || 'N/A'}</Text>
+          <Text style={styles.footerValueBlack}>
+            {item.last_order_date || 'N/A'}
+          </Text>
         </View>
         <View style={styles.footerCol}>
           <Text style={styles.footerLabel}>DAYS</Text>
@@ -131,21 +191,20 @@ const CustomerCard = ({ item, theme }) => {
 const SalesGenerateOrderScreen = () => {
   const { theme } = useTheme();
   const user = useSelector(selectCurrentUser);
-  const company = useSelector(state => state.auth.company);
 
   const { data, isLoading, isFetching, refetch, error } =
     useGetDebtorsMasterQuery(
-      { 
-        company: user?.company_user_code, 
-        user_id: user?.company_user_id
+      {
+        company: user?.company_user_code,
+        user_id: user?.company_user_id,
       },
-      { skip: !user?.company_user_code || !user?.company_user_id }
+      { skip: !user?.company_user_code || !user?.company_user_id },
     );
 
   const customerCards = useMemo(() => {
     try {
       let dataArray = [];
-      
+
       // Handle string response
       let parsedData = data;
       if (typeof data === 'string') {
@@ -162,7 +221,7 @@ const SalesGenerateOrderScreen = () => {
         }
       }
 
-      // Handle { status, data: [] } vs [...] 
+      // Handle { status, data: [] } vs [...]
       if (parsedData && Array.isArray(parsedData.data)) {
         dataArray = parsedData.data;
       } else if (Array.isArray(parsedData)) {
@@ -179,18 +238,35 @@ const SalesGenerateOrderScreen = () => {
   }, [data]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['bottom', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: theme.colors.background }}
+      edges={['bottom', 'left', 'right']}
+    >
       {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       ) : error ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          }}
+        >
           <Text style={{ color: theme.colors.error, textAlign: 'center' }}>
             Failed to load customers.
           </Text>
           <TouchableOpacity
-            style={{ marginTop: 16, padding: 10, backgroundColor: theme.colors.primary, borderRadius: 8 }}
+            style={{
+              marginTop: 16,
+              padding: 10,
+              backgroundColor: theme.colors.primary,
+              borderRadius: 8,
+            }}
             onPress={refetch}
           >
             <Text style={{ color: '#fff' }}>Retry</Text>
@@ -208,12 +284,18 @@ const SalesGenerateOrderScreen = () => {
           }
           ListEmptyComponent={
             <View style={{ padding: 20 }}>
-              <Text style={{ textAlign: 'center', color: theme.colors.textSecondary }}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  color: theme.colors.textSecondary,
+                }}
+              >
                 {!user?.company_user_code || !user?.company_user_id
                   ? 'Missing company_user_code or company_user_id for API.'
-                  : data 
-                    ? 'No customers found. Data received: ' + JSON.stringify(data).substring(0, 50)
-                    : 'No customers found.'}
+                  : data
+                  ? 'No customers found. Data received: ' +
+                    JSON.stringify(data).substring(0, 50)
+                  : 'No customers found.'}
               </Text>
             </View>
           }

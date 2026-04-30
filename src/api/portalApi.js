@@ -7,7 +7,6 @@ export const portalApi = baseApi.injectEndpoints({
         const formData = new FormData();
         formData.append('company', body.company?.trim()?.toUpperCase());
         formData.append('user_id', body.user_id || '');
-
         return {
           url: 'portal/debtors_master.php',
           method: 'POST',
@@ -29,12 +28,16 @@ export const portalApi = baseApi.injectEndpoints({
               name: body[key].fileName || 'image.jpg',
             });
           } else if (key === 'purch_order_details') {
-            formData.append(key, typeof body[key] === 'string' ? body[key] : JSON.stringify(body[key]));
+            formData.append(
+              key,
+              typeof body[key] === 'string'
+                ? body[key]
+                : JSON.stringify(body[key]),
+            );
           } else {
             formData.append(key, body[key]);
           }
         });
-
         return {
           url: 'portal/post_service_purch_sale.php',
           method: 'POST',
@@ -49,4 +52,8 @@ export const portalApi = baseApi.injectEndpoints({
   overrideExisting: true,
 });
 
-export const { useGetDebtorsMasterQuery, useLazyGetDebtorsMasterQuery, usePostServicePurchSaleMutation } = portalApi;
+export const {
+  useGetDebtorsMasterQuery,
+  useLazyGetDebtorsMasterQuery,
+  usePostServicePurchSaleMutation,
+} = portalApi;

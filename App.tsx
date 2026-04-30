@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -15,7 +15,7 @@ import { useTheme } from './src/config/useTheme';
 const AppContent = () => {
   const { theme } = useTheme();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const init = async () => {
       const state = store.getState();
       const company = state.auth.company;
