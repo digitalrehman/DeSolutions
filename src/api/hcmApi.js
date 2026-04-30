@@ -20,12 +20,20 @@ export const hcmApi = baseApi.injectEndpoints({
     postAttendance: builder.mutation({
       queryFn: async (body, api, extraOptions, baseQuery) => {
         const formData = new FormData();
-        Object.keys(body).forEach(key => {
-          formData.append(key, body[key]);
-        });
+        
+        formData.append('code', body.code || '');
+        formData.append('ActivityDate', body.ActivityDate || '');
+        formData.append('ActivityTime', body.ActivityTime || '');
+        formData.append('current_location', body.current_location || '');
+        formData.append('latitude', body.latitude || '');
+        formData.append('longitude', body.longitude || '');
+        formData.append('in_out', '1');
+        formData.append('status1', '1');
+        formData.append('id', '0');
+        formData.append('company', 'CRM');
 
         const result = await baseQuery({
-          url: 'hcm/user_attendance_post.php',
+          url: 'portal/user_attendance_post.php',
           method: 'POST',
           body: formData,
         });

@@ -14,9 +14,10 @@ import { useGetCustomerBalanceDetailsMutation, useGetSupplierBalanceDetailsMutat
 import { useSelector } from 'react-redux';
 
 const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
-  const { customerId, customerName, supplierId, supplierName, type } = route.params || {};
+  const { customerId, customerName, supplierId, supplierName, type, company: pCompany } = route.params || {};
   const { theme } = useTheme();
-  const company = useSelector(state => state.auth.company);
+  const globalCompany = useSelector(state => state.auth.company);
+  const company = pCompany || globalCompany;
   
   const isSupplier = type === 'supplier' || !!supplierId;
   const displayName = customerName || supplierName;
@@ -466,6 +467,7 @@ const CustomerBalanceDetailsScreen = ({ route, navigation }) => {
                     type={isSupplier ? 'supplier' : 'customer'}
                     selectedPersonId={entityId}
                     onSelect={handlePersonSelect}
+                    company={company}
                     style={{ flex: 1.5, marginBottom: 0, paddingHorizontal: 0, paddingTop: 0 }}
                   />
                 )}

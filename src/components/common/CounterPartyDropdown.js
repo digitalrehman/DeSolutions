@@ -18,9 +18,10 @@ import { useGetCounterPartyDropdownMutation } from '@api/ledgerApi';
  * CounterPartyDropdown
  * A reusable dropdown component to select Counter Parties based on a GL Account.
  */
-const CounterPartyDropdown = ({ accountCode, selectedPartyId, onSelect, onVisibilityChange, style }) => {
+const CounterPartyDropdown = ({ accountCode, selectedPartyId, onSelect, onVisibilityChange, style, company: propCompany }) => {
   const { theme } = useTheme();
-  const company = useSelector(state => state.auth.company);
+  const globalCompany = useSelector(state => state.auth.company);
+  const company = propCompany || globalCompany;
 
   const [getCounterPartyDropdown, { isLoading }] = useGetCounterPartyDropdownMutation();
 

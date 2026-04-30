@@ -19,9 +19,10 @@ import { useGetDashReceivableMutation, useGetDashPayableMutation } from '@api/da
  * A reusable dropdown component to select a Customer or Supplier based on type.
  * It automatically fetches from dash_receivable or dash_payable.
  */
-const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style }) => {
+const PersonDropdown = ({ type = 'customer', selectedPersonId, onSelect, style, company: propCompany }) => {
   const { theme } = useTheme();
-  const company = useSelector(state => state.auth.company);
+  const globalCompany = useSelector(state => state.auth.company);
+  const company = propCompany || globalCompany;
 
   const isSupplier = type === 'supplier';
 

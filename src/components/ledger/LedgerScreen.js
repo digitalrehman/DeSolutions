@@ -13,7 +13,7 @@ import { DateFilter, LoadingSpinner, PersonDropdown, GLAccountDropdown, CounterP
 import { useGetGLAccountInquiryMutation } from '@api/ledgerApi';
 
 const LedgerScreen = ({ route, navigation }) => {
-  const { account: initialAccount, title, fromDate: pFromDate, toDate: pToDate, personId: initialPersonId, type } = route.params || {};
+  const { account: initialAccount, title, fromDate: pFromDate, toDate: pToDate, personId: initialPersonId, type, company: pCompany } = route.params || {};
   const { theme } = useTheme();
 
   const isGenericReport = !!type;
@@ -88,6 +88,7 @@ const LedgerScreen = ({ route, navigation }) => {
         account: accToFetch,
         person_id: personToFetch,
         dimension_id: dimToFetch || 0,
+        company: pCompany,
       }).unwrap();
 
       if (response && response.status === 'true') {
@@ -288,6 +289,7 @@ const LedgerScreen = ({ route, navigation }) => {
                     type={isSupplier ? 'supplier' : 'customer'}
                     selectedPersonId={personId}
                     onSelect={handlePersonSelect}
+                    company={pCompany}
                     style={{ flex: 1.5, marginBottom: 0, paddingHorizontal: 0, paddingTop: 0 }}
                   />
                 )}
@@ -301,11 +303,13 @@ const LedgerScreen = ({ route, navigation }) => {
                         setPersonId('0');
                         setHasCounterParties(false);
                       }}
+                      company={pCompany}
                       style={{ width: hasCounterParties ? '48%' : '30%', flex: hasCounterParties ? 0 : 1.5, marginBottom: 0, paddingHorizontal: 0, paddingTop: 0 }}
                     />
                     <CounterPartyDropdown
                       accountCode={account}
                       selectedPartyId={personId}
+                      company={pCompany}
                       onVisibilityChange={setHasCounterParties}
                       onSelect={(party) => {
                         setPersonId(party.id);

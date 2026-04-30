@@ -18,9 +18,10 @@ import { useGetGLAccountDropdownMutation } from '@api/ledgerApi';
  * GLAccountDropdown
  * A reusable dropdown component to select GL Accounts.
  */
-const GLAccountDropdown = ({ selectedAccountId, onSelect, style }) => {
+const GLAccountDropdown = ({ selectedAccountId, onSelect, style, company: propCompany }) => {
   const { theme } = useTheme();
-  const company = useSelector(state => state.auth.company);
+  const globalCompany = useSelector(state => state.auth.company);
+  const company = propCompany || globalCompany;
 
   const [getGLAccountDropdown, { isLoading }] = useGetGLAccountDropdownMutation();
 

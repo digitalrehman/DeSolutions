@@ -17,10 +17,9 @@ import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '@store/slices/authSlice';
 
 const CustomerCard = ({ item, theme }) => {
-  console.log(item);
-
   const styles = getCardStyles(theme);
   const navigation = useNavigation();
+  const user = useSelector(selectCurrentUser);
 
   const cleanName = item.name ? item.name.replace(/&amp;/g, '&') : '';
   const displayName = item.city ? `${cleanName} , ${item.city}` : cleanName;
@@ -45,8 +44,9 @@ const CustomerCard = ({ item, theme }) => {
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('CustomerBalanceDetails', {
-                customerId: item.debtor_no,
+                customerId: item.person_id || item.customer_id,
                 customerName: item.name,
+                company: user?.company_user_code,
               })
             }
           >
@@ -63,8 +63,9 @@ const CustomerCard = ({ item, theme }) => {
           <TouchableOpacity
             onPress={() =>
               navigation.navigate('CustomerAging', {
-                customerId: item.debtor_no,
+                customerId: item.person_id || item.customer_id,
                 customerName: item.name,
+                company: user?.company_user_code,
               })
             }
             style={{ marginTop: 12 }}
@@ -145,13 +146,21 @@ const CustomerCard = ({ item, theme }) => {
                 backgroundColor: theme.colors.primary + '0D',
               },
             ]}
-            onPress={() =>
+            onPress={() => {
+              const today = new Date();
+              const thirtyDaysAgo = new Date();
+              thirtyDaysAgo.setDate(today.getDate() - 30);
+
               navigation.navigate('Ledger', {
-                personId: item.debtor_no,
+                personId: item.person_id || item.customer_id,
+                account: item.account,
+                company: user?.company_user_code,
                 title: item.name,
                 type: 'customer',
-              })
-            }
+                fromDate: thirtyDaysAgo.toISOString(),
+                toDate: today.toISOString(),
+              });
+            }}
           >
             <Icon
               name="swap-horizontal"

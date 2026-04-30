@@ -173,23 +173,8 @@ const AttendanceScreen = () => {
       const coords = await getCurrentLocation();
       setCurrentLocationCoords(coords);
 
-      const targetLat = parseFloat(userData?.latitude);
-      const targetLong = parseFloat(userData?.longitude);
-
-      if (!isNaN(targetLat) && !isNaN(targetLong)) {
-        const distance = geolib.getDistance(
-          { latitude: coords.latitude, longitude: coords.longitude },
-          { latitude: targetLat, longitude: targetLong },
-        );
-
-        if (distance <= 100) {
-          postAttendance(coords, false);
-        } else {
-          setDVRModalVisible(true);
-        }
-      } else {
-        setDVRModalVisible(true);
-      }
+      // Directly post attendance without geofencing or DVR checks
+      await postAttendance(coords);
     } catch (error) {
       showFeedback(
         'error',
@@ -208,43 +193,28 @@ const AttendanceScreen = () => {
     checkOutId = null,
   ) => {
     const currentDateStr = new Date().toISOString().split('T')[0];
-    const currentTimeStr = new Date().toLocaleTimeString('en-GB', {
-      hour12: false,
-    });
+    const now = new Date();
+    const hours = now.getHours();
+    const displayHours = hours === 0 ? '12' : String(hours).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const currentTimeStr = `${displayHours}:${minutes}:${seconds}`;
 
-    let payload = {};
+    const lat = coords?.latitude || 0;
+    const lon = coords?.longitude || 0;
+    const addressName = await getAddressFromCoords(lat, lon);
 
-    if (isOut) {
-      payload = {
-        code: userData?.emp_code || '10001',
-        ActivityDate: currentDateStr,
-        ActivityTime: currentTimeStr,
-        status: '1',
-        in_out: '1',
-        id: String(checkOutId || '0'),
-      };
-    } else {
-      const lat = coords?.latitude || 0;
-      const lon = coords?.longitude || 0;
-      const addressName = await getAddressFromCoords(lat, lon);
-
-      payload = {
-        code: userData?.emp_code,
-        ActivityDate: currentDateStr,
-        ActivityTime: currentTimeStr,
-        site_name: dvrData.site_name || '',
-        site_address: dvrData.site_address || '',
-        contact_person: dvrData.contact_person || '',
-        mobile_no: dvrData.mobile_no || '',
-        current_location: addressName,
-        nature_of_visit: dvrData.nature_of_visit || '',
-        latitude: lat.toString(),
-        longitude: lon.toString(),
-        in_out: '0',
-        status: '0',
-        id: '0',
-      };
-    }
+    const payload = {
+      code: userData?.emp_code || '',
+      ActivityDate: currentDateStr,
+      ActivityTime: currentTimeStr,
+      current_location: addressName,
+      latitude: lat.toString(),
+      longitude: lon.toString(),
+      in_out: '1',
+      status1: '1',
+      id: '0',
+    };
 
     setLoading(true);
     try {

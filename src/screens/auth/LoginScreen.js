@@ -97,7 +97,10 @@ const LoginScreen = ({ navigation }) => {
       }).unwrap();
 
       dispatch(
-        setCredentials({ user: result.user, company: formData.company }),
+        setCredentials({ 
+          user: result.user, 
+          company: result.user.company_user_code || formData.company 
+        }),
       );
     } catch (error) {
       console.log('Login error:', error);

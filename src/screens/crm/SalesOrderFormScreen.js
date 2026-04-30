@@ -22,9 +22,9 @@ import { selectCurrentUser } from '@store/slices/authSlice';
 
 const SalesOrderFormScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
-  
+
   const [cart, setCart] = useState([]);
-  
+
   const [ProductModal, setProductModal] = useState(false);
   const [Search, setSearch] = useState('');
   const [selectProduct, setSelectProduct] = useState(null);
@@ -36,7 +36,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
   const [shippingAddress, setShippingAddress] = useState('');
   const [picture, setPicture] = useState(null);
   const [orderLoader, setOrderLoader] = useState(false);
-  
+
   const { company } = useSelector(state => state.auth);
   const user = useSelector(selectCurrentUser);
   const [getStockMaster] = useGetStockMasterDropdownMutation();
@@ -49,7 +49,9 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
 
   const fetchProducts = async () => {
     try {
-      const response = await getStockMaster({ company }).unwrap();
+      const response = await getStockMaster({ 
+        company: user?.company_user_code || company 
+      }).unwrap();
       if (response && response.data) {
         setProducts(response.data);
       }
@@ -59,9 +61,12 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
   };
 
   // Derived Values
-  const grandTotal = cart.reduce((sum, item) => sum + parseFloat(item.GrandTotal || 0), 0);
+  const grandTotal = cart.reduce(
+    (sum, item) => sum + parseFloat(item.GrandTotal || 0),
+    0,
+  );
 
-  const handleQuantityChange = (type) => {
+  const handleQuantityChange = type => {
     if (type === 'plus') {
       setQuantity(prev => prev + 1);
     } else {
@@ -98,12 +103,12 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
     };
 
     setCart([...cart, newItem]);
-    
+
     // Reset fields
     setSelectProduct(null);
     setQuantity(1);
     setPrice('0');
-    
+
     Toast.show({ type: 'success', text1: 'Item added to cart' });
   };
 
@@ -118,56 +123,73 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
     }
 
     setOrderLoader(true);
-    
+
     try {
       const customer = route.params?.customer || {};
-      
+
       const purch_order_details = cart.map(item => ({
         item_code: item.item_code,
-        description: '', // as requested
+        description: item.description || '', // Now sending actual description
+        quantity_ordered: String(item.quantity_ordered),
         del_qty: String(item.quantity_ordered),
-        unit_price: String(item.unit_price)
+        unit_price: String(item.unit_price),
       }));
 
-      const formatDate = (dateObj) => {
+      const formatDate = dateObj => {
         const d = new Date(dateObj);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+          2,
+          '0',
+        )}-${String(d.getDate()).padStart(2, '0')}`;
       };
 
       const payload = {
         order_no: '0',
-        person_id: customer.debtor_no || customer.person_id || '',
+        person_id: customer.person_id || customer.customer_id || '',
         trans_type: '30',
         ord_date: formatDate(new Date()),
         po_no: poNo,
         po_date: formatDate(poDate),
-        loc_code: customer.loc_code || customer.default_location || '',
+        loc_code: customer.loc_code || '',
         total: String(grandTotal),
-        price_list: customer.price_list || customer.sales_type || '',
-        ship_via: customer.ship_via || customer.default_ship_via || '',
+        price_list: customer.price_list || '',
+        ship_via: customer.ship_via || '',
         memo: '',
         purch_order_details: JSON.stringify(purch_order_details),
-        user_id: user?.id || user?.company_user_id || '',
+        user_id: user?.company_user_id || user?.id || '', 
         shiping_address: shippingAddress,
-        company: company || '',
+        company: user?.company_user_code || company || '',
         image: picture,
+        salesman: customer.salesman || '',
+        payments: customer.payments || customer.payment_terms || '',
       };
-
       const response = await postOrder(payload).unwrap();
-      
+
       if (response && response.status === true) {
         setCart([]);
         setPicture(null);
         setPoNo('');
         setShippingAddress('');
-        Toast.show({ type: 'success', text1: 'Order confirmed successfully', text2: response.message || '' });
+        Toast.show({
+          type: 'success',
+          text1: 'Order confirmed successfully',
+          text2: response.message || '',
+        });
         navigation.goBack();
       } else {
-        Toast.show({ type: 'error', text1: 'Failed to place order', text2: response?.message || 'Unknown error' });
+        Toast.show({
+          type: 'error',
+          text1: 'Failed to place order',
+          text2: response?.message || 'Unknown error',
+        });
       }
     } catch (error) {
       console.log('Order Error:', error);
-      Toast.show({ type: 'error', text1: 'Network Error', text2: 'Could not place order' });
+      Toast.show({
+        type: 'error',
+        text1: 'Network Error',
+        text2: 'Could not place order',
+      });
     } finally {
       setOrderLoader(false);
     }
@@ -189,135 +211,313 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.formContainer, { backgroundColor: theme.colors.surface, shadowColor: '#000' }]}>
+        <View
+          style={[
+            styles.formContainer,
+            { backgroundColor: theme.colors.surface, shadowColor: '#000' },
+          ]}
+        >
           {/* Select Product */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setProductModal(true)}
-            style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Select Product</Text>
-            <Text style={[styles.inputValue, { color: theme.colors.textSecondary }]} numberOfLines={1}>
-              {selectProduct ? selectProduct.description : 'Choose a product...'}
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              Select Product
+            </Text>
+            <Text
+              style={[styles.inputValue, { color: theme.colors.textSecondary }]}
+              numberOfLines={1}
+            >
+              {selectProduct
+                ? selectProduct.description
+                : 'Choose a product...'}
             </Text>
           </TouchableOpacity>
 
           {/* Quantity */}
-          <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Quantity :</Text>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              Quantity :
+            </Text>
             <View style={styles.quantityRow}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => handleQuantityChange('minus')}
-                style={[styles.quantityBtn, { backgroundColor: theme.colors.primary }]}>
+                style={[
+                  styles.quantityBtn,
+                  { backgroundColor: theme.colors.primary },
+                ]}
+              >
                 <Ionicons name="remove" size={20} color="#fff" />
               </TouchableOpacity>
-              
+
               <TextInput
                 keyboardType="numeric"
                 value={String(quantity)}
                 onChangeText={txt => setQuantity(Number(txt) || 0)}
                 style={[styles.quantityInput, { color: theme.colors.text }]}
               />
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 onPress={() => handleQuantityChange('plus')}
-                style={[styles.quantityBtn, { backgroundColor: theme.colors.primary }]}>
+                style={[
+                  styles.quantityBtn,
+                  { backgroundColor: theme.colors.primary },
+                ]}
+              >
                 <Ionicons name="add" size={20} color="#fff" />
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Price */}
-          <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Price :</Text>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              Price :
+            </Text>
             <TextInput
               keyboardType="numeric"
               value={price}
               onChangeText={setPrice}
               placeholder="0"
               placeholderTextColor={theme.colors.textSecondary}
-              style={[styles.textInput, { color: theme.colors.text, borderBottomColor: theme.colors.border }]}
+              style={[
+                styles.textInput,
+                {
+                  color: theme.colors.text,
+                  borderBottomColor: theme.colors.border,
+                },
+              ]}
             />
           </View>
 
           {/* Add Item Button */}
           <TouchableOpacity onPress={addToCart} style={styles.addItemBtn}>
-            <View style={[styles.gradientBtn, { backgroundColor: theme.colors.primary }]}>
+            <View
+              style={[
+                styles.gradientBtn,
+                { backgroundColor: theme.colors.primary },
+              ]}
+            >
               <Text style={styles.btnText}>Add Item</Text>
             </View>
           </TouchableOpacity>
-          
+
           {/* Cart Summary */}
           {cart.length > 0 && (
             <View style={{ marginBottom: 20 }}>
-              <Text style={[styles.label, { color: theme.colors.text, marginBottom: 10 }]}>Cart Items ({cart.length})</Text>
+              <Text
+                style={[
+                  styles.label,
+                  { color: theme.colors.text, marginBottom: 10 },
+                ]}
+              >
+                Cart Items ({cart.length})
+              </Text>
               {cart.map((item, idx) => (
-                <View key={idx} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                  <Text style={{ color: theme.colors.textSecondary, flex: 1 }}>{item.description} (x{item.quantity_ordered})</Text>
-                  <Text style={{ color: theme.colors.text, fontWeight: '600' }}>Rs {item.GrandTotal}</Text>
+                <View
+                  key={idx}
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    marginBottom: 5,
+                  }}
+                >
+                  <Text style={{ color: theme.colors.textSecondary, flex: 1 }}>
+                    {item.description} (x{item.quantity_ordered})
+                  </Text>
+                  <Text style={{ color: theme.colors.text, fontWeight: '600' }}>
+                    Rs {item.GrandTotal}
+                  </Text>
                 </View>
               ))}
-              <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={[styles.label, { color: theme.colors.text, fontWeight: '700' }]}>Grand Total</Text>
-                <Text style={{ color: theme.colors.text, fontWeight: '700' }}>Rs {grandTotal.toFixed(2)}</Text>
+              <View
+                style={[
+                  styles.divider,
+                  { backgroundColor: theme.colors.border },
+                ]}
+              />
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text
+                  style={[
+                    styles.label,
+                    { color: theme.colors.text, fontWeight: '700' },
+                  ]}
+                >
+                  Grand Total
+                </Text>
+                <Text style={{ color: theme.colors.text, fontWeight: '700' }}>
+                  Rs {grandTotal.toFixed(2)}
+                </Text>
               </View>
             </View>
           )}
 
           {/* PO No */}
-          <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>PO No :</Text>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              PO No :
+            </Text>
             <TextInput
               value={poNo}
               onChangeText={setPoNo}
               placeholder="Enter PO No"
               placeholderTextColor={theme.colors.textSecondary}
-              style={[styles.textInput, { color: theme.colors.text, borderBottomColor: theme.colors.border }]}
+              style={[
+                styles.textInput,
+                {
+                  color: theme.colors.text,
+                  borderBottomColor: theme.colors.border,
+                },
+              ]}
             />
           </View>
 
           {/* PO Date */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
-            style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>PO Date :</Text>
-            <Text style={[styles.inputValue, { color: theme.colors.textSecondary }]} numberOfLines={1}>
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              PO Date :
+            </Text>
+            <Text
+              style={[styles.inputValue, { color: theme.colors.textSecondary }]}
+              numberOfLines={1}
+            >
               {poDate ? poDate.toLocaleDateString() : 'Select Date'}
             </Text>
           </TouchableOpacity>
 
           {/* Shipping Address */}
-          <View style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1, flexDirection: 'column', alignItems: 'flex-start' }]}>
-            <Text style={[styles.label, { color: theme.colors.text, marginBottom: 10 }]}>Shipping Address :</Text>
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.label,
+                { color: theme.colors.text, marginBottom: 10 },
+              ]}
+            >
+              Shipping Address :
+            </Text>
             <TextInput
               value={shippingAddress}
               onChangeText={setShippingAddress}
               placeholder="Enter Shipping Address"
               placeholderTextColor={theme.colors.textSecondary}
-              style={[styles.textInput, { color: theme.colors.text, borderBottomColor: theme.colors.border, width: '100%', textAlign: 'left', marginLeft: 0 }]}
+              style={[
+                styles.textInput,
+                {
+                  color: theme.colors.text,
+                  borderBottomColor: theme.colors.border,
+                  width: '100%',
+                  textAlign: 'left',
+                  marginLeft: 0,
+                },
+              ]}
               multiline
             />
           </View>
 
           {/* Picture */}
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={handlePickImage}
-            style={[styles.inputContainer, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: 1 }]}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Picture :</Text>
-            <Text style={[styles.inputValue, { color: theme.colors.textSecondary }]} numberOfLines={1}>
-              {picture ? picture.fileName || 'Image Selected' : 'Choose from Gallery...'}
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.border,
+                borderWidth: 1,
+              },
+            ]}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              Picture :
+            </Text>
+            <Text
+              style={[styles.inputValue, { color: theme.colors.textSecondary }]}
+              numberOfLines={1}
+            >
+              {picture
+                ? picture.fileName || 'Image Selected'
+                : 'Choose from Gallery...'}
             </Text>
           </TouchableOpacity>
 
           {/* Confirm order Button */}
-          <TouchableOpacity 
-            onPress={confirmOrder} 
+          <TouchableOpacity
+            onPress={confirmOrder}
             disabled={orderLoader}
-            style={styles.confirmBtn}>
-            <View style={[styles.gradientBtn, { backgroundColor: theme.colors.primary }]}>
+            style={styles.confirmBtn}
+          >
+            <View
+              style={[
+                styles.gradientBtn,
+                { backgroundColor: theme.colors.primary },
+              ]}
+            >
               {orderLoader ? (
-                  <ActivityIndicator color="#fff" />
+                <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.btnText}>Confirm order</Text>
               )}
@@ -329,7 +529,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
       <CustomDatePicker
         visible={showDatePicker}
         onClose={() => setShowDatePicker(false)}
-        onSelect={(date) => {
+        onSelect={date => {
           setPoDate(date);
           setShowDatePicker(false);
         }}
@@ -338,13 +538,28 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
       />
 
       {/* Product Selection Modal */}
-      <Modal 
+      <Modal
         isVisible={ProductModal}
         onBackdropPress={() => setProductModal(false)}
-        style={styles.modal}>
-        <View style={[styles.modalContent, { backgroundColor: theme.colors.surface }]}>
-          <View style={[styles.searchBar, { backgroundColor: theme.colors.background }]}>
-            <Ionicons name="search" size={20} color={theme.colors.textSecondary} />
+        style={styles.modal}
+      >
+        <View
+          style={[
+            styles.modalContent,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <View
+            style={[
+              styles.searchBar,
+              { backgroundColor: theme.colors.background },
+            ]}
+          >
+            <Ionicons
+              name="search"
+              size={20}
+              color={theme.colors.textSecondary}
+            />
             <TextInput
               placeholder="Search by Description or Stock ID"
               placeholderTextColor={theme.colors.textSecondary}
@@ -353,20 +568,35 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
               style={[styles.searchInput, { color: theme.colors.text }]}
             />
           </View>
-          
+
           <FlatList
             data={filteredProducts}
             keyExtractor={(item, index) => index.toString()}
-            renderItem={({item}) => (
-              <TouchableOpacity 
+            renderItem={({ item }) => (
+              <TouchableOpacity
                 onPress={() => {
                   setSelectProduct(item);
-                  setPrice(item.price || '0');
+                  setPrice(String(item.price || '0'));
                   setProductModal(false);
                 }}
-                style={[styles.productItem, { borderBottomColor: theme.colors.border }]}>
-                <Text style={[styles.productName, { color: theme.colors.text }]}>{item.description}</Text>
-                <Text style={[styles.productCode, { color: theme.colors.textSecondary }]}>{item.stock_id}</Text>
+                style={[
+                  styles.productItem,
+                  { borderBottomColor: theme.colors.border },
+                ]}
+              >
+                <Text
+                  style={[styles.productName, { color: theme.colors.text }]}
+                >
+                  {item.description}
+                </Text>
+                <Text
+                  style={[
+                    styles.productCode,
+                    { color: theme.colors.textSecondary },
+                  ]}
+                >
+                  {item.stock_id}
+                </Text>
               </TouchableOpacity>
             )}
           />
@@ -390,7 +620,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     elevation: 3,
-    shadowOffset: {width: 0, height: 2},
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
