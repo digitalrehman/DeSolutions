@@ -115,13 +115,17 @@ const SaleManagementScreen = ({ navigation }) => {
         {/* TODAY'S PLAN SECTION */}
         <View style={styles.sectionHeaderContainer}>
           <Text style={styles.sectionTitle}>TODAY'S PLAN</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('HCMAttendance')}>
             <Text style={styles.sectionRightText}>ATTENDANCE</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.planCard}>
-          <View style={styles.planHalf}>
+          <TouchableOpacity 
+            style={styles.planHalf} 
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('SaleTask')}
+          >
             <View style={[styles.iconCircle, { backgroundColor: theme.colors.primary + '1A' }]}>
               <Icon name="calendar-outline" size={24} color={theme.colors.primary} />
             </View>
@@ -131,9 +135,13 @@ const SaleManagementScreen = ({ navigation }) => {
               </Text>
               <Text style={styles.planSub}>Today</Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <View style={styles.planHalf}>
+          <TouchableOpacity 
+            style={styles.planHalf} 
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('HCMAttendance')}
+          >
             <View style={[styles.iconCircle, { backgroundColor: theme.colors.primary + '1A' }]}>
               <Icon name="calendar-outline" size={24} color={theme.colors.primary} />
             </View>
@@ -141,7 +149,7 @@ const SaleManagementScreen = ({ navigation }) => {
               <Text style={styles.planMainText}>Mark</Text>
               <Text style={styles.planMainText}>Attendance</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* QUICK ACTIONS SECTION */}

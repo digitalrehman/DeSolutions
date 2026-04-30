@@ -54,6 +54,68 @@ export const baseApi = createApi({
         };
       },
     }),
+    getSalesCategory: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        
+        return {
+          url: 'dropdown/sales_category.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    getSalesActivity: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        formData.append('sales_category', body.sales_category);
+        
+        return {
+          url: 'dropdown/sales_activity.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    getHospital: builder.mutation({
+      query: () => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        
+        return {
+          url: 'dropdown/hospital.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    getHospitalContacts: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        formData.append('hospital_id', body.hospital_id);
+        
+        return {
+          url: 'dropdown/hospital_contacts.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
     toggleErpStatus: builder.mutation({
       query: (body) => {
         const formData = new FormData();
@@ -73,6 +135,15 @@ export const baseApi = createApi({
   }),
 });
 
-export const { useGetFunctionalityCheckMutation, useGetDimensionDropdownMutation, useGetStockMasterDropdownMutation, useToggleErpStatusMutation } = baseApi;
+export const { 
+  useGetFunctionalityCheckMutation, 
+  useGetDimensionDropdownMutation, 
+  useGetStockMasterDropdownMutation, 
+  useGetSalesCategoryMutation,
+  useGetSalesActivityMutation,
+  useGetHospitalMutation,
+  useGetHospitalContactsMutation,
+  useToggleErpStatusMutation 
+} = baseApi;
 
 export default baseApi;
