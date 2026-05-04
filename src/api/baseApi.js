@@ -99,6 +99,18 @@ export const baseApi = createApi({
           },
         };
       },
+      transformResponse: (response) => {
+        if (response.status === 'true' && Array.isArray(response.data)) {
+          return {
+            ...response,
+            data: response.data.map(item => ({
+              ...item,
+              name: (item.name || '').replace(/&amp;/g, '&'),
+            })),
+          };
+        }
+        return response;
+      },
     }),
     getHospitalContacts: builder.mutation({
       query: (body) => {
@@ -108,6 +120,66 @@ export const baseApi = createApi({
         
         return {
           url: 'dropdown/hospital_contacts.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    getDailyWorkingPlan: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        formData.append('user_id', body.user_id);
+        formData.append('date', body.date);
+        
+        return {
+          url: 'portal/get_daily_working_plan.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    addDailyWorkingPlan: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        formData.append('id', body.id || '0');
+        formData.append('user_id', body.user_id);
+        formData.append('activity_date', body.activity_date);
+        formData.append('category', body.category);
+        formData.append('activity', body.activity); // Name from dropdown
+        formData.append('activity_id', body.activity_id); // New field: ID from dropdown
+        formData.append('hospital_name', body.hospital_name);
+        formData.append('contact_person', body.contact_person);
+        formData.append('progress_status', body.progress_status || '1');
+        formData.append('created_by', body.created_by);
+        formData.append('evening_remarks', body.evening_remarks || '');
+        if (body.emp_code) formData.append('emp_code', body.emp_code);
+        
+        return {
+          url: 'portal/daily_working_plan.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    getSalesProgressStatus: builder.mutation({
+      query: (body) => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        formData.append('activity', body.activity);
+        
+        return {
+          url: 'dropdown/sales_activity_progress_status.php',
           method: 'POST',
           body: formData,
           headers: {
@@ -143,6 +215,9 @@ export const {
   useGetSalesActivityMutation,
   useGetHospitalMutation,
   useGetHospitalContactsMutation,
+  useGetDailyWorkingPlanMutation,
+  useAddDailyWorkingPlanMutation,
+  useGetSalesProgressStatusMutation,
   useToggleErpStatusMutation 
 } = baseApi;
 

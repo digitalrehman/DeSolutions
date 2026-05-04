@@ -4,8 +4,8 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '@config/useTheme';
 
@@ -218,7 +218,9 @@ const SaleManagementScreen = ({ navigation }) => {
               { backgroundColor: theme.colors.primary + '1A', marginRight: 16 },
             ]}
           >
-            <Icon name="wallet-outline" size={24} color={theme.colors.primary} />
+            <View style={[styles.iconCircle, { backgroundColor: theme.colors.primary + '1A' }]}>
+              <Icon name="wallet-outline" size={24} color={theme.colors.primary} />
+            </View>
           </View>
           <View style={styles.expenseTextCol}>
             <Text style={styles.expenseTitle}>Field Expense</Text>

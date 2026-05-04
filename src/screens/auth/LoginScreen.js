@@ -192,7 +192,7 @@ const LoginScreen = ({ navigation }) => {
             {/* Footer Links - Outside innerContainer to push to bottom if space allows */}
             <View style={dynamicStyles.footer}>
               <AnimatedTypingText
-                text="Powered by Kmivo"
+                text="Powered by Desolutions"
                 style={[
                   dynamicStyles.footerText,
                   { color: theme.colors.textSecondary },
