@@ -14,8 +14,8 @@ import Modal from 'react-native-modal';
 import Toast from 'react-native-toast-message';
 import { useTheme } from '@config/useTheme';
 import { useSelector } from 'react-redux';
-import { useGetStockMasterDropdownMutation } from '@api/baseApi';
-import { CustomDatePicker } from '@components/common';
+import { useGetStockMasterDropdownMutation, useGetCustBranchDropdownMutation } from '@api/baseApi';
+import { CustomDatePicker, SearchableDropdown } from '@components/common';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { usePostServicePurchSaleMutation } from '@api/portalApi';
 import { selectCurrentUser } from '@store/slices/authSlice';
@@ -42,10 +42,33 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
   const [getStockMaster] = useGetStockMasterDropdownMutation();
   const [postOrder] = usePostServicePurchSaleMutation();
   const [products, setProducts] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranch, setSelectedBranch] = useState(null);
+  
+  const [getCustBranchDropdown, { isLoading: branchLoading }] = useGetCustBranchDropdownMutation();
 
   React.useEffect(() => {
     fetchProducts();
+    fetchBranches();
   }, []);
+
+  const fetchBranches = async () => {
+    const customer = route.params?.customer || {};
+    const personId = customer.person_id || customer.customer_id;
+    if (personId) {
+      try {
+        const response = await getCustBranchDropdown({
+          company: user?.company_user_code || company,
+          person_id: personId,
+        }).unwrap();
+        if (response && String(response.status) === 'true') {
+          setBranches(response.data || []);
+        }
+      } catch (error) {
+        console.log('Error fetching branches:', error);
+      }
+    }
+  };
 
   const fetchProducts = async () => {
     try {
@@ -150,7 +173,7 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
         ord_date: formatDate(new Date()),
         po_no: poNo,
         po_date: formatDate(poDate),
-        loc_code: customer.loc_code || '',
+        loc_code: selectedBranch || customer.loc_code || '',
         total: String(grandTotal),
         price_list: customer.price_list || '',
         ship_via: customer.ship_via || '',
@@ -221,6 +244,19 @@ const SalesOrderFormScreen = ({ navigation, route }) => {
             { backgroundColor: theme.colors.surface, shadowColor: '#000' },
           ]}
         >
+          {/* Select Branch */}
+          <SearchableDropdown
+            label="Select Branch"
+            placeholder="Choose a branch..."
+            data={branches}
+            selectedId={selectedBranch}
+            onSelect={item => setSelectedBranch(item.branch_code)}
+            isLoading={branchLoading}
+            idKey="branch_code"
+            labelKey="br_name"
+            iconName="git-branch-outline"
+          />
+
           {/* Select Product */}
           <TouchableOpacity
             onPress={() => setProductModal(true)}

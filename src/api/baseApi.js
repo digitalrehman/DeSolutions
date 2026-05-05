@@ -10,10 +10,10 @@ export const baseApi = createApi({
   keepUnusedDataFor: 600, // 10 minutes cache
   endpoints: builder => ({
     getFunctionalityCheck: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
-        
+
         return {
           url: 'access/functionality_checks.php',
           method: 'POST',
@@ -25,10 +25,10 @@ export const baseApi = createApi({
       },
     }),
     getDimensionDropdown: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
-        
+
         return {
           url: 'dropdown/dimension1.php',
           method: 'POST',
@@ -40,10 +40,10 @@ export const baseApi = createApi({
       },
     }),
     getStockMasterDropdown: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', body.company);
-        
+
         return {
           url: 'dropdown/stock_master.php',
           method: 'POST',
@@ -55,10 +55,10 @@ export const baseApi = createApi({
       },
     }),
     getSalesCategory: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', 'CRM');
-        
+
         return {
           url: 'dropdown/sales_category.php',
           method: 'POST',
@@ -70,11 +70,11 @@ export const baseApi = createApi({
       },
     }),
     getSalesActivity: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', 'CRM');
         formData.append('sales_category', body.sales_category);
-        
+
         return {
           url: 'dropdown/sales_activity.php',
           method: 'POST',
@@ -89,7 +89,7 @@ export const baseApi = createApi({
       query: () => {
         const formData = new FormData();
         formData.append('company', 'CRM');
-        
+
         return {
           url: 'dropdown/hospital.php',
           method: 'POST',
@@ -99,7 +99,7 @@ export const baseApi = createApi({
           },
         };
       },
-      transformResponse: (response) => {
+      transformResponse: response => {
         if (response.status === 'true' && Array.isArray(response.data)) {
           return {
             ...response,
@@ -113,11 +113,11 @@ export const baseApi = createApi({
       },
     }),
     getHospitalContacts: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', 'CRM');
         formData.append('hospital_id', body.hospital_id);
-        
+
         return {
           url: 'dropdown/hospital_contacts.php',
           method: 'POST',
@@ -129,12 +129,12 @@ export const baseApi = createApi({
       },
     }),
     getDailyWorkingPlan: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', 'CRM');
         formData.append('user_id', body.user_id);
         formData.append('date', body.date);
-        
+
         return {
           url: 'portal/get_daily_working_plan.php',
           method: 'POST',
@@ -146,22 +146,38 @@ export const baseApi = createApi({
       },
     }),
     addDailyWorkingPlan: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', 'CRM');
         formData.append('id', body.id || '0');
         formData.append('user_id', body.user_id);
         formData.append('activity_date', body.activity_date);
         formData.append('category', body.category);
-        formData.append('activity', body.activity); // Name from dropdown
-        formData.append('activity_id', body.activity_id); // New field: ID from dropdown
+        formData.append('activity', body.activity);
         formData.append('hospital_name', body.hospital_name);
         formData.append('contact_person', body.contact_person);
         formData.append('progress_status', body.progress_status || '1');
         formData.append('created_by', body.created_by);
         formData.append('evening_remarks', body.evening_remarks || '');
-        if (body.emp_code) formData.append('emp_code', body.emp_code);
-        
+        formData.append('longitude', body.longitude || '');
+        formData.append('latitude', body.latitude || '');
+        formData.append('current_location', body.location_name || '');
+        formData.append('ActivityTime', body.ActivityTime || '');
+        if (body.emp_code) {
+          formData.append('code', body.emp_code);
+        }
+
+        // --- DEBUG LOG FOR PAYLOAD ---
+        const payloadLog = {};
+        formData.getParts().forEach(part => {
+          payloadLog[part.fieldName] = part.string;
+        });
+        console.log(
+          '=== PAYLOAD FOR daily_working_plan.php ===\n',
+          JSON.stringify(payloadLog, null, 2),
+        );
+        // -----------------------------
+
         return {
           url: 'portal/daily_working_plan.php',
           method: 'POST',
@@ -173,11 +189,11 @@ export const baseApi = createApi({
       },
     }),
     getSalesProgressStatus: builder.mutation({
-      query: (body) => {
+      query: body => {
         const formData = new FormData();
         formData.append('company', 'CRM');
         formData.append('activity', body.activity);
-        
+
         return {
           url: 'dropdown/sales_activity_progress_status.php',
           method: 'POST',
@@ -188,12 +204,44 @@ export const baseApi = createApi({
         };
       },
     }),
-    toggleErpStatus: builder.mutation({
+    getCustBranchDropdown: builder.mutation({
       query: (body) => {
         const formData = new FormData();
         formData.append('company', body.company);
-        formData.append('activate', body.activate);
+        formData.append('person_id', body.person_id);
         
+        return {
+          url: 'mobile/dropdown/cust_branch.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    deleteDailyWorkingPlan: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', 'CRM');
+        formData.append('id', body.id);
+
+        return {
+          url: 'portal/delete_daily_working_plan.php',
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        };
+      },
+    }),
+    toggleErpStatus: builder.mutation({
+      query: body => {
+        const formData = new FormData();
+        formData.append('company', body.company);
+        formData.append('activate', body.activate);
+
         return {
           url: 'access/erp_on_off.php',
           method: 'POST',
@@ -207,10 +255,10 @@ export const baseApi = createApi({
   }),
 });
 
-export const { 
-  useGetFunctionalityCheckMutation, 
-  useGetDimensionDropdownMutation, 
-  useGetStockMasterDropdownMutation, 
+export const {
+  useGetFunctionalityCheckMutation,
+  useGetDimensionDropdownMutation,
+  useGetStockMasterDropdownMutation,
   useGetSalesCategoryMutation,
   useGetSalesActivityMutation,
   useGetHospitalMutation,
@@ -218,7 +266,9 @@ export const {
   useGetDailyWorkingPlanMutation,
   useAddDailyWorkingPlanMutation,
   useGetSalesProgressStatusMutation,
-  useToggleErpStatusMutation 
+  useGetCustBranchDropdownMutation,
+  useDeleteDailyWorkingPlanMutation,
+  useToggleErpStatusMutation,
 } = baseApi;
 
 export default baseApi;
